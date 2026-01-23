@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 7,
+    "pulled_at_utc": "2026-01-23T22:35:10.935866"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 13965,
+        "name": "Rosemary for the turkey",
+        "created_at": "2025-12-23T19:05:50.054000Z",
+        "updated_at": "2026-01-10T14:23:01.139000Z"
+      },
+      {
+        "id": 13964,
+        "name": "Oil for the Pork",
+        "created_at": "2025-12-23T19:05:50.051000Z",
+        "updated_at": "2026-01-10T14:23:01.138000Z"
+      },
+      {
+        "id": 13963,
+        "name": "Rosemary for the potatoes",
+        "created_at": "2025-12-23T19:05:50.029000Z",
+        "updated_at": "2026-01-10T14:23:01.137000Z"
+      },
+      {
+        "id": 13962,
+        "name": "Double Cream for whipping",
+        "created_at": "2025-12-23T19:05:50.011000Z",
+        "updated_at": "2026-01-10T14:23:01.136000Z"
+      },
+      {
+        "id": 13961,
+        "name": "Unsalted Butter for the red cabbage",
+        "created_at": "2025-12-23T19:05:50.011000Z",
+        "updated_at": "2026-01-10T14:23:01.135000Z"
+      },
+      {
+        "id": 13960,
+        "name": "Double Cream for the ganache",
+        "created_at": "2025-12-23T19:05:50.003000Z",
+        "updated_at": "2026-01-10T14:23:01.135000Z"
+      },
+      {
+        "id": 13959,
+        "name": "Chocolate",
+        "created_at": "2025-12-23T19:05:49.987000Z",
+        "updated_at": "2026-01-10T14:23:01.134000Z"
+      },
+      {
+        "id": 13958,
+        "name": "Celery Stick",
+        "created_at": "2025-12-23T19:05:49.984000Z",
+        "updated_at": "2026-01-18T01:17:33.520000Z"
+      },
+      {
+        "id": 13957,
+        "name": "Carrot for the gravy",
+        "created_at": "2025-12-23T19:05:49.976000Z",
+        "updated_at": "2026-01-10T14:23:01.132000Z"
+      },
+      {
+        "id": 13956,
+        "name": "Tracklements Rosemary Jelly",
+        "created_at": "2025-12-23T19:05:49.857000Z",
+        "updated_at": "2026-01-10T14:23:01.131000Z"
+      },
+      {
+        "id": 13955,
+        "name": "Mascarpone Cheese",
+        "created_at": "2025-12-23T19:05:49.806000Z",
+        "updated_at": "2026-01-18T01:17:55.749000Z"
+      },
+      {
+        "id": 13954,
+        "name": "Kale and Rainbow Chard Mix",
+        "created_at": "2025-12-23T19:05:49.799000Z",
+        "updated_at": "2026-01-10T14:23:01.129000Z"
+      },
+      {
+        "id": 13953,
+        "name": "Louisiana Style Spice Mix",
+        "created_at": "2025-12-23T19:05:49.732000Z",
+        "updated_at": "2026-01-10T14:23:01.129000Z"
+      },
+      {
+        "id": 13952,
+        "name": "Red Potato",
+        "created_at": "2025-12-23T19:05:49.716000Z",
+        "updated_at": "2026-01-10T14:23:01.128000Z"
+      },
+      {
+        "id": 13951,
+        "name": "Puttanesca Sauce",
+        "created_at": "2025-12-23T19:05:49.523000Z",
+        "updated_at": "2026-01-10T14:23:01.127000Z"
+      },
+      {
+        "id": 13950,
+        "name": "Pancetta Lardons",
+        "created_at": "2025-12-23T19:05:49.189000Z",
+        "updated_at": "2026-01-10T14:23:01.127000Z"
+      },
+      {
+        "id": 13949,
+        "name": "Jerusalem Artichoke",
+        "created_at": "2025-12-23T19:05:49.176000Z",
+        "updated_at": "2026-01-10T14:23:01.126000Z"
+      },
+      {
+        "id": 13948,
+        "name": "Garlic Bulb",
+        "created_at": "2025-12-23T19:05:48.809000Z",
+        "updated_at": "2026-01-10T14:23:01.125000Z"
+      },
+      {
+        "id": 13947,
+        "name": "Bolognese Garnish",
+        "created_at": "2025-12-23T19:05:48.736000Z",
+        "updated_at": "2026-01-10T14:23:01.124000Z"
+      },
+      {
+        "id": 13946,
+        "name": "Parmesan Cheese",
+        "created_at": "2025-12-23T19:05:48.679000Z",
+        "updated_at": "2026-01-18T01:18:04.603000Z"
+      },
+      {
+        "id": 13945,
+        "name": "Teriyaki Marinade Paste",
+        "created_at": "2025-12-23T19:05:48.532000Z",
+        "updated_at": "2026-01-10T14:23:01.122000Z"
+      },
+      {
+        "id": 13944,
+        "name": "Fish Sauce",
+        "created_at": "2025-12-23T19:05:48.525000Z",
+        "updated_at": "2026-01-18T01:17:42.049000Z"
+      },
+      {
+        "id": 13943,
+        "name": "Teriyaki Marinade Powder",
+        "created_at": "2025-12-23T19:05:48.518000Z",
+        "updated_at": "2026-01-10T14:23:01.121000Z"
+      },
+      {
+        "id": 13942,
+        "name": "Curry Garnish",
+        "created_at": "2025-12-23T19:05:48.449000Z",
+        "updated_at": "2026-01-10T14:23:01.120000Z"
+      },
+      {
+        "id": 13941,
+        "name": "Sweet Potato Wedges",
+        "created_at": "2025-12-23T19:05:48.424000Z",
+        "updated_at": "2026-01-10T14:23:01.119000Z"
+      },
+      {
+        "id": 13940,
+        "name": "Rump Bistro Steak",
+        "created_at": "2025-12-23T19:05:48.221000Z",
+        "updated_at": "2026-01-10T14:23:01.118000Z"
+      },
+      {
+        "id": 13939,
+        "name": "Fish Stock Powder",
+        "created_at": "2025-12-23T19:05:48.077000Z",
+        "updated_at": "2026-01-18T01:17:27.020000Z"
+      },
+      {
+        "id": 13938,
+        "name": "Punchy Balsamic Mustard",
+        "created_at": "2025-12-23T19:05:47.980000Z",
+        "updated_at": "2026-01-18T01:17:33.366000Z"
+      },
+      {
+        "id": 13937,
+        "name": "Tagine Garnish",
+        "created_at": "2025-12-23T19:05:47.918000Z",
+        "updated_at": "2026-01-10T14:23:01.116000Z"
+      },
+      {
+        "id": 13936,
+        "name": "Pork Medallion",
+        "created_at": "2025-12-23T19:05:47.503000Z",
+        "updated_at": "2026-01-10T14:23:01.115000Z"
+      },
+      {
+        "id": 13935,
+        "name": "Pork Strips",
+        "created_at": "2025-12-23T19:05:47.389000Z",
+        "updated_at": "2026-01-10T14:23:01.115000Z"
+      },
+      {
+        "id": 13934,
+        "name": "Small Sweet Potato",
+        "created_at": "2025-12-23T19:05:47.258000Z",
+        "updated_at": "2026-01-10T14:23:01.114000Z"
+      },
+      {
+        "id": 13933,
+        "name": "Rendang Paste",
+        "created_at": "2025-12-23T19:05:47.255000Z",
+        "updated_at": "2026-01-10T14:23:01.113000Z"
+      },
+      {
+        "id": 13932,
+        "name": "Spiced Pork Sausage",
+        "created_at": "2025-12-23T19:05:47.243000Z",
+        "updated_at": "2026-01-18T01:17:51.044000Z"
+      },
+      {
+        "id": 13931,
+        "name": "Oyster Style Sauce",
+        "created_at": "2025-12-23T19:05:46.782000Z",
+        "updated_at": "2026-01-18T01:18:03.750000Z"
+      },
+      {
+        "id": 13930,
+        "name": "Feijoada Paste",
+        "created_at": "2025-12-23T19:05:46.730000Z",
+        "updated_at": "2026-01-10T14:23:01.111000Z"
+      },
+      {
+        "id": 13929,
+        "name": "Ground Almond",
+        "created_at": "2025-12-23T19:05:46.671000Z",
+        "updated_at": "2026-01-18T01:17:31.074000Z"
+      },
+      {
+        "id": 13928,
+        "name": "Korma Spice Mix",
+        "created_at": "2025-12-23T19:05:46.659000Z",
+        "updated_at": "2026-01-10T14:23:01.109000Z"
+      },
+      {
+        "id": 13927,
+        "name": "Olive Oil for the Olives",
+        "created_at": "2025-12-23T19:05:46.538000Z",
+        "updated_at": "2026-01-10T14:23:01.108000Z"
+      },
+      {
+        "id": 13926,
+        "name": "Pomegranate Seeds",
+        "created_at": "2025-12-23T19:05:46.447000Z",
+        "updated_at": "2026-01-10T14:23:01.108000Z"
+      },
+      {
+        "id": 13925,
+        "name": "Brioche Bun",
+        "created_at": "2025-12-23T19:05:46.440000Z",
+        "updated_at": "2026-01-18T01:17:41.483000Z"
+      },
+      {
+        "id": 13924,
+        "name": "Oyster mushrooms",
+        "created_at": "2025-12-23T19:05:46.437000Z",
+        "updated_at": "2026-01-10T14:23:01.106000Z"
+      },
+      {
+        "id": 13923,
+        "name": "Wholemeal Pita",
+        "created_at": "2025-12-23T19:05:46.022000Z",
+        "updated_at": "2026-01-18T01:18:05.243000Z"
+      },
+      {
+        "id": 13922,
+        "name": "Chicken Mini Fillets",
+        "created_at": "2025-12-23T19:05:45.867000Z",
+        "updated_at": "2026-01-10T14:23:01.104000Z"
+      },
+      {
+        "id": 13921,
+        "name": "97% Pork Sausages",
+        "created_at": "2025-12-23T19:05:45.775000Z",
+        "updated_at": "2026-01-18T01:17:43.183000Z"
+      },
+      {
+        "id": 13920,
+        "name": "Sweet & Sour Garnish",
+        "created_at": "2025-12-23T19:05:45.024000Z",
+        "updated_at": "2026-01-10T14:23:01.103000Z"
+      },
+      {
+        "id": 13919,
+        "name": "Diced Pork",
+        "created_at": "2025-12-23T19:05:45.016000Z",
+        "updated_at": "2026-01-10T14:23:01.102000Z"
+      },
+      {
+        "id": 13918,
+        "name": "Sweet & Sour Sauce",
+        "created_at": "2025-12-23T19:05:45.000000Z",
+        "updated_at": "2026-01-10T14:23:01.101000Z"
+      },
+      {
+        "id": 13917,
+        "name": "Mixed Plum Tomatoes",
+        "created_at": "2025-12-23T19:05:44.916000Z",
+        "updated_at": "2026-01-10T14:23:01.101000Z"
+      },
+      {
+        "id": 13916,
+        "name": "Water for the Casserole",
+        "created_at": "2025-12-23T19:05:44.897000Z",
+        "updated_at": "2026-01-10T14:23:01.100000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 7,
+      "from": 301,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 350,
+      "total": 1147
+    }
+  }
+}

@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 15,
+    "pulled_at_utc": "2026-01-23T22:35:12.816337"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 9531,
+        "name": "Oil for the Chicken",
+        "created_at": "2025-12-23T18:42:35.216000Z",
+        "updated_at": "2026-01-10T14:23:00.805000Z"
+      },
+      {
+        "id": 8984,
+        "name": "Water for the Onions",
+        "created_at": "2025-12-23T18:40:21.747000Z",
+        "updated_at": "2026-01-10T14:23:00.804000Z"
+      },
+      {
+        "id": 8741,
+        "name": "Butter for the Potatoes",
+        "created_at": "2025-12-23T18:39:01.281000Z",
+        "updated_at": "2026-01-10T14:23:00.803000Z"
+      },
+      {
+        "id": 8392,
+        "name": "Marmalade",
+        "created_at": "2025-12-23T18:35:38.417000Z",
+        "updated_at": "2026-01-10T14:23:00.802000Z"
+      },
+      {
+        "id": 8387,
+        "name": "Dried Apricots",
+        "created_at": "2025-12-23T18:35:34.413000Z",
+        "updated_at": "2026-01-18T01:17:49.508000Z"
+      },
+      {
+        "id": 8381,
+        "name": "Spinach and Ricotta Ravioli",
+        "created_at": "2025-12-23T18:35:34.168000Z",
+        "updated_at": "2026-01-18T00:55:22.133000Z"
+      },
+      {
+        "id": 8364,
+        "name": "Olive Oil for the Fish Cakes",
+        "created_at": "2025-12-23T18:35:13.974000Z",
+        "updated_at": "2026-01-10T14:23:00.800000Z"
+      },
+      {
+        "id": 8363,
+        "name": "Corn on the Cob",
+        "created_at": "2025-12-23T18:35:13.911000Z",
+        "updated_at": "2026-01-10T14:23:00.799000Z"
+      },
+      {
+        "id": 8304,
+        "name": "Salt for the Sauce",
+        "created_at": "2025-12-23T18:34:47.117000Z",
+        "updated_at": "2026-01-10T14:23:00.798000Z"
+      },
+      {
+        "id": 8300,
+        "name": "Caster Sugar",
+        "created_at": "2025-12-23T18:34:37.581000Z",
+        "updated_at": "2026-01-10T14:23:00.797000Z"
+      },
+      {
+        "id": 8236,
+        "name": "Indian Snack Selection",
+        "created_at": "2025-12-23T18:33:57.359000Z",
+        "updated_at": "2026-01-18T00:08:00.984000Z"
+      },
+      {
+        "id": 8187,
+        "name": "Salt for the Broth",
+        "created_at": "2025-12-23T18:33:29.251000Z",
+        "updated_at": "2026-01-10T14:23:00.795000Z"
+      },
+      {
+        "id": 8186,
+        "name": "Chicken Broth Paste",
+        "created_at": "2025-12-23T18:33:29.238000Z",
+        "updated_at": "2026-01-10T14:23:00.794000Z"
+      },
+      {
+        "id": 8185,
+        "name": "Butter for the Roux",
+        "created_at": "2025-12-23T18:33:29.089000Z",
+        "updated_at": "2026-01-10T14:23:00.794000Z"
+      },
+      {
+        "id": 8173,
+        "name": "Sugar for the Rice",
+        "created_at": "2025-12-23T18:33:21.380000Z",
+        "updated_at": "2026-01-10T14:23:00.793000Z"
+      },
+      {
+        "id": 8172,
+        "name": "Boiled Water for the Dressing",
+        "created_at": "2025-12-23T18:33:21.303000Z",
+        "updated_at": "2026-01-10T14:23:00.792000Z"
+      },
+      {
+        "id": 7994,
+        "name": "Salt for the Burgers",
+        "created_at": "2025-12-23T18:31:49.425000Z",
+        "updated_at": "2026-01-10T14:23:00.791000Z"
+      },
+      {
+        "id": 7979,
+        "name": "Plum",
+        "created_at": "2025-12-23T18:31:41.260000Z",
+        "updated_at": "2026-01-10T14:23:00.790000Z"
+      },
+      {
+        "id": 7978,
+        "name": "Water for the Dauphinoise",
+        "created_at": "2025-12-23T18:31:40.770000Z",
+        "updated_at": "2026-01-10T14:23:00.789000Z"
+      },
+      {
+        "id": 7977,
+        "name": "Large Salmon Fillet",
+        "created_at": "2025-12-23T18:31:40.741000Z",
+        "updated_at": "2026-01-10T14:23:00.788000Z"
+      },
+      {
+        "id": 7957,
+        "name": "Zanzibar Style Curry Powder",
+        "created_at": "2025-12-23T18:31:33.320000Z",
+        "updated_at": "2026-01-18T01:17:49.024000Z"
+      },
+      {
+        "id": 7870,
+        "name": "Olive Oil for the Pesto",
+        "created_at": "2025-12-23T18:30:53.669000Z",
+        "updated_at": "2026-01-18T01:15:38.799000Z"
+      },
+      {
+        "id": 7760,
+        "name": "Water for the Spring Greens",
+        "created_at": "2025-12-23T18:30:01.656000Z",
+        "updated_at": "2026-01-10T14:23:00.786000Z"
+      },
+      {
+        "id": 7713,
+        "name": "Flour",
+        "created_at": "2025-12-23T18:29:40.689000Z",
+        "updated_at": "2026-01-10T14:23:00.785000Z"
+      },
+      {
+        "id": 7705,
+        "name": "Olives",
+        "created_at": "2025-12-23T18:29:35.471000Z",
+        "updated_at": "2026-01-18T01:17:43.875000Z"
+      },
+      {
+        "id": 7695,
+        "name": "Cashew Butter",
+        "created_at": "2025-12-23T18:29:29.689000Z",
+        "updated_at": "2026-01-10T14:23:00.783000Z"
+      },
+      {
+        "id": 7693,
+        "name": "Feta Cheese",
+        "created_at": "2025-12-23T18:29:28.975000Z",
+        "updated_at": "2026-01-18T01:17:42.058000Z"
+      },
+      {
+        "id": 7675,
+        "name": "Kale",
+        "created_at": "2025-12-23T18:29:21.452000Z",
+        "updated_at": "2026-01-10T14:23:00.781000Z"
+      },
+      {
+        "id": 7667,
+        "name": "Brioche Hot Dog Buns",
+        "created_at": "2025-12-23T18:29:16.901000Z",
+        "updated_at": "2026-01-10T14:23:00.781000Z"
+      },
+      {
+        "id": 7666,
+        "name": "Lamb Roasting Joint",
+        "created_at": "2025-12-23T18:29:16.846000Z",
+        "updated_at": "2026-01-10T14:23:00.780000Z"
+      },
+      {
+        "id": 7654,
+        "name": "Olive Oil for the Salad",
+        "created_at": "2025-12-23T18:29:11.260000Z",
+        "updated_at": "2026-01-10T14:23:00.779000Z"
+      },
+      {
+        "id": 7623,
+        "name": "Sugar for the Glaze",
+        "created_at": "2025-12-23T18:28:58.123000Z",
+        "updated_at": "2026-01-10T14:23:00.778000Z"
+      },
+      {
+        "id": 7581,
+        "name": "Water for the Dressing",
+        "created_at": "2025-12-23T18:28:41.272000Z",
+        "updated_at": "2026-01-18T01:13:59.238000Z"
+      },
+      {
+        "id": 7544,
+        "name": "Water for the Glaze",
+        "created_at": "2025-12-23T18:28:26.147000Z",
+        "updated_at": "2026-01-17T12:03:29.758000Z"
+      },
+      {
+        "id": 7543,
+        "name": "British Hickory Smoked Sausages",
+        "created_at": "2025-12-23T18:28:25.971000Z",
+        "updated_at": "2026-01-10T14:23:00.775000Z"
+      },
+      {
+        "id": 7542,
+        "name": "Water for the Yoghurt",
+        "created_at": "2025-12-23T18:28:25.842000Z",
+        "updated_at": "2026-01-10T14:23:00.775000Z"
+      },
+      {
+        "id": 7541,
+        "name": "Fable Slow-Braised Mushrooms",
+        "created_at": "2025-12-23T18:28:25.822000Z",
+        "updated_at": "2026-01-17T12:03:29.757000Z"
+      },
+      {
+        "id": 7540,
+        "name": "Water for the Laksa",
+        "created_at": "2025-12-23T18:28:25.805000Z",
+        "updated_at": "2026-01-10T14:23:00.773000Z"
+      },
+      {
+        "id": 7459,
+        "name": "Oil for the Breadcrumbs",
+        "created_at": "2025-12-23T18:28:04.090000Z",
+        "updated_at": "2026-01-10T14:23:00.772000Z"
+      },
+      {
+        "id": 7426,
+        "name": "Vegetable Spring Rolls",
+        "created_at": "2025-12-23T18:27:56.507000Z",
+        "updated_at": "2026-01-18T00:05:26.320000Z"
+      },
+      {
+        "id": 7390,
+        "name": "Olive Oil for the Drizzle",
+        "created_at": "2025-12-23T18:27:47.916000Z",
+        "updated_at": "2026-01-10T14:23:00.770000Z"
+      },
+      {
+        "id": 7389,
+        "name": "Water for the Broth",
+        "created_at": "2025-12-23T18:27:47.910000Z",
+        "updated_at": "2026-01-10T14:23:00.769000Z"
+      },
+      {
+        "id": 7388,
+        "name": "Mushroom Broth Paste",
+        "created_at": "2025-12-23T18:27:47.894000Z",
+        "updated_at": "2026-01-10T14:23:00.768000Z"
+      },
+      {
+        "id": 7387,
+        "name": "Sour Cherry Compote",
+        "created_at": "2025-12-23T18:27:47.805000Z",
+        "updated_at": "2026-01-10T14:23:00.768000Z"
+      },
+      {
+        "id": 7382,
+        "name": "Water for the Carrots",
+        "created_at": "2025-12-23T18:27:46.150000Z",
+        "updated_at": "2026-01-10T14:23:00.767000Z"
+      },
+      {
+        "id": 7381,
+        "name": "Sugar for the Carrots",
+        "created_at": "2025-12-23T18:27:46.145000Z",
+        "updated_at": "2026-01-10T14:23:00.766000Z"
+      },
+      {
+        "id": 7380,
+        "name": "Hot Water",
+        "created_at": "2025-12-23T18:27:45.828000Z",
+        "updated_at": "2026-01-10T14:23:00.765000Z"
+      },
+      {
+        "id": 7379,
+        "name": "Smoked Ham Slices",
+        "created_at": "2025-12-23T18:27:45.816000Z",
+        "updated_at": "2026-01-10T14:23:00.764000Z"
+      },
+      {
+        "id": 7378,
+        "name": "Figs",
+        "created_at": "2025-12-23T18:27:45.807000Z",
+        "updated_at": "2026-01-10T14:23:00.763000Z"
+      },
+      {
+        "id": 7377,
+        "name": "Freeze Dried Raspberries",
+        "created_at": "2025-12-23T18:27:45.795000Z",
+        "updated_at": "2026-01-10T14:23:00.762000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 15,
+      "from": 701,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 750,
+      "total": 1147
+    }
+  }
+}

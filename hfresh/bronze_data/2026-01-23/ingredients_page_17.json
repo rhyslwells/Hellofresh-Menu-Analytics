@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 17,
+    "pulled_at_utc": "2026-01-23T22:35:13.315395"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 6349,
+        "name": "Mushrooms",
+        "created_at": "2025-12-23T18:25:22.439000Z",
+        "updated_at": "2026-01-11T00:02:32.163000Z"
+      },
+      {
+        "id": 6348,
+        "name": "Filo Pastry Sheets",
+        "created_at": "2025-12-23T18:25:22.414000Z",
+        "updated_at": "2026-01-18T00:06:51.335000Z"
+      },
+      {
+        "id": 6346,
+        "name": "Ranch Dressing",
+        "created_at": "2025-12-23T18:25:22.286000Z",
+        "updated_at": "2026-01-10T14:23:00.717000Z"
+      },
+      {
+        "id": 6344,
+        "name": "Water for the Lamb",
+        "created_at": "2025-12-23T18:25:22.194000Z",
+        "updated_at": "2026-01-10T14:23:00.716000Z"
+      },
+      {
+        "id": 6343,
+        "name": "Aioli",
+        "created_at": "2025-12-23T18:25:22.186000Z",
+        "updated_at": "2026-01-10T14:23:00.715000Z"
+      },
+      {
+        "id": 4970,
+        "name": "Bulgogi Sauce",
+        "created_at": "2025-12-23T18:24:12.811000Z",
+        "updated_at": "2026-01-10T14:23:00.714000Z"
+      },
+      {
+        "id": 4969,
+        "name": "Finely Chopped Tomatoes with Basil",
+        "created_at": "2025-12-23T18:24:12.776000Z",
+        "updated_at": "2026-01-17T12:03:29.749000Z"
+      },
+      {
+        "id": 4965,
+        "name": "Sea Bream Fillets",
+        "created_at": "2025-12-23T18:24:12.705000Z",
+        "updated_at": "2026-01-10T14:23:00.712000Z"
+      },
+      {
+        "id": 4964,
+        "name": "Water for the Ragu",
+        "created_at": "2025-12-23T18:24:12.699000Z",
+        "updated_at": "2026-01-10T14:23:00.711000Z"
+      },
+      {
+        "id": 4963,
+        "name": "Crumbled Blue Cheese",
+        "created_at": "2025-12-23T18:24:12.690000Z",
+        "updated_at": "2026-01-10T14:23:00.711000Z"
+      },
+      {
+        "id": 4962,
+        "name": "Pecan Nut Halves",
+        "created_at": "2025-12-23T18:24:12.681000Z",
+        "updated_at": "2026-01-10T14:23:00.710000Z"
+      },
+      {
+        "id": 4961,
+        "name": "Hazelnuts",
+        "created_at": "2025-12-23T18:24:12.677000Z",
+        "updated_at": "2026-01-10T14:23:00.709000Z"
+      },
+      {
+        "id": 4959,
+        "name": "Avocado",
+        "created_at": "2025-12-23T18:24:12.638000Z",
+        "updated_at": "2026-01-10T14:23:00.708000Z"
+      },
+      {
+        "id": 4958,
+        "name": "Venison Leg Steaks",
+        "created_at": "2025-12-23T18:24:12.637000Z",
+        "updated_at": "2026-01-10T14:23:00.707000Z"
+      },
+      {
+        "id": 4957,
+        "name": "Cured Ham Tortelloni",
+        "created_at": "2025-12-23T18:24:12.548000Z",
+        "updated_at": "2026-01-17T12:03:29.747000Z"
+      },
+      {
+        "id": 4956,
+        "name": "Gnocchi",
+        "created_at": "2025-12-23T18:24:12.544000Z",
+        "updated_at": "2026-01-18T01:17:24.983000Z"
+      },
+      {
+        "id": 4954,
+        "name": "SlooOW Stone Oven White Baguette",
+        "created_at": "2025-12-23T18:24:12.541000Z",
+        "updated_at": "2026-01-18T00:07:52.104000Z"
+      },
+      {
+        "id": 4955,
+        "name": "Fine Beans, Young Pea Pods and Tenderstem Broccoli",
+        "created_at": "2025-12-23T18:24:12.541000Z",
+        "updated_at": "2026-01-10T14:23:00.704000Z"
+      },
+      {
+        "id": 4787,
+        "name": "Caramelised Onion Paste",
+        "created_at": "2025-12-23T18:24:04.068000Z",
+        "updated_at": "2026-01-17T12:03:29.746000Z"
+      },
+      {
+        "id": 4786,
+        "name": "Falafel",
+        "created_at": "2025-12-23T18:24:04.068000Z",
+        "updated_at": "2026-01-17T12:03:29.745000Z"
+      },
+      {
+        "id": 4785,
+        "name": "Pizza Dough",
+        "created_at": "2025-12-23T18:24:04.065000Z",
+        "updated_at": "2026-01-18T00:06:40.532000Z"
+      },
+      {
+        "id": 4784,
+        "name": "Low Fat Natural Yoghurt",
+        "created_at": "2025-12-23T18:24:04.064000Z",
+        "updated_at": "2026-01-10T14:23:00.700000Z"
+      },
+      {
+        "id": 4783,
+        "name": "Cauliflower Florets",
+        "created_at": "2025-12-23T18:24:03.951000Z",
+        "updated_at": "2026-01-17T12:03:29.744000Z"
+      },
+      {
+        "id": 4782,
+        "name": "Demi Garlic Baguettes",
+        "created_at": "2025-12-23T18:24:03.947000Z",
+        "updated_at": "2026-01-18T00:05:12.295000Z"
+      },
+      {
+        "id": 4702,
+        "name": "Lemon & Herb Seasoning",
+        "created_at": "2025-12-23T18:23:58.417000Z",
+        "updated_at": "2026-01-17T12:03:29.743000Z"
+      },
+      {
+        "id": 4700,
+        "name": "Diced Butternut Squash",
+        "created_at": "2025-12-23T18:23:58.406000Z",
+        "updated_at": "2026-01-18T01:14:18.731000Z"
+      },
+      {
+        "id": 4699,
+        "name": "White Wine Stock Powder",
+        "created_at": "2025-12-23T18:23:58.377000Z",
+        "updated_at": "2026-01-17T23:19:14.854000Z"
+      },
+      {
+        "id": 4698,
+        "name": "Salted Caramel Sauce",
+        "created_at": "2025-12-23T18:23:58.365000Z",
+        "updated_at": "2026-01-10T14:23:00.695000Z"
+      },
+      {
+        "id": 4697,
+        "name": "Tony's Chocolonely Milk Chocolate Bar",
+        "created_at": "2025-12-23T18:23:58.362000Z",
+        "updated_at": "2026-01-10T14:23:00.694000Z"
+      },
+      {
+        "id": 4696,
+        "name": "Cream Cheese",
+        "created_at": "2025-12-23T18:23:58.357000Z",
+        "updated_at": "2026-01-17T12:03:29.740000Z"
+      },
+      {
+        "id": 4695,
+        "name": "Large King Prawns",
+        "created_at": "2025-12-23T18:23:58.349000Z",
+        "updated_at": "2026-01-18T00:12:10.797000Z"
+      },
+      {
+        "id": 4694,
+        "name": "Water for the Greens",
+        "created_at": "2025-12-23T18:23:58.291000Z",
+        "updated_at": "2026-01-10T14:23:00.692000Z"
+      },
+      {
+        "id": 4693,
+        "name": "21 Day Aged British Sirloin Steaks",
+        "created_at": "2025-12-23T18:23:58.281000Z",
+        "updated_at": "2026-01-10T14:23:00.691000Z"
+      },
+      {
+        "id": 4692,
+        "name": "Dijon Mustard",
+        "created_at": "2025-12-23T18:23:58.280000Z",
+        "updated_at": "2026-01-18T01:17:55.747000Z"
+      },
+      {
+        "id": 4691,
+        "name": "Skin-On British Chicken Breasts",
+        "created_at": "2025-12-23T18:23:58.276000Z",
+        "updated_at": "2026-01-17T12:03:29.738000Z"
+      },
+      {
+        "id": 4688,
+        "name": "Chestnut Mushrooms",
+        "created_at": "2025-12-23T18:23:58.255000Z",
+        "updated_at": "2026-01-11T00:02:32.159000Z"
+      },
+      {
+        "id": 4687,
+        "name": "Cod Fillets",
+        "created_at": "2025-12-23T18:23:58.214000Z",
+        "updated_at": "2026-01-18T01:13:52.341000Z"
+      },
+      {
+        "id": 4686,
+        "name": "Cucumber",
+        "created_at": "2025-12-23T18:23:58.213000Z",
+        "updated_at": "2026-01-17T12:03:29.737000Z"
+      },
+      {
+        "id": 4685,
+        "name": "Black Olives",
+        "created_at": "2025-12-23T18:23:58.210000Z",
+        "updated_at": "2026-01-10T14:23:00.686000Z"
+      },
+      {
+        "id": 4684,
+        "name": "Broccoli",
+        "created_at": "2025-12-23T18:23:58.206000Z",
+        "updated_at": "2026-01-17T12:03:29.736000Z"
+      },
+      {
+        "id": 4404,
+        "name": "Pearl Couscous",
+        "created_at": "2025-12-23T18:23:47.258000Z",
+        "updated_at": "2026-01-10T14:23:00.684000Z"
+      },
+      {
+        "id": 4401,
+        "name": "Green Chilli Paste",
+        "created_at": "2025-12-23T18:23:47.164000Z",
+        "updated_at": "2026-01-10T14:23:00.684000Z"
+      },
+      {
+        "id": 4400,
+        "name": "Cracked Black Pepper",
+        "created_at": "2025-12-23T18:23:47.159000Z",
+        "updated_at": "2026-01-17T12:03:29.735000Z"
+      },
+      {
+        "id": 4398,
+        "name": "Tamarind Chutney",
+        "created_at": "2025-12-23T18:23:47.155000Z",
+        "updated_at": "2026-01-10T14:23:00.682000Z"
+      },
+      {
+        "id": 4397,
+        "name": "Parsnip",
+        "created_at": "2025-12-23T18:23:47.146000Z",
+        "updated_at": "2026-01-17T00:03:42.904000Z"
+      },
+      {
+        "id": 4003,
+        "name": "Steamed Basmati Rice",
+        "created_at": "2025-12-23T18:23:40.685000Z",
+        "updated_at": "2026-01-10T14:23:00.680000Z"
+      },
+      {
+        "id": 4000,
+        "name": "Pork Rib Rack",
+        "created_at": "2025-12-23T18:23:40.643000Z",
+        "updated_at": "2026-01-17T12:03:29.734000Z"
+      },
+      {
+        "id": 3993,
+        "name": "Milk",
+        "created_at": "2025-12-23T18:23:40.571000Z",
+        "updated_at": "2026-01-18T01:17:27.035000Z"
+      },
+      {
+        "id": 3992,
+        "name": "Water for the Beef",
+        "created_at": "2025-12-23T18:23:40.565000Z",
+        "updated_at": "2026-01-18T01:17:55.017000Z"
+      },
+      {
+        "id": 3991,
+        "name": "Red Pepper Chilli Jelly",
+        "created_at": "2025-12-23T18:23:40.560000Z",
+        "updated_at": "2026-01-17T12:03:29.732000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 17,
+      "from": 801,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 850,
+      "total": 1147
+    }
+  }
+}

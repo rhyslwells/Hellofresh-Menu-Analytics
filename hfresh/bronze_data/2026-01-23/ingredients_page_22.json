@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 22,
+    "pulled_at_utc": "2026-01-23T22:35:14.518876"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 98,
+        "name": "Central American Style Spice Mix",
+        "created_at": "2025-12-23T18:22:07.792000Z",
+        "updated_at": "2026-01-17T12:03:29.616000Z"
+      },
+      {
+        "id": 97,
+        "name": "Salmon Fillets",
+        "created_at": "2025-12-23T18:22:07.791000Z",
+        "updated_at": "2026-01-18T01:16:49.485000Z"
+      },
+      {
+        "id": 96,
+        "name": "Coriander",
+        "created_at": "2025-12-23T18:22:07.790000Z",
+        "updated_at": "2026-01-17T12:03:29.614000Z"
+      },
+      {
+        "id": 95,
+        "name": "British Chicken Breasts",
+        "created_at": "2025-12-23T18:22:07.789000Z",
+        "updated_at": "2026-01-17T12:03:29.613000Z"
+      },
+      {
+        "id": 94,
+        "name": "Dried Rosemary",
+        "created_at": "2025-12-23T18:22:07.786000Z",
+        "updated_at": "2026-01-18T00:12:10.737000Z"
+      },
+      {
+        "id": 93,
+        "name": "Mexican Style Spice Mix",
+        "created_at": "2025-12-23T18:22:07.785000Z",
+        "updated_at": "2026-01-17T12:03:29.612000Z"
+      },
+      {
+        "id": 92,
+        "name": "Green Pepper",
+        "created_at": "2025-12-23T18:22:07.782000Z",
+        "updated_at": "2026-01-18T01:18:27.098000Z"
+      },
+      {
+        "id": 91,
+        "name": "Sweet Potato",
+        "created_at": "2025-12-23T18:22:07.779000Z",
+        "updated_at": "2026-01-17T12:03:29.610000Z"
+      },
+      {
+        "id": 90,
+        "name": "Black Beans",
+        "created_at": "2025-12-23T18:22:07.774000Z",
+        "updated_at": "2026-01-17T12:03:29.609000Z"
+      },
+      {
+        "id": 89,
+        "name": "Sweetcorn",
+        "created_at": "2025-12-23T18:22:07.771000Z",
+        "updated_at": "2026-01-17T12:03:29.608000Z"
+      },
+      {
+        "id": 88,
+        "name": "Water for the Bulgur",
+        "created_at": "2025-12-23T18:22:07.698000Z",
+        "updated_at": "2026-01-17T12:03:29.608000Z"
+      },
+      {
+        "id": 87,
+        "name": "Water for the Breadcrumbs",
+        "created_at": "2025-12-23T18:22:07.693000Z",
+        "updated_at": "2026-01-17T12:03:29.607000Z"
+      },
+      {
+        "id": 86,
+        "name": "Carrot",
+        "created_at": "2025-12-23T18:22:07.692000Z",
+        "updated_at": "2026-01-17T12:03:29.606000Z"
+      },
+      {
+        "id": 85,
+        "name": "Basil Pesto",
+        "created_at": "2025-12-23T18:22:07.690000Z",
+        "updated_at": "2026-01-17T12:03:29.605000Z"
+      },
+      {
+        "id": 84,
+        "name": "Boiled Water for the Couscous",
+        "created_at": "2025-12-23T18:22:07.689000Z",
+        "updated_at": "2026-01-10T14:23:00.499000Z"
+      },
+      {
+        "id": 83,
+        "name": "Salt for the Breadcrumbs",
+        "created_at": "2025-12-23T18:22:07.688000Z",
+        "updated_at": "2026-01-18T00:12:10.736000Z"
+      },
+      {
+        "id": 82,
+        "name": "Mango Chutney",
+        "created_at": "2025-12-23T18:22:07.685000Z",
+        "updated_at": "2026-01-17T12:03:29.604000Z"
+      },
+      {
+        "id": 81,
+        "name": "Chermoula Spice Mix",
+        "created_at": "2025-12-23T18:22:07.684000Z",
+        "updated_at": "2026-01-10T14:23:00.496000Z"
+      },
+      {
+        "id": 80,
+        "name": "Creme Fraiche",
+        "created_at": "2025-12-23T18:22:07.683000Z",
+        "updated_at": "2026-01-18T01:17:56.390000Z"
+      },
+      {
+        "id": 79,
+        "name": "Beef Stock Paste",
+        "created_at": "2025-12-23T18:22:07.681000Z",
+        "updated_at": "2026-01-17T12:03:29.602000Z"
+      },
+      {
+        "id": 78,
+        "name": "Diced Chorizo",
+        "created_at": "2025-12-23T18:22:07.680000Z",
+        "updated_at": "2026-01-18T23:01:15.008000Z"
+      },
+      {
+        "id": 76,
+        "name": "Tomato Puree",
+        "created_at": "2025-12-23T18:22:07.678000Z",
+        "updated_at": "2026-01-17T12:03:29.601000Z"
+      },
+      {
+        "id": 75,
+        "name": "Bulgur Wheat",
+        "created_at": "2025-12-23T18:22:07.677000Z",
+        "updated_at": "2026-01-18T01:17:55.093000Z"
+      },
+      {
+        "id": 74,
+        "name": "Rogan Josh Curry Paste",
+        "created_at": "2025-12-23T18:22:07.675000Z",
+        "updated_at": "2026-01-17T12:03:29.599000Z"
+      },
+      {
+        "id": 73,
+        "name": "Red Wine Vinegar",
+        "created_at": "2025-12-23T18:22:07.672000Z",
+        "updated_at": "2026-01-18T01:17:41.835000Z"
+      },
+      {
+        "id": 72,
+        "name": "Couscous",
+        "created_at": "2025-12-23T18:22:07.669000Z",
+        "updated_at": "2026-01-18T01:17:58.562000Z"
+      },
+      {
+        "id": 71,
+        "name": "Breadcrumbs",
+        "created_at": "2025-12-23T18:22:07.666000Z",
+        "updated_at": "2026-01-18T00:12:10.731000Z"
+      },
+      {
+        "id": 70,
+        "name": "Chives",
+        "created_at": "2025-12-23T18:22:07.575000Z",
+        "updated_at": "2026-01-17T12:03:29.597000Z"
+      },
+      {
+        "id": 69,
+        "name": "Mature Cheddar Cheese",
+        "created_at": "2025-12-23T18:22:07.572000Z",
+        "updated_at": "2026-01-18T23:01:15.465000Z"
+      },
+      {
+        "id": 68,
+        "name": "Lentils",
+        "created_at": "2025-12-23T18:22:07.568000Z",
+        "updated_at": "2026-01-18T00:12:30.234000Z"
+      },
+      {
+        "id": 67,
+        "name": "Cauliflower",
+        "created_at": "2025-12-23T18:22:07.564000Z",
+        "updated_at": "2026-01-10T14:23:00.485000Z"
+      },
+      {
+        "id": 66,
+        "name": "Smoked Salmon",
+        "created_at": "2025-12-23T18:22:07.520000Z",
+        "updated_at": "2026-01-10T14:23:00.484000Z"
+      },
+      {
+        "id": 65,
+        "name": "Soured Cream",
+        "created_at": "2025-12-23T18:22:07.517000Z",
+        "updated_at": "2026-01-18T01:15:49.689000Z"
+      },
+      {
+        "id": 64,
+        "name": "Dill",
+        "created_at": "2025-12-23T18:22:07.513000Z",
+        "updated_at": "2026-01-10T14:23:00.483000Z"
+      },
+      {
+        "id": 63,
+        "name": "Lemon",
+        "created_at": "2025-12-23T18:22:07.510000Z",
+        "updated_at": "2026-01-17T12:03:29.594000Z"
+      },
+      {
+        "id": 62,
+        "name": "Baby Cucumber",
+        "created_at": "2025-12-23T18:22:07.507000Z",
+        "updated_at": "2026-01-17T12:03:29.594000Z"
+      },
+      {
+        "id": 61,
+        "name": "Potatoes",
+        "created_at": "2025-12-23T18:22:07.504000Z",
+        "updated_at": "2026-01-18T00:12:10.729000Z"
+      },
+      {
+        "id": 60,
+        "name": "Diced British Chicken Breast",
+        "created_at": "2025-12-23T18:22:07.388000Z",
+        "updated_at": "2026-01-17T12:03:29.592000Z"
+      },
+      {
+        "id": 59,
+        "name": "Miso Paste",
+        "created_at": "2025-12-23T18:22:07.385000Z",
+        "updated_at": "2026-01-17T12:03:29.591000Z"
+      },
+      {
+        "id": 58,
+        "name": "Butter Beans",
+        "created_at": "2025-12-23T18:22:07.379000Z",
+        "updated_at": "2026-01-17T12:03:29.591000Z"
+      },
+      {
+        "id": 57,
+        "name": "Courgette",
+        "created_at": "2025-12-23T18:22:07.374000Z",
+        "updated_at": "2026-01-17T12:03:29.590000Z"
+      },
+      {
+        "id": 56,
+        "name": "Water for the Rice",
+        "created_at": "2025-12-23T18:22:07.201000Z",
+        "updated_at": "2026-01-18T00:12:10.728000Z"
+      },
+      {
+        "id": 55,
+        "name": "Sugar for the Onions",
+        "created_at": "2025-12-23T18:22:07.198000Z",
+        "updated_at": "2026-01-17T12:03:29.589000Z"
+      },
+      {
+        "id": 54,
+        "name": "King Prawns",
+        "created_at": "2025-12-23T18:22:07.194000Z",
+        "updated_at": "2026-01-18T01:18:02.874000Z"
+      },
+      {
+        "id": 53,
+        "name": "Fish Pie Mix",
+        "created_at": "2025-12-23T18:22:07.190000Z",
+        "updated_at": "2026-01-18T01:17:26.172000Z"
+      },
+      {
+        "id": 52,
+        "name": "Vegetable Stock Paste",
+        "created_at": "2025-12-23T18:22:07.186000Z",
+        "updated_at": "2026-01-18T23:01:15.196000Z"
+      },
+      {
+        "id": 51,
+        "name": "Coconut Milk",
+        "created_at": "2025-12-23T18:22:07.183000Z",
+        "updated_at": "2026-01-17T12:03:29.586000Z"
+      },
+      {
+        "id": 50,
+        "name": "Ground Turmeric",
+        "created_at": "2025-12-23T18:22:07.179000Z",
+        "updated_at": "2026-01-10T14:23:00.470000Z"
+      },
+      {
+        "id": 49,
+        "name": "Ginger Puree",
+        "created_at": "2025-12-23T18:22:07.176000Z",
+        "updated_at": "2026-01-17T12:03:29.586000Z"
+      },
+      {
+        "id": 48,
+        "name": "Lime",
+        "created_at": "2025-12-23T18:22:07.173000Z",
+        "updated_at": "2026-01-17T12:03:29.585000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 22,
+      "from": 1051,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 1100,
+      "total": 1147
+    }
+  }
+}

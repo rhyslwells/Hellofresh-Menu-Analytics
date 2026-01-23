@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "tags",
+    "locale": "en-GB",
+    "page": 3,
+    "pulled_at_utc": "2026-01-23T22:35:15.562754"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 1075,
+        "name": "Warm-winter",
+        "created_at": "2025-12-23T18:28:58.396000Z",
+        "updated_at": "2026-01-10T14:23:06.561000Z"
+      },
+      {
+        "id": 1027,
+        "name": "Street-food",
+        "created_at": "2025-12-23T18:27:45.886000Z",
+        "updated_at": "2026-01-10T14:23:06.561000Z"
+      },
+      {
+        "id": 1021,
+        "name": "Paramount+",
+        "created_at": "2025-12-23T18:27:41.475000Z",
+        "updated_at": "2026-01-10T14:23:06.560000Z"
+      },
+      {
+        "id": 1010,
+        "name": "Lower Carb",
+        "created_at": "2025-12-23T18:27:32.768000Z",
+        "updated_at": "2026-01-17T12:03:34.877000Z"
+      },
+      {
+        "id": 995,
+        "name": "Bestseller",
+        "created_at": "2025-12-23T18:27:20.566000Z",
+        "updated_at": "2026-01-10T14:23:06.558000Z"
+      },
+      {
+        "id": 971,
+        "name": "Best-of-2025",
+        "created_at": "2025-12-23T18:26:59.565000Z",
+        "updated_at": "2026-01-10T14:23:06.557000Z"
+      },
+      {
+        "id": 951,
+        "name": "Quick Prep",
+        "created_at": "2025-12-23T18:26:50.996000Z",
+        "updated_at": "2026-01-10T14:23:06.556000Z"
+      },
+      {
+        "id": 897,
+        "name": "Build your Own Feast",
+        "created_at": "2025-12-23T18:25:59.616000Z",
+        "updated_at": "2026-01-10T14:23:06.555000Z"
+      },
+      {
+        "id": 882,
+        "name": "New-year",
+        "created_at": "2025-12-23T18:25:53.780000Z",
+        "updated_at": "2026-01-10T14:23:06.555000Z"
+      },
+      {
+        "id": 881,
+        "name": "Festive-flavours",
+        "created_at": "2025-12-23T18:25:53.618000Z",
+        "updated_at": "2026-01-10T14:23:06.554000Z"
+      },
+      {
+        "id": 880,
+        "name": "Christmas",
+        "created_at": "2025-12-23T18:25:53.612000Z",
+        "updated_at": "2026-01-10T14:23:06.553000Z"
+      },
+      {
+        "id": 843,
+        "name": "Sides-veggie",
+        "created_at": "2025-12-23T18:25:31.659000Z",
+        "updated_at": "2026-01-10T14:23:06.552000Z"
+      },
+      {
+        "id": 654,
+        "name": "Easter",
+        "created_at": "2025-12-23T18:24:12.981000Z",
+        "updated_at": "2026-01-17T12:03:34.876000Z"
+      },
+      {
+        "id": 653,
+        "name": "Vegan",
+        "created_at": "2025-12-23T18:24:12.663000Z",
+        "updated_at": "2026-01-11T00:02:37.993000Z"
+      },
+      {
+        "id": 652,
+        "name": "Hellofresh-skills",
+        "created_at": "2025-12-23T18:24:12.581000Z",
+        "updated_at": "2026-01-10T14:23:06.550000Z"
+      },
+      {
+        "id": 630,
+        "name": "Climate Conscious",
+        "created_at": "2025-12-23T18:24:04.113000Z",
+        "updated_at": "2026-01-10T14:23:06.549000Z"
+      },
+      {
+        "id": 629,
+        "name": "Fish-free",
+        "created_at": "2025-12-23T18:24:04.096000Z",
+        "updated_at": "2026-01-10T14:23:06.548000Z"
+      },
+      {
+        "id": 557,
+        "name": "Chef's Choice",
+        "created_at": "2025-12-23T18:23:40.326000Z",
+        "updated_at": "2026-01-17T12:03:34.874000Z"
+      },
+      {
+        "id": 555,
+        "name": "Blender Needed",
+        "created_at": "2025-12-23T18:23:40.258000Z",
+        "updated_at": "2026-01-10T14:23:06.546000Z"
+      },
+      {
+        "id": 554,
+        "name": "Kickstart",
+        "created_at": "2025-12-23T18:23:40.205000Z",
+        "updated_at": "2026-01-10T14:23:06.545000Z"
+      },
+      {
+        "id": 553,
+        "name": "Carb Smart",
+        "created_at": "2025-12-23T18:23:40.168000Z",
+        "updated_at": "2026-01-17T12:03:34.873000Z"
+      },
+      {
+        "id": 552,
+        "name": "Customer Favourites",
+        "created_at": "2025-12-23T18:23:40.093000Z",
+        "updated_at": "2026-01-17T12:03:34.873000Z"
+      },
+      {
+        "id": 551,
+        "name": "Ineligible-reco",
+        "created_at": "2025-12-23T18:23:40.079000Z",
+        "updated_at": "2026-01-18T00:12:30.798000Z"
+      },
+      {
+        "id": 266,
+        "name": "Cuisine-spotlight",
+        "created_at": "2025-12-23T18:23:00.308000Z",
+        "updated_at": "2026-01-10T14:23:06.542000Z"
+      },
+      {
+        "id": 218,
+        "name": "North American",
+        "created_at": "2025-12-23T18:22:54.727000Z",
+        "updated_at": "2026-01-18T00:12:30.794000Z"
+      },
+      {
+        "id": 193,
+        "name": "Comfort Food",
+        "created_at": "2025-12-23T18:22:49.419000Z",
+        "updated_at": "2026-01-17T12:03:34.870000Z"
+      },
+      {
+        "id": 169,
+        "name": "One Pot Wonder",
+        "created_at": "2025-12-23T18:22:40.746000Z",
+        "updated_at": "2026-01-10T14:23:06.539000Z"
+      },
+      {
+        "id": 168,
+        "name": "Under 650 kcal",
+        "created_at": "2025-12-23T18:22:40.595000Z",
+        "updated_at": "2026-01-10T14:23:06.538000Z"
+      },
+      {
+        "id": 167,
+        "name": "Healthy",
+        "created_at": "2025-12-23T18:22:40.458000Z",
+        "updated_at": "2026-01-10T14:23:06.537000Z"
+      },
+      {
+        "id": 78,
+        "name": "HelloFresh Specials",
+        "created_at": "2025-12-23T18:22:23.469000Z",
+        "updated_at": "2026-01-17T12:03:34.870000Z"
+      },
+      {
+        "id": 55,
+        "name": "Customer Favourite",
+        "created_at": "2025-12-23T18:22:17.162000Z",
+        "updated_at": "2026-01-17T12:03:34.869000Z"
+      },
+      {
+        "id": 54,
+        "name": "Healthy-kickstart",
+        "created_at": "2025-12-23T18:22:17.151000Z",
+        "updated_at": "2026-01-10T14:23:06.535000Z"
+      },
+      {
+        "id": 35,
+        "name": "Summer-bbq",
+        "created_at": "2025-12-23T18:22:08.218000Z",
+        "updated_at": "2026-01-10T14:23:06.534000Z"
+      },
+      {
+        "id": 34,
+        "name": "Regional-specialty",
+        "created_at": "2025-12-23T18:22:08.100000Z",
+        "updated_at": "2026-01-17T12:03:34.868000Z"
+      },
+      {
+        "id": 33,
+        "name": "Sheet Pan",
+        "created_at": "2025-12-23T18:22:08.025000Z",
+        "updated_at": "2026-01-17T12:03:34.867000Z"
+      },
+      {
+        "id": 32,
+        "name": "Egg(s) not included",
+        "created_at": "2025-12-23T18:22:08.025000Z",
+        "updated_at": "2026-01-10T14:23:06.531000Z"
+      },
+      {
+        "id": 31,
+        "name": "Prepped in 10",
+        "created_at": "2025-12-23T18:22:07.990000Z",
+        "updated_at": "2026-01-17T12:03:34.867000Z"
+      },
+      {
+        "id": 30,
+        "name": "Family Friendly",
+        "created_at": "2025-12-23T18:22:07.958000Z",
+        "updated_at": "2026-01-18T00:12:30.790000Z"
+      },
+      {
+        "id": 29,
+        "name": "Curries",
+        "created_at": "2025-12-23T18:22:07.950000Z",
+        "updated_at": "2026-01-17T12:03:34.865000Z"
+      },
+      {
+        "id": 28,
+        "name": "Very Hot",
+        "created_at": "2025-12-23T18:22:07.947000Z",
+        "updated_at": "2026-01-10T14:23:06.528000Z"
+      },
+      {
+        "id": 27,
+        "name": "Handhelds",
+        "created_at": "2025-12-23T18:22:07.945000Z",
+        "updated_at": "2026-01-18T00:12:30.782000Z"
+      },
+      {
+        "id": 26,
+        "name": "Dinners",
+        "created_at": "2025-12-23T18:22:07.886000Z",
+        "updated_at": "2026-01-10T14:23:06.527000Z"
+      },
+      {
+        "id": 25,
+        "name": "Noodle-stir-fry",
+        "created_at": "2025-12-23T18:22:07.877000Z",
+        "updated_at": "2026-01-17T12:03:34.864000Z"
+      },
+      {
+        "id": 24,
+        "name": "Pan-asian-plates",
+        "created_at": "2025-12-23T18:22:07.875000Z",
+        "updated_at": "2026-01-17T12:03:34.863000Z"
+      },
+      {
+        "id": 23,
+        "name": "Vegetarian",
+        "created_at": "2025-12-23T18:22:07.874000Z",
+        "updated_at": "2026-01-10T14:23:06.525000Z"
+      },
+      {
+        "id": 22,
+        "name": "South/SoutheastAsian",
+        "created_at": "2025-12-23T18:22:07.713000Z",
+        "updated_at": "2026-01-17T12:03:34.862000Z"
+      },
+      {
+        "id": 21,
+        "name": "Taste of Middle East",
+        "created_at": "2025-12-23T18:22:07.712000Z",
+        "updated_at": "2026-01-17T12:03:34.861000Z"
+      },
+      {
+        "id": 20,
+        "name": "Winter-warmers",
+        "created_at": "2025-12-23T18:22:07.619000Z",
+        "updated_at": "2026-01-10T14:23:06.523000Z"
+      },
+      {
+        "id": 19,
+        "name": "New",
+        "created_at": "2025-12-23T18:22:07.617000Z",
+        "updated_at": "2026-01-17T12:03:34.861000Z"
+      },
+      {
+        "id": 18,
+        "name": "Classic-plates",
+        "created_at": "2025-12-23T18:22:07.613000Z",
+        "updated_at": "2026-01-17T12:03:34.860000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 3,
+      "from": 101,
+      "last_page": 4,
+      "per_page": 50,
+      "to": 150,
+      "total": 167
+    }
+  }
+}

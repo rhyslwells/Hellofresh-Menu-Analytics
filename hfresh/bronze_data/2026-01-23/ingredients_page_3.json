@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 3,
+    "pulled_at_utc": "2026-01-23T22:35:09.933245"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 16609,
+        "name": "Buckwheat",
+        "created_at": "2026-01-02T02:46:26.809000Z",
+        "updated_at": "2026-01-10T14:23:01.784000Z"
+      },
+      {
+        "id": 16606,
+        "name": "Beefsteak Tomato",
+        "created_at": "2026-01-02T02:46:04.579000Z",
+        "updated_at": "2026-01-10T14:23:01.784000Z"
+      },
+      {
+        "id": 16605,
+        "name": "Pepitas",
+        "created_at": "2026-01-02T02:46:04.572000Z",
+        "updated_at": "2026-01-10T14:23:01.783000Z"
+      },
+      {
+        "id": 16604,
+        "name": "Whole Wheat Pitas",
+        "created_at": "2026-01-02T02:46:04.552000Z",
+        "updated_at": "2026-01-10T14:23:01.783000Z"
+      },
+      {
+        "id": 16603,
+        "name": "Lobster Ravioli",
+        "created_at": "2026-01-02T02:46:04.549000Z",
+        "updated_at": "2026-01-10T14:23:01.782000Z"
+      },
+      {
+        "id": 16602,
+        "name": "Heirloom Grape Tomatoes",
+        "created_at": "2026-01-02T02:46:04.534000Z",
+        "updated_at": "2026-01-10T14:23:01.782000Z"
+      },
+      {
+        "id": 16601,
+        "name": "Garlic Herb Butter",
+        "created_at": "2026-01-02T02:46:04.526000Z",
+        "updated_at": "2026-01-10T14:23:01.781000Z"
+      },
+      {
+        "id": 16600,
+        "name": "Shredded Red Cabbage",
+        "created_at": "2026-01-02T02:46:04.525000Z",
+        "updated_at": "2026-01-10T14:23:01.781000Z"
+      },
+      {
+        "id": 16599,
+        "name": "Tilapia",
+        "created_at": "2026-01-02T02:46:04.518000Z",
+        "updated_at": "2026-01-10T14:23:01.781000Z"
+      },
+      {
+        "id": 16598,
+        "name": "Orzo Pasta",
+        "created_at": "2026-01-02T02:46:04.515000Z",
+        "updated_at": "2026-01-10T14:23:01.780000Z"
+      },
+      {
+        "id": 16597,
+        "name": "Sliced Almonds",
+        "created_at": "2026-01-02T02:46:04.503000Z",
+        "updated_at": "2026-01-10T14:23:01.780000Z"
+      },
+      {
+        "id": 16596,
+        "name": "Ranch-Cut Steak",
+        "created_at": "2026-01-02T02:46:04.498000Z",
+        "updated_at": "2026-01-10T14:23:01.779000Z"
+      },
+      {
+        "id": 16593,
+        "name": "Shredded Carrots",
+        "created_at": "2026-01-02T02:45:44.954000Z",
+        "updated_at": "2026-01-10T14:23:01.779000Z"
+      },
+      {
+        "id": 16592,
+        "name": "Diced Tomatoes",
+        "created_at": "2026-01-02T02:45:44.886000Z",
+        "updated_at": "2026-01-10T14:23:01.778000Z"
+      },
+      {
+        "id": 16591,
+        "name": "Parsley",
+        "created_at": "2026-01-02T02:45:44.868000Z",
+        "updated_at": "2026-01-10T14:23:01.778000Z"
+      },
+      {
+        "id": 16590,
+        "name": "Cornstarch",
+        "created_at": "2026-01-02T02:45:44.776000Z",
+        "updated_at": "2026-01-10T14:23:01.777000Z"
+      },
+      {
+        "id": 16589,
+        "name": "Crushed Tomatoes",
+        "created_at": "2026-01-02T02:45:44.748000Z",
+        "updated_at": "2026-01-10T14:23:01.777000Z"
+      },
+      {
+        "id": 16588,
+        "name": "Enchilada Spice Blend",
+        "created_at": "2026-01-02T02:45:44.741000Z",
+        "updated_at": "2026-01-10T14:23:01.776000Z"
+      },
+      {
+        "id": 16587,
+        "name": "Chili Powder",
+        "created_at": "2026-01-02T02:45:44.730000Z",
+        "updated_at": "2026-01-10T14:23:01.776000Z"
+      },
+      {
+        "id": 16586,
+        "name": "Gemelli Pasta",
+        "created_at": "2026-01-02T02:45:44.653000Z",
+        "updated_at": "2026-01-10T14:23:01.776000Z"
+      },
+      {
+        "id": 16585,
+        "name": "Garlic Oil",
+        "created_at": "2026-01-02T02:45:44.594000Z",
+        "updated_at": "2026-01-10T14:23:01.775000Z"
+      },
+      {
+        "id": 16584,
+        "name": "Mixed Greens",
+        "created_at": "2026-01-02T02:45:41.954000Z",
+        "updated_at": "2026-01-10T14:23:01.775000Z"
+      },
+      {
+        "id": 16583,
+        "name": "Columbia River Steelhead Trout",
+        "created_at": "2026-01-02T02:45:41.933000Z",
+        "updated_at": "2026-01-10T14:23:01.774000Z"
+      },
+      {
+        "id": 16582,
+        "name": "Pecans",
+        "created_at": "2026-01-02T02:45:41.917000Z",
+        "updated_at": "2026-01-10T14:23:01.774000Z"
+      },
+      {
+        "id": 16581,
+        "name": "Beyond Burgers™",
+        "created_at": "2026-01-02T02:45:41.872000Z",
+        "updated_at": "2026-01-10T14:23:01.773000Z"
+      },
+      {
+        "id": 16580,
+        "name": "Fry Seasoning",
+        "created_at": "2026-01-02T02:45:41.843000Z",
+        "updated_at": "2026-01-10T14:23:01.773000Z"
+      },
+      {
+        "id": 16579,
+        "name": "Diced Steak",
+        "created_at": "2026-01-02T02:45:41.770000Z",
+        "updated_at": "2026-01-10T14:23:01.772000Z"
+      },
+      {
+        "id": 16577,
+        "name": "Jalapeño",
+        "created_at": "2026-01-02T02:45:41.758000Z",
+        "updated_at": "2026-01-10T14:23:01.771000Z"
+      },
+      {
+        "id": 16578,
+        "name": "Beef Demi-Glace",
+        "created_at": "2026-01-02T02:45:41.758000Z",
+        "updated_at": "2026-01-10T14:23:01.772000Z"
+      },
+      {
+        "id": 16576,
+        "name": "Italian Pork Sausage",
+        "created_at": "2026-01-02T02:45:41.710000Z",
+        "updated_at": "2026-01-10T14:23:01.771000Z"
+      },
+      {
+        "id": 16575,
+        "name": "Hot Honey",
+        "created_at": "2026-01-02T02:45:41.605000Z",
+        "updated_at": "2026-01-10T14:23:01.770000Z"
+      },
+      {
+        "id": 16574,
+        "name": "Chili Lime Butter",
+        "created_at": "2026-01-02T02:45:41.593000Z",
+        "updated_at": "2026-01-10T14:23:01.770000Z"
+      },
+      {
+        "id": 16573,
+        "name": "Colavita Crushed Tomatoes",
+        "created_at": "2026-01-02T02:45:41.507000Z",
+        "updated_at": "2026-01-10T14:23:01.769000Z"
+      },
+      {
+        "id": 16572,
+        "name": "Italian Chicken Sausage Mix",
+        "created_at": "2026-01-02T02:45:41.496000Z",
+        "updated_at": "2026-01-18T01:16:45.323000Z"
+      },
+      {
+        "id": 16571,
+        "name": "Tomato Paste",
+        "created_at": "2026-01-02T02:45:41.496000Z",
+        "updated_at": "2026-01-10T14:23:01.769000Z"
+      },
+      {
+        "id": 16570,
+        "name": "Ground Pork",
+        "created_at": "2026-01-02T02:45:41.489000Z",
+        "updated_at": "2026-01-10T14:23:01.768000Z"
+      },
+      {
+        "id": 16569,
+        "name": "Chipotle Powder",
+        "created_at": "2026-01-02T02:45:41.487000Z",
+        "updated_at": "2026-01-10T14:23:01.768000Z"
+      },
+      {
+        "id": 16568,
+        "name": "Chili Pepper",
+        "created_at": "2026-01-02T02:45:41.481000Z",
+        "updated_at": "2026-01-10T14:23:01.767000Z"
+      },
+      {
+        "id": 16567,
+        "name": "Dill Pickle",
+        "created_at": "2026-01-02T02:45:41.473000Z",
+        "updated_at": "2026-01-10T14:23:01.767000Z"
+      },
+      {
+        "id": 16566,
+        "name": "Brioche Buns",
+        "created_at": "2026-01-02T02:45:41.465000Z",
+        "updated_at": "2026-01-10T14:23:01.766000Z"
+      },
+      {
+        "id": 16565,
+        "name": "Long Green Pepper",
+        "created_at": "2026-01-02T02:45:41.464000Z",
+        "updated_at": "2026-01-10T14:23:01.766000Z"
+      },
+      {
+        "id": 16564,
+        "name": "Corn",
+        "created_at": "2026-01-02T02:45:41.456000Z",
+        "updated_at": "2026-01-10T14:23:01.765000Z"
+      },
+      {
+        "id": 16563,
+        "name": "Chicken Cutlets",
+        "created_at": "2026-01-02T02:45:41.430000Z",
+        "updated_at": "2026-01-10T14:23:01.764000Z"
+      },
+      {
+        "id": 16562,
+        "name": "Sweet and Smoky BBQ Seasoning",
+        "created_at": "2026-01-02T02:45:41.415000Z",
+        "updated_at": "2026-01-10T14:23:01.764000Z"
+      },
+      {
+        "id": 16561,
+        "name": "Basil Oil",
+        "created_at": "2026-01-02T02:45:41.399000Z",
+        "updated_at": "2026-01-10T14:23:01.763000Z"
+      },
+      {
+        "id": 16560,
+        "name": "Fresh Mozzarella",
+        "created_at": "2026-01-02T02:45:41.371000Z",
+        "updated_at": "2026-01-10T14:23:01.763000Z"
+      },
+      {
+        "id": 16559,
+        "name": "Pineapple",
+        "created_at": "2026-01-02T02:45:41.356000Z",
+        "updated_at": "2026-01-10T14:23:01.762000Z"
+      },
+      {
+        "id": 16558,
+        "name": "Tempura Mix",
+        "created_at": "2026-01-02T02:45:41.325000Z",
+        "updated_at": "2026-01-10T14:23:01.240000Z"
+      },
+      {
+        "id": 16557,
+        "name": "Korean Chili Flakes",
+        "created_at": "2026-01-02T02:45:41.309000Z",
+        "updated_at": "2026-01-10T14:23:01.239000Z"
+      },
+      {
+        "id": 16556,
+        "name": "Dried Cherries",
+        "created_at": "2026-01-02T02:45:41.302000Z",
+        "updated_at": "2026-01-10T14:23:01.238000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 3,
+      "from": 101,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 150,
+      "total": 1147
+    }
+  }
+}

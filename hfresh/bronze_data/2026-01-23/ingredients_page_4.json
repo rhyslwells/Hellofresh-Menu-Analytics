@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 4,
+    "pulled_at_utc": "2026-01-23T22:35:10.217770"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 16555,
+        "name": "Shrimp",
+        "created_at": "2026-01-02T02:45:41.296000Z",
+        "updated_at": "2026-01-10T14:23:01.237000Z"
+      },
+      {
+        "id": 16554,
+        "name": "Sabra Classic Hummus",
+        "created_at": "2026-01-02T02:45:41.290000Z",
+        "updated_at": "2026-01-10T14:23:01.236000Z"
+      },
+      {
+        "id": 16553,
+        "name": "Ancho Chili Powder",
+        "created_at": "2026-01-02T02:45:41.288000Z",
+        "updated_at": "2026-01-10T14:23:01.235000Z"
+      },
+      {
+        "id": 16552,
+        "name": "Garlic Powder",
+        "created_at": "2026-01-02T02:45:41.277000Z",
+        "updated_at": "2026-01-10T14:23:01.235000Z"
+      },
+      {
+        "id": 16551,
+        "name": "Chicken Demi-Glace",
+        "created_at": "2026-01-02T02:45:41.274000Z",
+        "updated_at": "2026-01-10T14:23:01.234000Z"
+      },
+      {
+        "id": 16550,
+        "name": "Vegetable Stock Concentrate",
+        "created_at": "2026-01-02T02:45:41.274000Z",
+        "updated_at": "2026-01-10T14:23:01.233000Z"
+      },
+      {
+        "id": 16549,
+        "name": "Cherry Jam",
+        "created_at": "2026-01-02T02:45:41.268000Z",
+        "updated_at": "2026-01-10T14:23:01.232000Z"
+      },
+      {
+        "id": 16548,
+        "name": "Persian Cucumber",
+        "created_at": "2026-01-02T02:45:41.259000Z",
+        "updated_at": "2026-01-10T14:23:01.231000Z"
+      },
+      {
+        "id": 16547,
+        "name": "Zucchini",
+        "created_at": "2026-01-02T02:45:41.257000Z",
+        "updated_at": "2026-01-10T14:23:01.231000Z"
+      },
+      {
+        "id": 16546,
+        "name": "Maple Leaf Farms Duck Breast",
+        "created_at": "2026-01-02T02:45:41.254000Z",
+        "updated_at": "2026-01-10T14:23:01.230000Z"
+      },
+      {
+        "id": 16545,
+        "name": "Italian Seasoning",
+        "created_at": "2026-01-02T02:45:41.248000Z",
+        "updated_at": "2026-01-10T14:23:01.230000Z"
+      },
+      {
+        "id": 16544,
+        "name": "Israeli Couscous",
+        "created_at": "2026-01-02T02:45:41.234000Z",
+        "updated_at": "2026-01-10T14:23:01.229000Z"
+      },
+      {
+        "id": 16543,
+        "name": "Turkish Spice Blend",
+        "created_at": "2026-01-02T02:45:41.218000Z",
+        "updated_at": "2026-01-10T14:23:01.228000Z"
+      },
+      {
+        "id": 16542,
+        "name": "Sweet Italian Chicken Sausage",
+        "created_at": "2026-01-02T02:45:41.206000Z",
+        "updated_at": "2026-01-10T14:23:01.228000Z"
+      },
+      {
+        "id": 16541,
+        "name": "Cilantro",
+        "created_at": "2026-01-02T02:45:41.189000Z",
+        "updated_at": "2026-01-10T14:23:01.227000Z"
+      },
+      {
+        "id": 16540,
+        "name": "Blackening Spice",
+        "created_at": "2026-01-02T02:45:41.179000Z",
+        "updated_at": "2026-01-10T14:23:01.227000Z"
+      },
+      {
+        "id": 16539,
+        "name": "Beef Tenderloin",
+        "created_at": "2026-01-02T02:45:41.174000Z",
+        "updated_at": "2026-01-10T14:23:01.226000Z"
+      },
+      {
+        "id": 16538,
+        "name": "Chicken Breast Strips",
+        "created_at": "2026-01-02T02:45:41.169000Z",
+        "updated_at": "2026-01-10T14:23:01.226000Z"
+      },
+      {
+        "id": 16537,
+        "name": "Tuscan Heat Spice",
+        "created_at": "2026-01-02T02:45:41.163000Z",
+        "updated_at": "2026-01-10T14:23:01.225000Z"
+      },
+      {
+        "id": 16536,
+        "name": "Grape Tomatoes",
+        "created_at": "2026-01-02T02:45:41.147000Z",
+        "updated_at": "2026-01-10T14:23:01.224000Z"
+      },
+      {
+        "id": 16535,
+        "name": "Italian Cheese Blend",
+        "created_at": "2026-01-02T02:45:41.142000Z",
+        "updated_at": "2026-01-10T14:23:01.224000Z"
+      },
+      {
+        "id": 16534,
+        "name": "2% Reduced Fat Milk",
+        "created_at": "2026-01-02T02:45:41.134000Z",
+        "updated_at": "2026-01-10T14:23:01.223000Z"
+      },
+      {
+        "id": 16533,
+        "name": "Bacon",
+        "created_at": "2026-01-02T02:45:41.121000Z",
+        "updated_at": "2026-01-10T14:23:01.223000Z"
+      },
+      {
+        "id": 16532,
+        "name": "Chicken Stock Concentrate",
+        "created_at": "2026-01-02T02:45:41.113000Z",
+        "updated_at": "2026-01-10T14:23:01.222000Z"
+      },
+      {
+        "id": 16531,
+        "name": "Cavatappi Pasta",
+        "created_at": "2026-01-02T02:45:41.112000Z",
+        "updated_at": "2026-01-10T14:23:01.222000Z"
+      },
+      {
+        "id": 16530,
+        "name": "Pepper",
+        "created_at": "2026-01-02T02:45:41.100000Z",
+        "updated_at": "2026-01-10T14:23:01.221000Z"
+      },
+      {
+        "id": 16529,
+        "name": "Pork Tenderloin",
+        "created_at": "2026-01-02T02:45:41.099000Z",
+        "updated_at": "2026-01-10T14:23:01.221000Z"
+      },
+      {
+        "id": 16528,
+        "name": "Beef Stock Concentrate",
+        "created_at": "2026-01-02T02:45:41.094000Z",
+        "updated_at": "2026-01-10T14:23:01.220000Z"
+      },
+      {
+        "id": 16527,
+        "name": "Pepper Jack Cheese",
+        "created_at": "2026-01-02T02:45:41.093000Z",
+        "updated_at": "2026-01-10T14:23:01.219000Z"
+      },
+      {
+        "id": 16526,
+        "name": "Ground Beef",
+        "created_at": "2026-01-02T02:45:41.089000Z",
+        "updated_at": "2026-01-10T14:23:01.219000Z"
+      },
+      {
+        "id": 16525,
+        "name": "Yukon Gold Potatoes",
+        "created_at": "2026-01-02T02:45:41.085000Z",
+        "updated_at": "2026-01-10T14:23:01.218000Z"
+      },
+      {
+        "id": 16524,
+        "name": "Southwest Spice Blend",
+        "created_at": "2026-01-02T02:45:41.079000Z",
+        "updated_at": "2026-01-10T14:23:01.218000Z"
+      },
+      {
+        "id": 16523,
+        "name": "Russet Potatoes",
+        "created_at": "2026-01-02T02:45:41.070000Z",
+        "updated_at": "2026-01-10T14:23:01.217000Z"
+      },
+      {
+        "id": 16522,
+        "name": "Scallions",
+        "created_at": "2026-01-02T02:45:41.066000Z",
+        "updated_at": "2026-01-10T14:23:01.217000Z"
+      },
+      {
+        "id": 16521,
+        "name": "Baby Carrots",
+        "created_at": "2026-01-02T02:45:41.062000Z",
+        "updated_at": "2026-01-10T14:23:01.216000Z"
+      },
+      {
+        "id": 16520,
+        "name": "Roma Tomato",
+        "created_at": "2026-01-02T02:45:41.057000Z",
+        "updated_at": "2026-01-10T14:23:01.216000Z"
+      },
+      {
+        "id": 16519,
+        "name": "Poblano Pepper",
+        "created_at": "2026-01-02T02:45:41.042000Z",
+        "updated_at": "2026-01-10T14:23:01.215000Z"
+      },
+      {
+        "id": 16467,
+        "name": "Sweet Lightning Winter Squash",
+        "created_at": "2026-01-02T02:40:02.188000Z",
+        "updated_at": "2026-01-10T14:23:01.214000Z"
+      },
+      {
+        "id": 16466,
+        "name": "Butter for the Vegetables",
+        "created_at": "2026-01-02T02:40:00.669000Z",
+        "updated_at": "2026-01-10T14:23:01.214000Z"
+      },
+      {
+        "id": 16274,
+        "name": "Water for the Cavolo Nero",
+        "created_at": "2026-01-02T02:35:44.530000Z",
+        "updated_at": "2026-01-10T14:23:01.213000Z"
+      },
+      {
+        "id": 16230,
+        "name": "Passata di Pomodoro",
+        "created_at": "2026-01-02T02:35:41.753000Z",
+        "updated_at": "2026-01-10T14:23:01.213000Z"
+      },
+      {
+        "id": 14074,
+        "name": "Chilli Ketchup",
+        "created_at": "2025-12-23T19:06:03.392000Z",
+        "updated_at": "2026-01-10T14:23:01.212000Z"
+      },
+      {
+        "id": 14073,
+        "name": "Muscovado Sugar",
+        "created_at": "2025-12-23T19:06:03.385000Z",
+        "updated_at": "2026-01-10T14:23:01.212000Z"
+      },
+      {
+        "id": 14072,
+        "name": "Wooden Skewers",
+        "created_at": "2025-12-23T19:06:03.357000Z",
+        "updated_at": "2026-01-10T14:23:01.211000Z"
+      },
+      {
+        "id": 14071,
+        "name": "Orecchiette pasta",
+        "created_at": "2025-12-23T19:06:03.261000Z",
+        "updated_at": "2026-01-10T14:23:01.210000Z"
+      },
+      {
+        "id": 14069,
+        "name": "Herb Focaccia",
+        "created_at": "2025-12-23T19:06:03.224000Z",
+        "updated_at": "2026-01-10T14:23:01.209000Z"
+      },
+      {
+        "id": 14070,
+        "name": "Tandoori Paste",
+        "created_at": "2025-12-23T19:06:03.224000Z",
+        "updated_at": "2026-01-10T14:23:01.210000Z"
+      },
+      {
+        "id": 14068,
+        "name": "Gouda Cheese",
+        "created_at": "2025-12-23T19:06:03.058000Z",
+        "updated_at": "2026-01-10T14:23:01.209000Z"
+      },
+      {
+        "id": 14067,
+        "name": "Sausage",
+        "created_at": "2025-12-23T19:06:03.039000Z",
+        "updated_at": "2026-01-10T14:23:01.208000Z"
+      },
+      {
+        "id": 14066,
+        "name": "Pointed Cabbage",
+        "created_at": "2025-12-23T19:06:02.881000Z",
+        "updated_at": "2026-01-10T14:23:01.207000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 4,
+      "from": 151,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 200,
+      "total": 1147
+    }
+  }
+}

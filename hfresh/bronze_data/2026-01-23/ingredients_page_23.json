@@ -1,0 +1,303 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 23,
+    "pulled_at_utc": "2026-01-23T22:35:14.737444"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 47,
+        "name": "Medium Tomato",
+        "created_at": "2025-12-23T18:22:07.169000Z",
+        "updated_at": "2026-01-17T12:03:29.584000Z"
+      },
+      {
+        "id": 46,
+        "name": "Onion",
+        "created_at": "2025-12-23T18:22:07.164000Z",
+        "updated_at": "2026-01-17T12:03:29.583000Z"
+      },
+      {
+        "id": 45,
+        "name": "Water for the Soup",
+        "created_at": "2025-12-23T18:22:07.113000Z",
+        "updated_at": "2026-01-17T12:03:29.582000Z"
+      },
+      {
+        "id": 44,
+        "name": "Chilli Flakes",
+        "created_at": "2025-12-23T18:22:07.108000Z",
+        "updated_at": "2026-01-18T01:18:26.288000Z"
+      },
+      {
+        "id": 43,
+        "name": "Lasagne Sheets",
+        "created_at": "2025-12-23T18:22:07.102000Z",
+        "updated_at": "2026-01-10T14:23:00.464000Z"
+      },
+      {
+        "id": 42,
+        "name": "Sugar for the Sauce",
+        "created_at": "2025-12-23T18:22:07.046000Z",
+        "updated_at": "2026-01-17T12:03:29.581000Z"
+      },
+      {
+        "id": 41,
+        "name": "Salted Peanuts",
+        "created_at": "2025-12-23T18:22:07.042000Z",
+        "updated_at": "2026-01-18T00:21:23.251000Z"
+      },
+      {
+        "id": 40,
+        "name": "Baby Spinach",
+        "created_at": "2025-12-23T18:22:07.038000Z",
+        "updated_at": "2026-01-17T12:03:29.579000Z"
+      },
+      {
+        "id": 39,
+        "name": "Chicken Stock Paste",
+        "created_at": "2025-12-23T18:22:07.035000Z",
+        "updated_at": "2026-01-17T12:03:29.579000Z"
+      },
+      {
+        "id": 38,
+        "name": "West African Style Paste",
+        "created_at": "2025-12-23T18:22:07.031000Z",
+        "updated_at": "2026-01-10T14:23:00.460000Z"
+      },
+      {
+        "id": 37,
+        "name": "Bell Pepper",
+        "created_at": "2025-12-23T18:22:07.027000Z",
+        "updated_at": "2026-01-18T01:17:32.333000Z"
+      },
+      {
+        "id": 36,
+        "name": "Basmati Rice",
+        "created_at": "2025-12-23T18:22:07.024000Z",
+        "updated_at": "2026-01-17T12:03:29.577000Z"
+      },
+      {
+        "id": 35,
+        "name": "Water for the Sauce",
+        "created_at": "2025-12-23T18:22:06.979000Z",
+        "updated_at": "2026-01-18T01:18:30.854000Z"
+      },
+      {
+        "id": 34,
+        "name": "Sugar",
+        "created_at": "2025-12-23T18:22:06.975000Z",
+        "updated_at": "2026-01-17T12:03:29.576000Z"
+      },
+      {
+        "id": 33,
+        "name": "Wild Rocket",
+        "created_at": "2025-12-23T18:22:06.971000Z",
+        "updated_at": "2026-01-18T00:12:10.721000Z"
+      },
+      {
+        "id": 32,
+        "name": "Sun-Dried Tomato Paste",
+        "created_at": "2025-12-23T18:22:06.968000Z",
+        "updated_at": "2026-01-18T01:14:46.400000Z"
+      },
+      {
+        "id": 31,
+        "name": "Mixed Herbs",
+        "created_at": "2025-12-23T18:22:06.965000Z",
+        "updated_at": "2026-01-17T12:03:29.573000Z"
+      },
+      {
+        "id": 30,
+        "name": "Red Wine Stock Paste",
+        "created_at": "2025-12-23T18:22:06.961000Z",
+        "updated_at": "2026-01-17T12:03:29.573000Z"
+      },
+      {
+        "id": 29,
+        "name": "Tomato Passata",
+        "created_at": "2025-12-23T18:22:06.957000Z",
+        "updated_at": "2026-01-17T12:03:29.572000Z"
+      },
+      {
+        "id": 28,
+        "name": "Sliced Mushrooms",
+        "created_at": "2025-12-23T18:22:06.954000Z",
+        "updated_at": "2026-01-17T12:03:29.571000Z"
+      },
+      {
+        "id": 27,
+        "name": "British Beef Mince",
+        "created_at": "2025-12-23T18:22:06.950000Z",
+        "updated_at": "2026-01-17T12:03:29.570000Z"
+      },
+      {
+        "id": 26,
+        "name": "Orzo",
+        "created_at": "2025-12-23T18:22:06.946000Z",
+        "updated_at": "2026-01-18T01:15:37.873000Z"
+      },
+      {
+        "id": 25,
+        "name": "Butter",
+        "created_at": "2025-12-23T18:22:06.872000Z",
+        "updated_at": "2026-01-18T23:01:15.004000Z"
+      },
+      {
+        "id": 24,
+        "name": "British Smoked Bacon Lardons",
+        "created_at": "2025-12-23T18:22:06.869000Z",
+        "updated_at": "2026-01-17T12:03:29.569000Z"
+      },
+      {
+        "id": 23,
+        "name": "Crispy Onions",
+        "created_at": "2025-12-23T18:22:06.866000Z",
+        "updated_at": "2026-01-18T01:11:53.114000Z"
+      },
+      {
+        "id": 22,
+        "name": "Dried Cranberries",
+        "created_at": "2025-12-23T18:22:06.863000Z",
+        "updated_at": "2026-01-10T14:23:00.446000Z"
+      },
+      {
+        "id": 21,
+        "name": "Grated Hard Italian Style Cheese",
+        "created_at": "2025-12-23T18:22:06.860000Z",
+        "updated_at": "2026-01-18T01:17:54.992000Z"
+      },
+      {
+        "id": 20,
+        "name": "Wholegrain Mustard",
+        "created_at": "2025-12-23T18:22:06.857000Z",
+        "updated_at": "2026-01-18T01:18:03.441000Z"
+      },
+      {
+        "id": 19,
+        "name": "Mayonnaise",
+        "created_at": "2025-12-23T18:22:06.854000Z",
+        "updated_at": "2026-01-18T23:01:15.014000Z"
+      },
+      {
+        "id": 18,
+        "name": "Baby Gem Lettuce",
+        "created_at": "2025-12-23T18:22:06.851000Z",
+        "updated_at": "2026-01-17T12:03:29.565000Z"
+      },
+      {
+        "id": 17,
+        "name": "Red Onion",
+        "created_at": "2025-12-23T18:22:06.847000Z",
+        "updated_at": "2026-01-17T12:03:29.564000Z"
+      },
+      {
+        "id": 16,
+        "name": "Ciabatta",
+        "created_at": "2025-12-23T18:22:06.844000Z",
+        "updated_at": "2026-01-18T01:18:06.411000Z"
+      },
+      {
+        "id": 15,
+        "name": "Garlic Clove",
+        "created_at": "2025-12-23T18:22:06.841000Z",
+        "updated_at": "2026-01-18T01:18:30.772000Z"
+      },
+      {
+        "id": 14,
+        "name": "Brussels Sprouts",
+        "created_at": "2025-12-23T18:22:06.838000Z",
+        "updated_at": "2026-01-10T14:23:00.439000Z"
+      },
+      {
+        "id": 13,
+        "name": "Olive Oil for the Dressing",
+        "created_at": "2025-12-23T18:22:06.717000Z",
+        "updated_at": "2026-01-18T01:17:48.923000Z"
+      },
+      {
+        "id": 12,
+        "name": "Honey",
+        "created_at": "2025-12-23T18:22:06.713000Z",
+        "updated_at": "2026-01-20T23:01:19.710000Z"
+      },
+      {
+        "id": 11,
+        "name": "Halloumi",
+        "created_at": "2025-12-23T18:22:06.710000Z",
+        "updated_at": "2026-01-18T01:17:48.904000Z"
+      },
+      {
+        "id": 10,
+        "name": "Walnuts",
+        "created_at": "2025-12-23T18:22:06.707000Z",
+        "updated_at": "2026-01-18T23:01:15.482000Z"
+      },
+      {
+        "id": 9,
+        "name": "Greek Style Salad Cheese",
+        "created_at": "2025-12-23T18:22:06.705000Z",
+        "updated_at": "2026-01-18T01:14:44.400000Z"
+      },
+      {
+        "id": 8,
+        "name": "Baby Leaf Mix",
+        "created_at": "2025-12-23T18:22:06.702000Z",
+        "updated_at": "2026-01-17T12:03:29.558000Z"
+      },
+      {
+        "id": 7,
+        "name": "Cider Vinegar",
+        "created_at": "2025-12-23T18:22:06.699000Z",
+        "updated_at": "2026-01-17T12:03:29.557000Z"
+      },
+      {
+        "id": 6,
+        "name": "Harissa Paste",
+        "created_at": "2025-12-23T18:22:06.696000Z",
+        "updated_at": "2026-01-18T01:16:47.294000Z"
+      },
+      {
+        "id": 5,
+        "name": "Greek Style Natural Yoghurt",
+        "created_at": "2025-12-23T18:22:06.693000Z",
+        "updated_at": "2026-01-18T01:17:40.378000Z"
+      },
+      {
+        "id": 4,
+        "name": "Baby Plum Tomatoes",
+        "created_at": "2025-12-23T18:22:06.690000Z",
+        "updated_at": "2026-01-17T12:03:29.554000Z"
+      },
+      {
+        "id": 3,
+        "name": "Ditali Pasta",
+        "created_at": "2025-12-23T18:22:06.687000Z",
+        "updated_at": "2026-01-18T00:05:26.765000Z"
+      },
+      {
+        "id": 2,
+        "name": "Ground Cumin",
+        "created_at": "2025-12-23T18:22:06.684000Z",
+        "updated_at": "2026-01-18T00:12:10.713000Z"
+      },
+      {
+        "id": 1,
+        "name": "Butternut Squash",
+        "created_at": "2025-12-23T18:22:06.680000Z",
+        "updated_at": "2026-01-10T14:23:00.429000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 23,
+      "from": 1101,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 1147,
+      "total": 1147
+    }
+  }
+}

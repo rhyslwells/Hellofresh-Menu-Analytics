@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 19,
+    "pulled_at_utc": "2026-01-23T22:35:13.801556"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 1439,
+        "name": "Pork Belly",
+        "created_at": "2025-12-23T18:23:05.888000Z",
+        "updated_at": "2026-01-10T14:23:00.639000Z"
+      },
+      {
+        "id": 1438,
+        "name": "Red Cabbage",
+        "created_at": "2025-12-23T18:23:05.885000Z",
+        "updated_at": "2026-01-17T12:03:29.704000Z"
+      },
+      {
+        "id": 1437,
+        "name": "Confit Duck Legs",
+        "created_at": "2025-12-23T18:23:05.881000Z",
+        "updated_at": "2026-01-17T12:03:29.703000Z"
+      },
+      {
+        "id": 1436,
+        "name": "Lamb Mince",
+        "created_at": "2025-12-23T18:23:05.872000Z",
+        "updated_at": "2026-01-17T12:03:29.702000Z"
+      },
+      {
+        "id": 1280,
+        "name": "BBQ Sauce",
+        "created_at": "2025-12-23T18:23:00.242000Z",
+        "updated_at": "2026-01-18T01:16:46.723000Z"
+      },
+      {
+        "id": 1279,
+        "name": "Red Leicester",
+        "created_at": "2025-12-23T18:23:00.238000Z",
+        "updated_at": "2026-01-17T12:03:29.700000Z"
+      },
+      {
+        "id": 1278,
+        "name": "Dried Thyme",
+        "created_at": "2025-12-23T18:23:00.230000Z",
+        "updated_at": "2026-01-17T12:03:29.699000Z"
+      },
+      {
+        "id": 1277,
+        "name": "Thai Green Style Paste",
+        "created_at": "2025-12-23T18:23:00.227000Z",
+        "updated_at": "2026-01-17T12:03:29.698000Z"
+      },
+      {
+        "id": 1276,
+        "name": "Truffle Zest",
+        "created_at": "2025-12-23T18:23:00.224000Z",
+        "updated_at": "2026-01-17T12:03:29.697000Z"
+      },
+      {
+        "id": 1084,
+        "name": "Malaysian Style Paste",
+        "created_at": "2025-12-23T18:22:55.160000Z",
+        "updated_at": "2026-01-10T14:23:00.631000Z"
+      },
+      {
+        "id": 899,
+        "name": "Worcester Sauce",
+        "created_at": "2025-12-23T18:22:49.404000Z",
+        "updated_at": "2026-01-18T01:18:30.781000Z"
+      },
+      {
+        "id": 898,
+        "name": "Fig Jam",
+        "created_at": "2025-12-23T18:22:49.402000Z",
+        "updated_at": "2026-01-10T14:23:00.630000Z"
+      },
+      {
+        "id": 896,
+        "name": "Mango",
+        "created_at": "2025-12-23T18:22:49.401000Z",
+        "updated_at": "2026-01-10T14:23:00.628000Z"
+      },
+      {
+        "id": 897,
+        "name": "Macaroni",
+        "created_at": "2025-12-23T18:22:49.401000Z",
+        "updated_at": "2026-01-18T00:05:14.314000Z"
+      },
+      {
+        "id": 895,
+        "name": "Roasted Spice and Herb Blend",
+        "created_at": "2025-12-23T18:22:49.400000Z",
+        "updated_at": "2026-01-17T12:03:29.694000Z"
+      },
+      {
+        "id": 893,
+        "name": "Korma Curry Paste",
+        "created_at": "2025-12-23T18:22:49.396000Z",
+        "updated_at": "2026-01-17T12:03:29.693000Z"
+      },
+      {
+        "id": 892,
+        "name": "Ground Cinnamon",
+        "created_at": "2025-12-23T18:22:49.393000Z",
+        "updated_at": "2026-01-18T00:12:10.782000Z"
+      },
+      {
+        "id": 891,
+        "name": "White Cumin Seeds",
+        "created_at": "2025-12-23T18:22:49.390000Z",
+        "updated_at": "2026-01-18T01:12:37.488000Z"
+      },
+      {
+        "id": 890,
+        "name": "Onion Marmalade",
+        "created_at": "2025-12-23T18:22:49.381000Z",
+        "updated_at": "2026-01-17T12:03:29.690000Z"
+      },
+      {
+        "id": 889,
+        "name": "Marinara Sauce",
+        "created_at": "2025-12-23T18:22:49.376000Z",
+        "updated_at": "2026-01-10T14:23:00.624000Z"
+      },
+      {
+        "id": 888,
+        "name": "Goat's Cheese",
+        "created_at": "2025-12-23T18:22:49.370000Z",
+        "updated_at": "2026-01-18T01:18:00.867000Z"
+      },
+      {
+        "id": 887,
+        "name": "Orkney Crab Meat",
+        "created_at": "2025-12-23T18:22:49.244000Z",
+        "updated_at": "2026-01-10T14:23:00.622000Z"
+      },
+      {
+        "id": 886,
+        "name": "Samphire",
+        "created_at": "2025-12-23T18:22:49.240000Z",
+        "updated_at": "2026-01-10T14:23:00.621000Z"
+      },
+      {
+        "id": 751,
+        "name": "Water for the Jus",
+        "created_at": "2025-12-23T18:22:40.743000Z",
+        "updated_at": "2026-01-17T12:03:29.687000Z"
+      },
+      {
+        "id": 750,
+        "name": "Broccoli Florets",
+        "created_at": "2025-12-23T18:22:40.740000Z",
+        "updated_at": "2026-01-17T12:03:29.686000Z"
+      },
+      {
+        "id": 749,
+        "name": "Redcurrant Jelly",
+        "created_at": "2025-12-23T18:22:40.739000Z",
+        "updated_at": "2026-01-17T12:03:29.685000Z"
+      },
+      {
+        "id": 748,
+        "name": "Red Wine Jus Paste",
+        "created_at": "2025-12-23T18:22:40.737000Z",
+        "updated_at": "2026-01-18T01:16:53.708000Z"
+      },
+      {
+        "id": 747,
+        "name": "Prunes",
+        "created_at": "2025-12-23T18:22:40.734000Z",
+        "updated_at": "2026-01-18T01:15:23.951000Z"
+      },
+      {
+        "id": 746,
+        "name": "Caribbean Style Jerk",
+        "created_at": "2025-12-23T18:22:40.728000Z",
+        "updated_at": "2026-01-18T01:17:31.593000Z"
+      },
+      {
+        "id": 745,
+        "name": "Dried Basil",
+        "created_at": "2025-12-23T18:22:40.726000Z",
+        "updated_at": "2026-01-17T12:03:29.684000Z"
+      },
+      {
+        "id": 744,
+        "name": "Linguine",
+        "created_at": "2025-12-23T18:22:40.640000Z",
+        "updated_at": "2026-01-18T01:18:07.225000Z"
+      },
+      {
+        "id": 743,
+        "name": "Mussels",
+        "created_at": "2025-12-23T18:22:40.637000Z",
+        "updated_at": "2026-01-17T12:03:29.681000Z"
+      },
+      {
+        "id": 742,
+        "name": "Balsamic Glaze",
+        "created_at": "2025-12-23T18:22:40.633000Z",
+        "updated_at": "2026-01-18T00:12:10.765000Z"
+      },
+      {
+        "id": 741,
+        "name": "Water for the Cornflour",
+        "created_at": "2025-12-23T18:22:40.584000Z",
+        "updated_at": "2026-01-10T14:23:00.612000Z"
+      },
+      {
+        "id": 740,
+        "name": "Vegetable Gyozas",
+        "created_at": "2025-12-23T18:22:40.577000Z",
+        "updated_at": "2026-01-18T00:04:51.093000Z"
+      },
+      {
+        "id": 739,
+        "name": "Water for the Couscous",
+        "created_at": "2025-12-23T18:22:40.576000Z",
+        "updated_at": "2026-01-18T01:18:30.775000Z"
+      },
+      {
+        "id": 738,
+        "name": "Cornflour",
+        "created_at": "2025-12-23T18:22:40.574000Z",
+        "updated_at": "2026-01-10T14:23:00.610000Z"
+      },
+      {
+        "id": 737,
+        "name": "Water for the Gravy",
+        "created_at": "2025-12-23T18:22:40.568000Z",
+        "updated_at": "2026-01-18T01:14:51.738000Z"
+      },
+      {
+        "id": 736,
+        "name": "Shredded Savoy Cabbage",
+        "created_at": "2025-12-23T18:22:40.563000Z",
+        "updated_at": "2026-01-17T12:03:29.678000Z"
+      },
+      {
+        "id": 735,
+        "name": "Water",
+        "created_at": "2025-12-23T18:22:40.561000Z",
+        "updated_at": "2026-01-18T23:01:15.476000Z"
+      },
+      {
+        "id": 734,
+        "name": "Balsamic Vinegar",
+        "created_at": "2025-12-23T18:22:40.558000Z",
+        "updated_at": "2026-01-18T01:17:42.695000Z"
+      },
+      {
+        "id": 733,
+        "name": "Boiled Water for the Risotto",
+        "created_at": "2025-12-23T18:22:40.511000Z",
+        "updated_at": "2026-01-17T12:03:29.675000Z"
+      },
+      {
+        "id": 732,
+        "name": "Sambal Paste",
+        "created_at": "2025-12-23T18:22:40.507000Z",
+        "updated_at": "2026-01-17T12:03:29.674000Z"
+      },
+      {
+        "id": 731,
+        "name": "Boiled Water for the Sauce",
+        "created_at": "2025-12-23T18:22:40.506000Z",
+        "updated_at": "2026-01-10T14:23:00.603000Z"
+      },
+      {
+        "id": 730,
+        "name": "Gochujang Paste",
+        "created_at": "2025-12-23T18:22:40.502000Z",
+        "updated_at": "2026-01-17T12:03:29.672000Z"
+      },
+      {
+        "id": 729,
+        "name": "Cajun Spice Mix",
+        "created_at": "2025-12-23T18:22:40.498000Z",
+        "updated_at": "2026-01-18T01:17:51.057000Z"
+      },
+      {
+        "id": 728,
+        "name": "Vegan Mince",
+        "created_at": "2025-12-23T18:22:40.496000Z",
+        "updated_at": "2026-01-10T14:23:00.601000Z"
+      },
+      {
+        "id": 727,
+        "name": "Risotto Rice",
+        "created_at": "2025-12-23T18:22:40.495000Z",
+        "updated_at": "2026-01-18T01:14:16.786000Z"
+      },
+      {
+        "id": 726,
+        "name": "Pomegranate",
+        "created_at": "2025-12-23T18:22:40.436000Z",
+        "updated_at": "2026-01-10T14:23:00.599000Z"
+      },
+      {
+        "id": 725,
+        "name": "Zhoug Style Paste",
+        "created_at": "2025-12-23T18:22:40.432000Z",
+        "updated_at": "2026-01-10T14:23:00.598000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 19,
+      "from": 901,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 950,
+      "total": 1147
+    }
+  }
+}

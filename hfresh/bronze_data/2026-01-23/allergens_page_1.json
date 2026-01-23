@@ -1,0 +1,201 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "allergens",
+    "locale": "en-GB",
+    "page": 1,
+    "pulled_at_utc": "2026-01-23T22:35:14.927536"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 410,
+        "name": "Lupin",
+        "created_at": "2025-12-23T18:24:12.582000Z",
+        "updated_at": "2026-01-10T14:23:00.940000Z"
+      },
+      {
+        "id": 128,
+        "name": "Molluscs",
+        "created_at": "2025-12-23T18:22:40.608000Z",
+        "updated_at": "2026-01-17T12:03:30.699000Z"
+      },
+      {
+        "id": 28,
+        "name": "Spelt (wheat)",
+        "created_at": "2025-12-23T18:22:07.601000Z",
+        "updated_at": "2026-01-17T12:03:30.698000Z"
+      },
+      {
+        "id": 27,
+        "name": "Oats",
+        "created_at": "2025-12-23T18:22:07.598000Z",
+        "updated_at": "2026-01-17T12:03:30.698000Z"
+      },
+      {
+        "id": 26,
+        "name": "Khorasan (wheat)",
+        "created_at": "2025-12-23T18:22:07.595000Z",
+        "updated_at": "2026-01-17T12:03:30.697000Z"
+      },
+      {
+        "id": 25,
+        "name": "Kamut (wheat)",
+        "created_at": "2025-12-23T18:22:07.592000Z",
+        "updated_at": "2026-01-17T12:03:30.696000Z"
+      },
+      {
+        "id": 24,
+        "name": "Crustaceans",
+        "created_at": "2025-12-23T18:22:07.215000Z",
+        "updated_at": "2026-01-17T12:03:30.696000Z"
+      },
+      {
+        "id": 23,
+        "name": "Fish",
+        "created_at": "2025-12-23T18:22:07.213000Z",
+        "updated_at": "2026-01-17T12:03:30.695000Z"
+      },
+      {
+        "id": 22,
+        "name": "Celery",
+        "created_at": "2025-12-23T18:22:06.898000Z",
+        "updated_at": "2026-01-17T12:03:30.694000Z"
+      },
+      {
+        "id": 21,
+        "name": "Rye",
+        "created_at": "2025-12-23T18:22:06.895000Z",
+        "updated_at": "2026-01-18T00:12:10.702000Z"
+      },
+      {
+        "id": 20,
+        "name": "Mustard",
+        "created_at": "2025-12-23T18:22:06.886000Z",
+        "updated_at": "2026-01-17T12:03:30.693000Z"
+      },
+      {
+        "id": 19,
+        "name": "Egg",
+        "created_at": "2025-12-23T18:22:06.884000Z",
+        "updated_at": "2026-01-18T00:12:10.696000Z"
+      },
+      {
+        "id": 18,
+        "name": "Barley",
+        "created_at": "2025-12-23T18:22:06.881000Z",
+        "updated_at": "2026-01-18T00:12:10.695000Z"
+      },
+      {
+        "id": 17,
+        "name": "Brazil nuts",
+        "created_at": "2025-12-23T18:22:06.778000Z",
+        "updated_at": "2026-01-17T12:03:30.690000Z"
+      },
+      {
+        "id": 16,
+        "name": "Pecan Nuts",
+        "created_at": "2025-12-23T18:22:06.775000Z",
+        "updated_at": "2026-01-17T12:03:30.689000Z"
+      },
+      {
+        "id": 15,
+        "name": "Almonds",
+        "created_at": "2025-12-23T18:22:06.769000Z",
+        "updated_at": "2026-01-17T12:03:30.689000Z"
+      },
+      {
+        "id": 14,
+        "name": "Sesame",
+        "created_at": "2025-12-23T18:22:06.767000Z",
+        "updated_at": "2026-01-18T00:12:10.694000Z"
+      },
+      {
+        "id": 13,
+        "name": "Pistachio nuts",
+        "created_at": "2025-12-23T18:22:06.764000Z",
+        "updated_at": "2026-01-17T12:03:30.687000Z"
+      },
+      {
+        "id": 12,
+        "name": "Macadamia Nuts",
+        "created_at": "2025-12-23T18:22:06.762000Z",
+        "updated_at": "2026-01-17T12:03:30.686000Z"
+      },
+      {
+        "id": 11,
+        "name": "Hazelnuts",
+        "created_at": "2025-12-23T18:22:06.759000Z",
+        "updated_at": "2026-01-17T12:03:30.686000Z"
+      },
+      {
+        "id": 10,
+        "name": "Cashew nuts",
+        "created_at": "2025-12-23T18:22:06.756000Z",
+        "updated_at": "2026-01-17T12:03:30.685000Z"
+      },
+      {
+        "id": 9,
+        "name": "Peanut",
+        "created_at": "2025-12-23T18:22:06.754000Z",
+        "updated_at": "2026-01-17T12:03:30.684000Z"
+      },
+      {
+        "id": 8,
+        "name": "May contain traces of allergens",
+        "created_at": "2025-12-23T18:22:06.751000Z",
+        "updated_at": "2026-01-18T00:12:10.693000Z"
+      },
+      {
+        "id": 7,
+        "name": "Soya",
+        "created_at": "2025-12-23T18:22:06.746000Z",
+        "updated_at": "2026-01-17T12:03:30.683000Z"
+      },
+      {
+        "id": 6,
+        "name": "Walnuts",
+        "created_at": "2025-12-23T18:22:06.743000Z",
+        "updated_at": "2026-01-17T12:03:30.682000Z"
+      },
+      {
+        "id": 5,
+        "name": "Nuts",
+        "created_at": "2025-12-23T18:22:06.740000Z",
+        "updated_at": "2026-01-19T23:01:17.975000Z"
+      },
+      {
+        "id": 4,
+        "name": "Sulphites",
+        "created_at": "2025-12-23T18:22:06.738000Z",
+        "updated_at": "2026-01-18T00:12:10.688000Z"
+      },
+      {
+        "id": 3,
+        "name": "Milk",
+        "created_at": "2025-12-23T18:22:06.735000Z",
+        "updated_at": "2026-01-18T00:12:10.684000Z"
+      },
+      {
+        "id": 2,
+        "name": "Wheat",
+        "created_at": "2025-12-23T18:22:06.732000Z",
+        "updated_at": "2026-01-18T00:12:10.683000Z"
+      },
+      {
+        "id": 1,
+        "name": "Cereals containing gluten",
+        "created_at": "2025-12-23T18:22:06.729000Z",
+        "updated_at": "2026-01-18T00:12:10.674000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 1,
+      "from": 1,
+      "last_page": 1,
+      "per_page": 50,
+      "to": 30,
+      "total": 30
+    }
+  }
+}

@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 18,
+    "pulled_at_utc": "2026-01-23T22:35:13.538464"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 3990,
+        "name": "Puff Pastry Sheet",
+        "created_at": "2025-12-23T18:23:40.550000Z",
+        "updated_at": "2026-01-18T00:05:26.451000Z"
+      },
+      {
+        "id": 3987,
+        "name": "Burger Sauce",
+        "created_at": "2025-12-23T18:23:40.516000Z",
+        "updated_at": "2026-01-18T01:12:14.400000Z"
+      },
+      {
+        "id": 3986,
+        "name": "Duck Breasts",
+        "created_at": "2025-12-23T18:23:40.489000Z",
+        "updated_at": "2026-01-10T14:23:00.675000Z"
+      },
+      {
+        "id": 3985,
+        "name": "Burrata",
+        "created_at": "2025-12-23T18:23:40.480000Z",
+        "updated_at": "2026-01-10T14:23:00.674000Z"
+      },
+      {
+        "id": 3983,
+        "name": "Pine Nuts",
+        "created_at": "2025-12-23T18:23:40.471000Z",
+        "updated_at": "2026-01-17T12:03:29.730000Z"
+      },
+      {
+        "id": 3969,
+        "name": "Super Soft Tortillas with Whole Wheat",
+        "created_at": "2025-12-23T18:23:40.332000Z",
+        "updated_at": "2026-01-18T01:15:37.986000Z"
+      },
+      {
+        "id": 3968,
+        "name": "Olive Oil for the Garlic Bread",
+        "created_at": "2025-12-23T18:23:40.311000Z",
+        "updated_at": "2026-01-17T12:03:29.729000Z"
+      },
+      {
+        "id": 3967,
+        "name": "Ginger, Garlic & Lemongrass Puree",
+        "created_at": "2025-12-23T18:23:40.304000Z",
+        "updated_at": "2026-01-17T12:03:29.728000Z"
+      },
+      {
+        "id": 3965,
+        "name": "Spinach and Ricotta Tortelloni",
+        "created_at": "2025-12-23T18:23:40.302000Z",
+        "updated_at": "2026-01-10T14:23:00.670000Z"
+      },
+      {
+        "id": 3964,
+        "name": "Olive Oil for the Marinade",
+        "created_at": "2025-12-23T18:23:40.289000Z",
+        "updated_at": "2026-01-10T14:23:00.670000Z"
+      },
+      {
+        "id": 3962,
+        "name": "Oil for Cooking",
+        "created_at": "2025-12-23T18:23:40.263000Z",
+        "updated_at": "2026-01-10T14:23:00.669000Z"
+      },
+      {
+        "id": 3960,
+        "name": "North Indian Style Spice Mix",
+        "created_at": "2025-12-23T18:23:40.256000Z",
+        "updated_at": "2026-01-17T12:03:29.727000Z"
+      },
+      {
+        "id": 3958,
+        "name": "Boiled Water for the Stock",
+        "created_at": "2025-12-23T18:23:40.245000Z",
+        "updated_at": "2026-01-10T14:23:00.667000Z"
+      },
+      {
+        "id": 3957,
+        "name": "Wild Mushroom Paste",
+        "created_at": "2025-12-23T18:23:40.237000Z",
+        "updated_at": "2026-01-17T12:03:29.726000Z"
+      },
+      {
+        "id": 3956,
+        "name": "Water for the Lentils",
+        "created_at": "2025-12-23T18:23:40.233000Z",
+        "updated_at": "2026-01-10T14:23:00.666000Z"
+      },
+      {
+        "id": 3955,
+        "name": "Firm Tofu",
+        "created_at": "2025-12-23T18:23:40.225000Z",
+        "updated_at": "2026-01-18T01:17:56.711000Z"
+      },
+      {
+        "id": 3954,
+        "name": "Olive Oil for the Sauce",
+        "created_at": "2025-12-23T18:23:40.205000Z",
+        "updated_at": "2026-01-10T14:23:00.664000Z"
+      },
+      {
+        "id": 3952,
+        "name": "Baking Potato",
+        "created_at": "2025-12-23T18:23:40.174000Z",
+        "updated_at": "2026-01-17T12:03:29.724000Z"
+      },
+      {
+        "id": 3951,
+        "name": "Black Sesame Seeds",
+        "created_at": "2025-12-23T18:23:40.166000Z",
+        "updated_at": "2026-01-17T12:03:29.723000Z"
+      },
+      {
+        "id": 3950,
+        "name": "Olive Oil",
+        "created_at": "2025-12-23T18:23:40.163000Z",
+        "updated_at": "2026-01-10T14:23:00.662000Z"
+      },
+      {
+        "id": 3949,
+        "name": "British Pork Loin Steaks",
+        "created_at": "2025-12-23T18:23:40.160000Z",
+        "updated_at": "2026-01-17T12:03:29.722000Z"
+      },
+      {
+        "id": 3947,
+        "name": "Toasted Flaked Almonds",
+        "created_at": "2025-12-23T18:23:40.157000Z",
+        "updated_at": "2026-01-17T12:03:29.720000Z"
+      },
+      {
+        "id": 3948,
+        "name": "Basa Fillets",
+        "created_at": "2025-12-23T18:23:40.157000Z",
+        "updated_at": "2026-01-17T12:03:29.721000Z"
+      },
+      {
+        "id": 3945,
+        "name": "Finely Chopped Tomatoes with Onion and Garlic",
+        "created_at": "2025-12-23T18:23:40.155000Z",
+        "updated_at": "2026-01-17T12:03:29.719000Z"
+      },
+      {
+        "id": 3943,
+        "name": "Water for the Dal",
+        "created_at": "2025-12-23T18:23:40.154000Z",
+        "updated_at": "2026-01-17T12:03:29.719000Z"
+      },
+      {
+        "id": 3942,
+        "name": "Asparagus",
+        "created_at": "2025-12-23T18:23:40.151000Z",
+        "updated_at": "2026-01-17T12:03:29.718000Z"
+      },
+      {
+        "id": 3941,
+        "name": "Reserved Pasta Water for the Sauce",
+        "created_at": "2025-12-23T18:23:40.149000Z",
+        "updated_at": "2026-01-10T14:23:00.657000Z"
+      },
+      {
+        "id": 3940,
+        "name": "Red Split Lentils",
+        "created_at": "2025-12-23T18:23:40.148000Z",
+        "updated_at": "2026-01-17T12:03:29.717000Z"
+      },
+      {
+        "id": 3939,
+        "name": "Rosemary",
+        "created_at": "2025-12-23T18:23:40.146000Z",
+        "updated_at": "2026-01-10T14:23:00.655000Z"
+      },
+      {
+        "id": 3938,
+        "name": "Parmigiano Reggiano",
+        "created_at": "2025-12-23T18:23:40.144000Z",
+        "updated_at": "2026-01-17T12:03:29.716000Z"
+      },
+      {
+        "id": 3937,
+        "name": "Tikka Masala Paste",
+        "created_at": "2025-12-23T18:23:40.143000Z",
+        "updated_at": "2026-01-17T12:03:29.715000Z"
+      },
+      {
+        "id": 3935,
+        "name": "Unsalted Butter",
+        "created_at": "2025-12-23T18:23:40.139000Z",
+        "updated_at": "2026-01-18T01:18:01.552000Z"
+      },
+      {
+        "id": 3934,
+        "name": "Reserved Potato Water",
+        "created_at": "2025-12-23T18:23:40.137000Z",
+        "updated_at": "2026-01-10T14:23:00.652000Z"
+      },
+      {
+        "id": 3933,
+        "name": "Fresh Tagliatelle",
+        "created_at": "2025-12-23T18:23:40.133000Z",
+        "updated_at": "2026-01-18T01:16:43.497000Z"
+      },
+      {
+        "id": 3932,
+        "name": "Monkfish Medallions",
+        "created_at": "2025-12-23T18:23:40.129000Z",
+        "updated_at": "2026-01-17T12:03:29.714000Z"
+      },
+      {
+        "id": 3931,
+        "name": "21 Day Aged British Rump Steaks",
+        "created_at": "2025-12-23T18:23:40.125000Z",
+        "updated_at": "2026-01-17T12:03:29.713000Z"
+      },
+      {
+        "id": 3929,
+        "name": "Reserved Pasta Water",
+        "created_at": "2025-12-23T18:23:40.083000Z",
+        "updated_at": "2026-01-17T12:03:29.712000Z"
+      },
+      {
+        "id": 3927,
+        "name": "British Beef and Pork Mince",
+        "created_at": "2025-12-23T18:23:40.077000Z",
+        "updated_at": "2026-01-17T12:03:29.711000Z"
+      },
+      {
+        "id": 3925,
+        "name": "Slow Cooked Beef",
+        "created_at": "2025-12-23T18:23:40.071000Z",
+        "updated_at": "2026-01-10T14:23:00.648000Z"
+      },
+      {
+        "id": 3923,
+        "name": "British Cumberland Sausages",
+        "created_at": "2025-12-23T18:23:40.068000Z",
+        "updated_at": "2026-01-18T01:09:34.984000Z"
+      },
+      {
+        "id": 3921,
+        "name": "Salted Pistachios",
+        "created_at": "2025-12-23T18:23:40.066000Z",
+        "updated_at": "2026-01-18T00:06:22.895000Z"
+      },
+      {
+        "id": 3920,
+        "name": "Mozzarella",
+        "created_at": "2025-12-23T18:23:40.060000Z",
+        "updated_at": "2026-01-18T01:12:54.920000Z"
+      },
+      {
+        "id": 3919,
+        "name": "Olive Oil for the Crumb",
+        "created_at": "2025-12-23T18:23:40.058000Z",
+        "updated_at": "2026-01-17T12:03:29.709000Z"
+      },
+      {
+        "id": 3917,
+        "name": "Mint",
+        "created_at": "2025-12-23T18:23:40.056000Z",
+        "updated_at": "2026-01-17T12:03:29.708000Z"
+      },
+      {
+        "id": 3915,
+        "name": "British Honey Mustard Sausages",
+        "created_at": "2025-12-23T18:23:40.050000Z",
+        "updated_at": "2026-01-18T00:03:42.667000Z"
+      },
+      {
+        "id": 3914,
+        "name": "Chopped Cavolo Nero",
+        "created_at": "2025-12-23T18:23:40.049000Z",
+        "updated_at": "2026-01-17T12:03:29.706000Z"
+      },
+      {
+        "id": 3913,
+        "name": "Lamb Steaks",
+        "created_at": "2025-12-23T18:23:40.047000Z",
+        "updated_at": "2026-01-17T12:03:29.705000Z"
+      },
+      {
+        "id": 1442,
+        "name": "Water for the Cabbage",
+        "created_at": "2025-12-23T18:23:05.898000Z",
+        "updated_at": "2026-01-10T14:23:00.641000Z"
+      },
+      {
+        "id": 1441,
+        "name": "Apple and Sage Jelly",
+        "created_at": "2025-12-23T18:23:05.893000Z",
+        "updated_at": "2026-01-18T00:12:10.794000Z"
+      },
+      {
+        "id": 1440,
+        "name": "Boiled Water",
+        "created_at": "2025-12-23T18:23:05.891000Z",
+        "updated_at": "2026-01-10T14:23:00.639000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 18,
+      "from": 851,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 900,
+      "total": 1147
+    }
+  }
+}

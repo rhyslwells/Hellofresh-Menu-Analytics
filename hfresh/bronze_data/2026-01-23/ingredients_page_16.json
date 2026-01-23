@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 16,
+    "pulled_at_utc": "2026-01-23T22:35:13.086959"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 7369,
+        "name": "Purple Carrot",
+        "created_at": "2025-12-23T18:27:41.368000Z",
+        "updated_at": "2026-01-10T14:23:00.761000Z"
+      },
+      {
+        "id": 7335,
+        "name": "Salt for the Tofu",
+        "created_at": "2025-12-23T18:27:32.878000Z",
+        "updated_at": "2026-01-17T12:03:29.755000Z"
+      },
+      {
+        "id": 7334,
+        "name": "Salt for the Mixture",
+        "created_at": "2025-12-23T18:27:32.868000Z",
+        "updated_at": "2026-01-10T14:23:00.760000Z"
+      },
+      {
+        "id": 7333,
+        "name": "Garlic & White Wine Scottish Mussels",
+        "created_at": "2025-12-23T18:27:32.797000Z",
+        "updated_at": "2026-01-10T14:23:00.759000Z"
+      },
+      {
+        "id": 7332,
+        "name": "Water for the Butternut",
+        "created_at": "2025-12-23T18:27:32.756000Z",
+        "updated_at": "2026-01-10T14:23:00.758000Z"
+      },
+      {
+        "id": 7331,
+        "name": "Pumpkin Seeds",
+        "created_at": "2025-12-23T18:27:32.749000Z",
+        "updated_at": "2026-01-10T14:23:00.757000Z"
+      },
+      {
+        "id": 7330,
+        "name": "Gammon Steaks",
+        "created_at": "2025-12-23T18:27:32.572000Z",
+        "updated_at": "2026-01-10T14:23:00.756000Z"
+      },
+      {
+        "id": 7329,
+        "name": "Thyme",
+        "created_at": "2025-12-23T18:27:32.569000Z",
+        "updated_at": "2026-01-10T14:23:00.755000Z"
+      },
+      {
+        "id": 7328,
+        "name": "Pre-Cut Red Cabbage",
+        "created_at": "2025-12-23T18:27:32.559000Z",
+        "updated_at": "2026-01-10T14:23:00.755000Z"
+      },
+      {
+        "id": 7270,
+        "name": "THIS™ Isn't Streaky Bacon Rashers",
+        "created_at": "2025-12-23T18:27:20.456000Z",
+        "updated_at": "2026-01-18T00:17:17.182000Z"
+      },
+      {
+        "id": 7269,
+        "name": "THIS™ Isn't Pork Sausages",
+        "created_at": "2025-12-23T18:27:20.450000Z",
+        "updated_at": "2026-01-18T00:07:28.151000Z"
+      },
+      {
+        "id": 7256,
+        "name": "Water for the Beans",
+        "created_at": "2025-12-23T18:27:19.956000Z",
+        "updated_at": "2026-01-10T14:23:00.752000Z"
+      },
+      {
+        "id": 7255,
+        "name": "Water for the Chicken",
+        "created_at": "2025-12-23T18:27:19.944000Z",
+        "updated_at": "2026-01-10T14:23:00.751000Z"
+      },
+      {
+        "id": 7254,
+        "name": "Water for the Kale",
+        "created_at": "2025-12-23T18:27:19.917000Z",
+        "updated_at": "2026-01-10T14:23:00.750000Z"
+      },
+      {
+        "id": 7253,
+        "name": "Sri Lankan Style Curry Powder",
+        "created_at": "2025-12-23T18:27:19.911000Z",
+        "updated_at": "2026-01-10T14:23:00.749000Z"
+      },
+      {
+        "id": 7251,
+        "name": "Sugar for the Marinade",
+        "created_at": "2025-12-23T18:27:19.868000Z",
+        "updated_at": "2026-01-10T14:23:00.749000Z"
+      },
+      {
+        "id": 7250,
+        "name": "Pasanda Style Seasoning",
+        "created_at": "2025-12-23T18:27:19.786000Z",
+        "updated_at": "2026-01-10T14:23:00.748000Z"
+      },
+      {
+        "id": 7244,
+        "name": "Boiled Water for the Bulgur",
+        "created_at": "2025-12-23T18:27:19.642000Z",
+        "updated_at": "2026-01-10T14:23:00.747000Z"
+      },
+      {
+        "id": 7230,
+        "name": "Oil for the Roux",
+        "created_at": "2025-12-23T18:27:14.030000Z",
+        "updated_at": "2026-01-10T14:23:00.746000Z"
+      },
+      {
+        "id": 7229,
+        "name": "Whole British Chicken",
+        "created_at": "2025-12-23T18:27:14.028000Z",
+        "updated_at": "2026-01-10T14:23:00.745000Z"
+      },
+      {
+        "id": 7228,
+        "name": "British Beef Roasting Joint",
+        "created_at": "2025-12-23T18:27:14.017000Z",
+        "updated_at": "2026-01-10T14:23:00.744000Z"
+      },
+      {
+        "id": 7227,
+        "name": "21 Day Aged British Fillet Steaks",
+        "created_at": "2025-12-23T18:27:13.991000Z",
+        "updated_at": "2026-01-10T14:23:00.743000Z"
+      },
+      {
+        "id": 7226,
+        "name": "Parma Ham & Parmigiano Reggiano Filled Pasta",
+        "created_at": "2025-12-23T18:27:13.941000Z",
+        "updated_at": "2026-01-18T00:58:31.889000Z"
+      },
+      {
+        "id": 7148,
+        "name": "Egg for Binding",
+        "created_at": "2025-12-23T18:26:59.659000Z",
+        "updated_at": "2026-01-10T14:23:00.742000Z"
+      },
+      {
+        "id": 7147,
+        "name": "Rice Noodles",
+        "created_at": "2025-12-23T18:26:59.658000Z",
+        "updated_at": "2026-01-10T14:23:00.741000Z"
+      },
+      {
+        "id": 7146,
+        "name": "Milk for the Mash",
+        "created_at": "2025-12-23T18:26:59.617000Z",
+        "updated_at": "2026-01-10T14:23:00.740000Z"
+      },
+      {
+        "id": 7144,
+        "name": "Salt for the Mash",
+        "created_at": "2025-12-23T18:26:59.611000Z",
+        "updated_at": "2026-01-10T14:23:00.738000Z"
+      },
+      {
+        "id": 7145,
+        "name": "Water for the Pork",
+        "created_at": "2025-12-23T18:26:59.611000Z",
+        "updated_at": "2026-01-10T14:23:00.739000Z"
+      },
+      {
+        "id": 7141,
+        "name": "Vegetable Oil",
+        "created_at": "2025-12-23T18:26:59.580000Z",
+        "updated_at": "2026-01-18T01:16:45.003000Z"
+      },
+      {
+        "id": 7139,
+        "name": "Water for the Batter",
+        "created_at": "2025-12-23T18:26:59.577000Z",
+        "updated_at": "2026-01-10T14:23:00.736000Z"
+      },
+      {
+        "id": 7138,
+        "name": "Baileys Caramel Sauce",
+        "created_at": "2025-12-23T18:26:59.572000Z",
+        "updated_at": "2026-01-10T14:23:00.736000Z"
+      },
+      {
+        "id": 7136,
+        "name": "Chocolate Chips",
+        "created_at": "2025-12-23T18:26:59.571000Z",
+        "updated_at": "2026-01-17T23:13:29.418000Z"
+      },
+      {
+        "id": 7134,
+        "name": "Devil's Food Cake Mix",
+        "created_at": "2025-12-23T18:26:59.567000Z",
+        "updated_at": "2026-01-18T00:15:19.649000Z"
+      },
+      {
+        "id": 7133,
+        "name": "Salt for the Meatballs",
+        "created_at": "2025-12-23T18:26:59.473000Z",
+        "updated_at": "2026-01-10T14:23:00.733000Z"
+      },
+      {
+        "id": 7060,
+        "name": "Bao Buns",
+        "created_at": "2025-12-23T18:26:51.504000Z",
+        "updated_at": "2026-01-18T01:10:28.413000Z"
+      },
+      {
+        "id": 7059,
+        "name": "Slow Cooked British Pork",
+        "created_at": "2025-12-23T18:26:51.491000Z",
+        "updated_at": "2026-01-17T12:03:29.752000Z"
+      },
+      {
+        "id": 7046,
+        "name": "French Camembert",
+        "created_at": "2025-12-23T18:26:50.886000Z",
+        "updated_at": "2026-01-10T14:23:00.730000Z"
+      },
+      {
+        "id": 6813,
+        "name": "Chorizo Slices",
+        "created_at": "2025-12-23T18:26:00.299000Z",
+        "updated_at": "2026-01-18T00:58:45.019000Z"
+      },
+      {
+        "id": 6811,
+        "name": "Sage",
+        "created_at": "2025-12-23T18:25:59.916000Z",
+        "updated_at": "2026-01-10T14:23:00.729000Z"
+      },
+      {
+        "id": 6810,
+        "name": "Plain Flour for the gravy",
+        "created_at": "2025-12-23T18:25:59.752000Z",
+        "updated_at": "2026-01-18T01:17:26.065000Z"
+      },
+      {
+        "id": 6807,
+        "name": "British Turkey Breast Joint",
+        "created_at": "2025-12-23T18:25:59.556000Z",
+        "updated_at": "2026-01-10T14:23:00.727000Z"
+      },
+      {
+        "id": 6806,
+        "name": "Pigs with their Blankets",
+        "created_at": "2025-12-23T18:25:59.545000Z",
+        "updated_at": "2026-01-18T00:15:22.467000Z"
+      },
+      {
+        "id": 6754,
+        "name": "Cashew Nuts",
+        "created_at": "2025-12-23T18:25:53.785000Z",
+        "updated_at": "2026-01-18T00:05:40.750000Z"
+      },
+      {
+        "id": 6753,
+        "name": "Smashed Avocado",
+        "created_at": "2025-12-23T18:25:53.760000Z",
+        "updated_at": "2026-01-18T01:16:45.000000Z"
+      },
+      {
+        "id": 6752,
+        "name": "Pesto",
+        "created_at": "2025-12-23T18:25:53.599000Z",
+        "updated_at": "2026-01-18T01:15:47.547000Z"
+      },
+      {
+        "id": 6503,
+        "name": "Orange",
+        "created_at": "2025-12-23T18:25:31.613000Z",
+        "updated_at": "2026-01-10T14:23:00.723000Z"
+      },
+      {
+        "id": 6499,
+        "name": "Butter for the Sauce",
+        "created_at": "2025-12-23T18:25:31.391000Z",
+        "updated_at": "2026-01-10T14:23:00.722000Z"
+      },
+      {
+        "id": 6497,
+        "name": "Red Kidney Beans",
+        "created_at": "2025-12-23T18:25:31.373000Z",
+        "updated_at": "2026-01-10T14:23:00.721000Z"
+      },
+      {
+        "id": 6357,
+        "name": "Paneer",
+        "created_at": "2025-12-23T18:25:22.539000Z",
+        "updated_at": "2026-01-18T01:18:01.659000Z"
+      },
+      {
+        "id": 6356,
+        "name": "Pineapple Rings",
+        "created_at": "2025-12-23T18:25:22.521000Z",
+        "updated_at": "2026-01-10T14:23:00.719000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 16,
+      "from": 751,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 800,
+      "total": 1147
+    }
+  }
+}

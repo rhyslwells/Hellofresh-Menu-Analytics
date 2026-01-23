@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 21,
+    "pulled_at_utc": "2026-01-23T22:35:14.243288"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 148,
+        "name": "Boiling Water",
+        "created_at": "2025-12-23T18:22:07.994000Z",
+        "updated_at": "2026-01-17T12:03:29.645000Z"
+      },
+      {
+        "id": 147,
+        "name": "Egg",
+        "created_at": "2025-12-23T18:22:07.992000Z",
+        "updated_at": "2026-01-17T12:03:29.644000Z"
+      },
+      {
+        "id": 146,
+        "name": "Peanut Butter",
+        "created_at": "2025-12-23T18:22:07.990000Z",
+        "updated_at": "2026-01-18T01:17:49.308000Z"
+      },
+      {
+        "id": 145,
+        "name": "Pineapple Chutney",
+        "created_at": "2025-12-23T18:22:07.989000Z",
+        "updated_at": "2026-01-10T14:23:00.552000Z"
+      },
+      {
+        "id": 144,
+        "name": "Sweet Chilli Sauce",
+        "created_at": "2025-12-23T18:22:07.987000Z",
+        "updated_at": "2026-01-10T14:23:00.551000Z"
+      },
+      {
+        "id": 143,
+        "name": "Burger Buns",
+        "created_at": "2025-12-23T18:22:07.986000Z",
+        "updated_at": "2026-01-18T23:01:15.478000Z"
+      },
+      {
+        "id": 142,
+        "name": "Rice Vinegar",
+        "created_at": "2025-12-23T18:22:07.982000Z",
+        "updated_at": "2026-01-17T12:03:29.642000Z"
+      },
+      {
+        "id": 141,
+        "name": "Jerk Paste",
+        "created_at": "2025-12-23T18:22:07.979000Z",
+        "updated_at": "2026-01-10T14:23:00.548000Z"
+      },
+      {
+        "id": 140,
+        "name": "Pear",
+        "created_at": "2025-12-23T18:22:07.979000Z",
+        "updated_at": "2026-01-10T14:23:00.547000Z"
+      },
+      {
+        "id": 139,
+        "name": "Peas",
+        "created_at": "2025-12-23T18:22:07.976000Z",
+        "updated_at": "2026-01-17T12:03:29.641000Z"
+      },
+      {
+        "id": 138,
+        "name": "Indonesian Style Spice Mix",
+        "created_at": "2025-12-23T18:22:07.975000Z",
+        "updated_at": "2026-01-17T12:03:29.640000Z"
+      },
+      {
+        "id": 137,
+        "name": "Roasted White Sesame Seeds",
+        "created_at": "2025-12-23T18:22:07.972000Z",
+        "updated_at": "2026-01-17T12:03:29.640000Z"
+      },
+      {
+        "id": 136,
+        "name": "Coleslaw Mix",
+        "created_at": "2025-12-23T18:22:07.937000Z",
+        "updated_at": "2026-01-17T12:03:29.639000Z"
+      },
+      {
+        "id": 135,
+        "name": "Serrano Ham",
+        "created_at": "2025-12-23T18:22:07.932000Z",
+        "updated_at": "2026-01-17T12:03:29.638000Z"
+      },
+      {
+        "id": 134,
+        "name": "Mixed Beans",
+        "created_at": "2025-12-23T18:22:07.931000Z",
+        "updated_at": "2026-01-17T12:03:29.637000Z"
+      },
+      {
+        "id": 133,
+        "name": "Penne Pasta",
+        "created_at": "2025-12-23T18:22:07.929000Z",
+        "updated_at": "2026-01-18T01:16:47.663000Z"
+      },
+      {
+        "id": 132,
+        "name": "Greek Style Flatbreads",
+        "created_at": "2025-12-23T18:22:07.927000Z",
+        "updated_at": "2026-01-18T01:15:22.241000Z"
+      },
+      {
+        "id": 131,
+        "name": "Chipotle Paste",
+        "created_at": "2025-12-23T18:22:07.925000Z",
+        "updated_at": "2026-01-17T12:03:29.636000Z"
+      },
+      {
+        "id": 130,
+        "name": "Jasmine Rice",
+        "created_at": "2025-12-23T18:22:07.923000Z",
+        "updated_at": "2026-01-17T12:03:29.635000Z"
+      },
+      {
+        "id": 129,
+        "name": "Chickpeas",
+        "created_at": "2025-12-23T18:22:07.922000Z",
+        "updated_at": "2026-01-17T12:03:29.634000Z"
+      },
+      {
+        "id": 128,
+        "name": "Vegan ‘Nduja",
+        "created_at": "2025-12-23T18:22:07.919000Z",
+        "updated_at": "2026-01-18T01:09:27.513000Z"
+      },
+      {
+        "id": 127,
+        "name": "Smoked Paprika",
+        "created_at": "2025-12-23T18:22:07.918000Z",
+        "updated_at": "2026-01-18T23:01:15.677000Z"
+      },
+      {
+        "id": 126,
+        "name": "Tomato Ketchup",
+        "created_at": "2025-12-23T18:22:07.870000Z",
+        "updated_at": "2026-01-18T23:01:15.701000Z"
+      },
+      {
+        "id": 125,
+        "name": "Plain Flour",
+        "created_at": "2025-12-23T18:22:07.868000Z",
+        "updated_at": "2026-01-18T23:01:15.006000Z"
+      },
+      {
+        "id": 124,
+        "name": "Salt for the Rice",
+        "created_at": "2025-12-23T18:22:07.865000Z",
+        "updated_at": "2026-01-11T00:02:32.149000Z"
+      },
+      {
+        "id": 123,
+        "name": "Apple",
+        "created_at": "2025-12-23T18:22:07.864000Z",
+        "updated_at": "2026-01-18T00:12:10.750000Z"
+      },
+      {
+        "id": 122,
+        "name": "Boiled Water for the Rice",
+        "created_at": "2025-12-23T18:22:07.861000Z",
+        "updated_at": "2026-01-10T14:23:00.532000Z"
+      },
+      {
+        "id": 121,
+        "name": "Cheese Sauce",
+        "created_at": "2025-12-23T18:22:07.861000Z",
+        "updated_at": "2026-01-17T12:03:29.630000Z"
+      },
+      {
+        "id": 120,
+        "name": "Plain Taco Tortillas",
+        "created_at": "2025-12-23T18:22:07.857000Z",
+        "updated_at": "2026-01-18T01:14:29.271000Z"
+      },
+      {
+        "id": 119,
+        "name": "Yellow Thai Style Paste",
+        "created_at": "2025-12-23T18:22:07.857000Z",
+        "updated_at": "2026-01-18T00:56:15.751000Z"
+      },
+      {
+        "id": 118,
+        "name": "Thai Style Spice Mix",
+        "created_at": "2025-12-23T18:22:07.853000Z",
+        "updated_at": "2026-01-18T01:17:32.258000Z"
+      },
+      {
+        "id": 117,
+        "name": "Red Chilli",
+        "created_at": "2025-12-23T18:22:07.849000Z",
+        "updated_at": "2026-01-18T01:17:55.274000Z"
+      },
+      {
+        "id": 116,
+        "name": "Sugar for the Pickle",
+        "created_at": "2025-12-23T18:22:07.847000Z",
+        "updated_at": "2026-01-17T12:03:29.627000Z"
+      },
+      {
+        "id": 115,
+        "name": "Udon Noodles",
+        "created_at": "2025-12-23T18:22:07.846000Z",
+        "updated_at": "2026-01-18T00:12:10.745000Z"
+      },
+      {
+        "id": 114,
+        "name": "Baby Corn",
+        "created_at": "2025-12-23T18:22:07.843000Z",
+        "updated_at": "2026-01-10T14:23:00.525000Z"
+      },
+      {
+        "id": 113,
+        "name": "Hoisin Sauce",
+        "created_at": "2025-12-23T18:22:07.842000Z",
+        "updated_at": "2026-01-18T01:17:34.425000Z"
+      },
+      {
+        "id": 112,
+        "name": "Maple Syrup",
+        "created_at": "2025-12-23T18:22:07.842000Z",
+        "updated_at": "2026-01-10T14:23:00.523000Z"
+      },
+      {
+        "id": 111,
+        "name": "Young Pea Pods",
+        "created_at": "2025-12-23T18:22:07.839000Z",
+        "updated_at": "2026-01-17T12:03:29.624000Z"
+      },
+      {
+        "id": 110,
+        "name": "Sushi Rice",
+        "created_at": "2025-12-23T18:22:07.839000Z",
+        "updated_at": "2026-01-17T23:02:24.605000Z"
+      },
+      {
+        "id": 109,
+        "name": "Pak Choi",
+        "created_at": "2025-12-23T18:22:07.834000Z",
+        "updated_at": "2026-01-18T01:18:26.978000Z"
+      },
+      {
+        "id": 108,
+        "name": "Aubergine",
+        "created_at": "2025-12-23T18:22:07.829000Z",
+        "updated_at": "2026-01-17T12:03:29.623000Z"
+      },
+      {
+        "id": 107,
+        "name": "Sriracha Sauce",
+        "created_at": "2025-12-23T18:22:07.814000Z",
+        "updated_at": "2026-01-18T00:12:10.744000Z"
+      },
+      {
+        "id": 106,
+        "name": "Sesame Oil",
+        "created_at": "2025-12-23T18:22:07.811000Z",
+        "updated_at": "2026-01-18T00:10:47.093000Z"
+      },
+      {
+        "id": 105,
+        "name": "Soy Sauce",
+        "created_at": "2025-12-23T18:22:07.808000Z",
+        "updated_at": "2026-01-18T01:15:39.105000Z"
+      },
+      {
+        "id": 104,
+        "name": "Ketjap Manis",
+        "created_at": "2025-12-23T18:22:07.806000Z",
+        "updated_at": "2026-01-17T12:03:29.619000Z"
+      },
+      {
+        "id": 103,
+        "name": "Egg Noodle Nest",
+        "created_at": "2025-12-23T18:22:07.802000Z",
+        "updated_at": "2026-01-18T01:17:07.162000Z"
+      },
+      {
+        "id": 102,
+        "name": "Spring Onion",
+        "created_at": "2025-12-23T18:22:07.798000Z",
+        "updated_at": "2026-01-17T12:03:29.618000Z"
+      },
+      {
+        "id": 101,
+        "name": "Hot Sauce",
+        "created_at": "2025-12-23T18:22:07.797000Z",
+        "updated_at": "2026-01-18T00:12:10.738000Z"
+      },
+      {
+        "id": 100,
+        "name": "Green Beans",
+        "created_at": "2025-12-23T18:22:07.795000Z",
+        "updated_at": "2026-01-17T12:03:29.617000Z"
+      },
+      {
+        "id": 99,
+        "name": "Portobello Mushrooms",
+        "created_at": "2025-12-23T18:22:07.792000Z",
+        "updated_at": "2026-01-17T12:03:29.616000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 21,
+      "from": 1001,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 1050,
+      "total": 1147
+    }
+  }
+}

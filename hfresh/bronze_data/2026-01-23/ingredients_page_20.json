@@ -1,0 +1,321 @@
+{
+  "metadata": {
+    "pull_date": "2026-01-23",
+    "endpoint": "ingredients",
+    "locale": "en-GB",
+    "page": 20,
+    "pulled_at_utc": "2026-01-23T22:35:14.022250"
+  },
+  "payload": {
+    "data": [
+      {
+        "id": 724,
+        "name": "Cooked Beetroot",
+        "created_at": "2025-12-23T18:22:40.427000Z",
+        "updated_at": "2026-01-17T12:03:29.669000Z"
+      },
+      {
+        "id": 361,
+        "name": "British Chicken Thighs",
+        "created_at": "2025-12-23T18:22:23.624000Z",
+        "updated_at": "2026-01-17T12:03:29.668000Z"
+      },
+      {
+        "id": 360,
+        "name": "Teriyaki Sauce",
+        "created_at": "2025-12-23T18:22:23.441000Z",
+        "updated_at": "2026-01-18T01:14:29.763000Z"
+      },
+      {
+        "id": 359,
+        "name": "Houmous",
+        "created_at": "2025-12-23T18:22:23.438000Z",
+        "updated_at": "2026-01-10T14:23:00.595000Z"
+      },
+      {
+        "id": 358,
+        "name": "Blanched Peas, Young Pea Pods and Green Beans",
+        "created_at": "2025-12-23T18:22:23.435000Z",
+        "updated_at": "2026-01-10T14:23:00.594000Z"
+      },
+      {
+        "id": 357,
+        "name": "Szechuan Paste",
+        "created_at": "2025-12-23T18:22:23.432000Z",
+        "updated_at": "2026-01-17T12:03:29.666000Z"
+      },
+      {
+        "id": 356,
+        "name": "Fresh Edamame Beans",
+        "created_at": "2025-12-23T18:22:23.430000Z",
+        "updated_at": "2026-01-17T12:03:29.665000Z"
+      },
+      {
+        "id": 355,
+        "name": "Diced Sweet Potato",
+        "created_at": "2025-12-23T18:22:23.426000Z",
+        "updated_at": "2026-01-10T14:23:00.591000Z"
+      },
+      {
+        "id": 354,
+        "name": "Radishes",
+        "created_at": "2025-12-23T18:22:23.424000Z",
+        "updated_at": "2026-01-10T14:23:00.591000Z"
+      },
+      {
+        "id": 353,
+        "name": "Slow Cooked British Chicken",
+        "created_at": "2025-12-23T18:22:23.422000Z",
+        "updated_at": "2026-01-10T14:23:00.590000Z"
+      },
+      {
+        "id": 352,
+        "name": "Chinese Five Spice",
+        "created_at": "2025-12-23T18:22:23.418000Z",
+        "updated_at": "2026-01-17T12:03:29.664000Z"
+      },
+      {
+        "id": 316,
+        "name": "British Pork and Oregano Sausage Meat",
+        "created_at": "2025-12-23T18:22:17.296000Z",
+        "updated_at": "2026-01-18T01:16:09.606000Z"
+      },
+      {
+        "id": 315,
+        "name": "British Pork Mince",
+        "created_at": "2025-12-23T18:22:17.281000Z",
+        "updated_at": "2026-01-18T00:12:10.763000Z"
+      },
+      {
+        "id": 313,
+        "name": "Unconventional Plant-Based Burgers",
+        "created_at": "2025-12-23T18:22:17.136000Z",
+        "updated_at": "2026-01-18T00:05:26.243000Z"
+      },
+      {
+        "id": 312,
+        "name": "Dried Oregano",
+        "created_at": "2025-12-23T18:22:17.130000Z",
+        "updated_at": "2026-01-17T12:03:29.662000Z"
+      },
+      {
+        "id": 311,
+        "name": "Plant-Based Soy Protein Chicken Pieces",
+        "created_at": "2025-12-23T18:22:17.104000Z",
+        "updated_at": "2026-01-10T14:23:00.585000Z"
+      },
+      {
+        "id": 182,
+        "name": "Mustard Seeds",
+        "created_at": "2025-12-23T18:22:08.293000Z",
+        "updated_at": "2026-01-18T01:18:00.899000Z"
+      },
+      {
+        "id": 181,
+        "name": "Sliced Spring Greens",
+        "created_at": "2025-12-23T18:22:08.289000Z",
+        "updated_at": "2026-01-10T14:23:00.583000Z"
+      },
+      {
+        "id": 180,
+        "name": "Desiccated Coconut",
+        "created_at": "2025-12-23T18:22:08.285000Z",
+        "updated_at": "2026-01-10T14:23:00.582000Z"
+      },
+      {
+        "id": 179,
+        "name": "Echalion Shallot",
+        "created_at": "2025-12-23T18:22:08.278000Z",
+        "updated_at": "2026-01-17T12:03:29.660000Z"
+      },
+      {
+        "id": 178,
+        "name": "Smoky Base Paste",
+        "created_at": "2025-12-23T18:22:08.264000Z",
+        "updated_at": "2026-01-10T14:23:00.580000Z"
+      },
+      {
+        "id": 177,
+        "name": "Chopped Kale",
+        "created_at": "2025-12-23T18:22:08.258000Z",
+        "updated_at": "2026-01-17T12:03:29.660000Z"
+      },
+      {
+        "id": 176,
+        "name": "Plain Naans",
+        "created_at": "2025-12-23T18:22:08.250000Z",
+        "updated_at": "2026-01-18T01:14:50.923000Z"
+      },
+      {
+        "id": 175,
+        "name": "British Streaky Bacon",
+        "created_at": "2025-12-23T18:22:08.246000Z",
+        "updated_at": "2026-01-18T00:12:10.758000Z"
+      },
+      {
+        "id": 174,
+        "name": "Apricot Jam",
+        "created_at": "2025-12-23T18:22:08.244000Z",
+        "updated_at": "2026-01-10T14:23:00.577000Z"
+      },
+      {
+        "id": 173,
+        "name": "Dried Mint",
+        "created_at": "2025-12-23T18:22:08.241000Z",
+        "updated_at": "2026-01-10T14:23:00.576000Z"
+      },
+      {
+        "id": 172,
+        "name": "Tandoori Masala Mix",
+        "created_at": "2025-12-23T18:22:08.239000Z",
+        "updated_at": "2026-01-17T12:03:29.657000Z"
+      },
+      {
+        "id": 171,
+        "name": "Sugar for Pickling",
+        "created_at": "2025-12-23T18:22:08.234000Z",
+        "updated_at": "2026-01-17T12:03:29.657000Z"
+      },
+      {
+        "id": 170,
+        "name": "Char Siu Paste",
+        "created_at": "2025-12-23T18:22:08.231000Z",
+        "updated_at": "2026-01-17T12:03:29.656000Z"
+      },
+      {
+        "id": 169,
+        "name": "Red Thai Style Paste",
+        "created_at": "2025-12-23T18:22:08.206000Z",
+        "updated_at": "2026-01-18T01:17:56.688000Z"
+      },
+      {
+        "id": 167,
+        "name": "Bamboo Skewers",
+        "created_at": "2025-12-23T18:22:08.202000Z",
+        "updated_at": "2026-01-10T14:23:00.571000Z"
+      },
+      {
+        "id": 168,
+        "name": "Olive Oil for the Chimichurri",
+        "created_at": "2025-12-23T18:22:08.202000Z",
+        "updated_at": "2026-01-10T14:23:00.571000Z"
+      },
+      {
+        "id": 166,
+        "name": "Rigatoni Pasta",
+        "created_at": "2025-12-23T18:22:08.201000Z",
+        "updated_at": "2026-01-18T01:17:49.805000Z"
+      },
+      {
+        "id": 165,
+        "name": "Water for the Curry",
+        "created_at": "2025-12-23T18:22:08.201000Z",
+        "updated_at": "2026-01-18T01:17:57.701000Z"
+      },
+      {
+        "id": 164,
+        "name": "Skipjack Tuna in Water",
+        "created_at": "2025-12-23T18:22:08.198000Z",
+        "updated_at": "2026-01-10T14:23:00.568000Z"
+      },
+      {
+        "id": 163,
+        "name": "Flat Leaf Parsley",
+        "created_at": "2025-12-23T18:22:08.196000Z",
+        "updated_at": "2026-01-17T12:03:29.653000Z"
+      },
+      {
+        "id": 162,
+        "name": "Curry Powder Mix",
+        "created_at": "2025-12-23T18:22:08.194000Z",
+        "updated_at": "2026-01-17T12:03:29.653000Z"
+      },
+      {
+        "id": 161,
+        "name": "Olive Oil for the Salsa",
+        "created_at": "2025-12-23T18:22:08.094000Z",
+        "updated_at": "2026-01-17T12:03:29.652000Z"
+      },
+      {
+        "id": 160,
+        "name": "Sugar for the Salsa",
+        "created_at": "2025-12-23T18:22:08.091000Z",
+        "updated_at": "2026-01-10T14:23:00.565000Z"
+      },
+      {
+        "id": 159,
+        "name": "Ricotta Cheese",
+        "created_at": "2025-12-23T18:22:08.088000Z",
+        "updated_at": "2026-01-18T01:16:45.790000Z"
+      },
+      {
+        "id": 158,
+        "name": "Peri Peri Seasoning",
+        "created_at": "2025-12-23T18:22:08.087000Z",
+        "updated_at": "2026-01-18T00:07:01.528000Z"
+      },
+      {
+        "id": 157,
+        "name": "Leek",
+        "created_at": "2025-12-23T18:22:08.084000Z",
+        "updated_at": "2026-01-17T12:03:29.651000Z"
+      },
+      {
+        "id": 156,
+        "name": "Tenderstem® Broccoli",
+        "created_at": "2025-12-23T18:22:08.082000Z",
+        "updated_at": "2026-01-17T12:03:29.650000Z"
+      },
+      {
+        "id": 155,
+        "name": "Kiwi",
+        "created_at": "2025-12-23T18:22:08.075000Z",
+        "updated_at": "2026-01-10T14:23:00.560000Z"
+      },
+      {
+        "id": 154,
+        "name": "Capers",
+        "created_at": "2025-12-23T18:22:08.075000Z",
+        "updated_at": "2026-01-17T12:03:29.649000Z"
+      },
+      {
+        "id": 153,
+        "name": "Salad Potatoes",
+        "created_at": "2025-12-23T18:22:08.067000Z",
+        "updated_at": "2026-01-17T12:03:29.649000Z"
+      },
+      {
+        "id": 152,
+        "name": "Spaghetti",
+        "created_at": "2025-12-23T18:22:08.065000Z",
+        "updated_at": "2026-01-18T01:16:53.315000Z"
+      },
+      {
+        "id": 151,
+        "name": "Tarragon",
+        "created_at": "2025-12-23T18:22:08.060000Z",
+        "updated_at": "2026-01-10T14:23:00.557000Z"
+      },
+      {
+        "id": 150,
+        "name": "Sugar for the Dressing",
+        "created_at": "2025-12-23T18:22:07.999000Z",
+        "updated_at": "2026-01-17T12:03:29.647000Z"
+      },
+      {
+        "id": 149,
+        "name": "Salt",
+        "created_at": "2025-12-23T18:22:07.995000Z",
+        "updated_at": "2026-01-17T12:03:29.646000Z"
+      }
+    ],
+    "meta": {
+      "current_page": 20,
+      "from": 951,
+      "last_page": 23,
+      "per_page": 50,
+      "to": 1000,
+      "total": 1147
+    }
+  }
+}
