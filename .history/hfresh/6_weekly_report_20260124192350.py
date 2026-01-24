@@ -493,36 +493,6 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
     lines.append("![Allergen Density Heatmap](../charts/allergen_density_heatmap.png)")
     lines.append("")
     
-    # Additional Exploratory Insights
-    lines.append("## 5. Ingredient Insights")
-    lines.append("")
-    popular_ings = get_popular_ingredients(spark, limit=10)
-    if popular_ings:
-        lines.append("### Top 10 Most Used Ingredients")
-        for i, ing in enumerate(popular_ings[:10], 1):
-            name = ing.get('ingredient_name', 'Unknown')
-            count = ing.get('recipe_count', 0)
-            lines.append(f"{i}. **{name}** ({count} recipes)")
-    lines.append("")
-    
-    lines.append("## 6. Cuisine Distribution")
-    lines.append("")
-    cuisines = get_cuisine_distribution(spark)
-    if cuisines:
-        for i, cuisine in enumerate(cuisines[:8], 1):
-            cuisine_name = cuisine.get('cuisine', 'Unknown')
-            count = cuisine.get('recipe_count', 0)
-            lines.append(f"{i}. **{cuisine_name}** - {count} recipes")
-    lines.append("")
-    
-    lines.append("## 7. Recipe Lifecycle")
-    lines.append("")
-    lifecycle = get_recipe_lifecycle(spark)
-    if lifecycle:
-        for status, data in lifecycle.items():
-            lines.append(f"- **{status}:** {data.get('count', 0)} recipes (avg {data.get('avg_days', 0)} days active)")
-    lines.append("")
-    
     # Data Quality
     lines.append("## Data Quality Notes")
     lines.append("")
