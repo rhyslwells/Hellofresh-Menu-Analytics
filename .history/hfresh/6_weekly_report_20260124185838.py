@@ -1,202 +1,179 @@
 """
-HFRESH WEEKLY REPORT GENERATOR
+DATABRICKS WEEKLY REPORT GENERATOR
 
 Purpose
 -------
-Generates a weekly summary report after each data pull.
-Shows what's new, what's changed, and key metrics.
+Generates weekly markdown reports with embedded charts after each transformation.
+Pulls insights from Gold layer and creates visualizations.
 
 Output
 ------
-- Markdown report (can be saved to Obsidian vault)
-- Terminal-formatted summary
-- Optional: HTML report
+- Charts (PNG): stored in /Workspace/hfresh/output/charts/
+  - menu_overlap_trends.png
+  - recipe_survival_distribution.png
+  - ingredient_trends.png
+  - allergen_density_heatmap.png
+- Reports (Markdown): stored in /Workspace/hfresh/output/reports/
+  - weekly_report_YYYY-MM-DD.md
+- Git integration: Commits reports to repository
 
 Usage
 -----
-Run after bronze ingestion:
-python 6_weekly_report.py
+In Databricks notebook:
+%run ./6_weekly_report
 
-Or automatically via cron:
-0 7 * * 1 cd /path && python 1_bronze.py && python 2_silver.py && python 6_weekly_report.py
+Or parameterized:
+dbutils.notebook.run("6_weekly_report", 60, {"pull_date": "2026-01-24"})
 """
 
-import sqlite3
-from pathlib import Path
+from pyspark.sql import SparkSession, functions as F
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
+import json
+import os
+import subprocess
+
+# Data visualization
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    import seaborn as sns
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+
+# Databricks
+try:
+    from databricks.sdk.service.files import GetResponse
+    spark = SparkSession.builder.appName("hfresh_weekly_report").getOrCreate()
+    IN_DATABRICKS = True
+except:
+    IN_DATABRICKS = False
 
 
 # ======================
 # Configuration
 # ======================
 
-SILVER_DB = Path("hfresh/silver_data.db")
-REPORTS_DIR = Path("hfresh/reports")
+CATALOG = "hfresh_catalog"
+GOLD_SCHEMA = "hfresh_gold"
+SILVER_SCHEMA = "hfresh_silver"
 
-# Create reports directory
-REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+# Gold tables
+GOLD_WEEKLY_METRICS = f"{CATALOG}.{GOLD_SCHEMA}.weekly_menu_metrics"
+GOLD_RECIPE_SURVIVAL = f"{CATALOG}.{GOLD_SCHEMA}.recipe_survival_metrics"
+GOLD_INGREDIENT_TRENDS = f"{CATALOG}.{GOLD_SCHEMA}.ingredient_trends"
+GOLD_MENU_STABILITY = f"{CATALOG}.{GOLD_SCHEMA}.menu_stability_metrics"
+GOLD_ALLERGEN_DENSITY = f"{CATALOG}.{GOLD_SCHEMA}.allergen_density"
+
+# Silver tables for report details
+SILVER_RECIPES = f"{CATALOG}.{SILVER_SCHEMA}.recipes"
+SILVER_MENUS = f"{CATALOG}.{SILVER_SCHEMA}.menus"
+
+# Output directories (Databricks workspace paths)
+WORKSPACE_ROOT = "/Workspace/hfresh"
+CHARTS_DIR = f"{WORKSPACE_ROOT}/output/charts"
+REPORTS_DIR = f"{WORKSPACE_ROOT}/output/reports"
+GIT_REPO_PATH = "/Workspace/hfresh"  # Git repo root
 
 
 # ======================
 # Report Data Queries
 # ======================
 
-def get_latest_pull_date(conn: sqlite3.Connection) -> str:
-    """Get the most recent pull date."""
-    cursor = conn.cursor()
-    cursor.execute("SELECT MAX(first_seen_date) FROM menus")
-    result = cursor.fetchone()[0]
-    return result if result else datetime.now().strftime("%Y-%m-%d")
-
-
-def get_previous_pull_date(conn: sqlite3.Connection, current_pull: str) -> str | None:
-    """Get the pull date before the current one."""
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT MAX(first_seen_date) 
-        FROM menus 
-        WHERE first_seen_date < ?
-    """, (current_pull,))
-    result = cursor.fetchone()[0]
-    return result
-
-
-def get_menu_summary(conn: sqlite3.Connection, pull_date: str) -> Dict:
-    """Get summary stats for this week's menu."""
-    cursor = conn.cursor()
+def get_latest_week(spark: SparkSession) -> str:
+    """Get the most recent week from Gold metrics."""
+    result = spark.sql(f"""
+        SELECT MAX(week_start_date) FROM {GOLD_WEEKLY_METRICS}
+    """).collect()
     
-    # Menu count and recipe count
-    cursor.execute("""
+    if result and result[0][0]:
+        return str(result[0][0])
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def get_week_summary(spark: SparkSession, week_date: str) -> dict:
+    """Get summary metrics for the week."""
+    df = spark.sql(f"""
         SELECT 
-            COUNT(DISTINCT m.menu_id) as menu_count,
-            COUNT(DISTINCT mr.recipe_id) as recipe_count,
-            m.start_date,
-            m.year_week
-        FROM menus m
-        LEFT JOIN menu_recipes mr ON m.menu_id = mr.menu_id
-        WHERE m.first_seen_date = ?
-        GROUP BY m.start_date, m.year_week
+            week_start_date,
+            total_recipes,
+            unique_recipes,
+            new_recipes,
+            returning_recipes,
+            avg_difficulty,
+            avg_prep_time_minutes
+        FROM {GOLD_WEEKLY_METRICS}
+        WHERE week_start_date = '{week_date}'
         LIMIT 1
-    """, (pull_date,))
+    """)
     
-    row = cursor.fetchone()
-    if not row:
-        return {}
-    
-    return {
-        'menu_count': row[0],
-        'recipe_count': row[1],
-        'start_date': row[2],
-        'year_week': row[3]
-    }
+    if not df.rdd.isEmpty():
+        row = df.collect()[0].asDict()
+        return {
+            'week_date': week_date,
+            'total_recipes': row.get('total_recipes', 0),
+            'unique_recipes': row.get('unique_recipes', 0),
+            'new_recipes': row.get('new_recipes', 0),
+            'returning_recipes': row.get('returning_recipes', 0),
+            'avg_difficulty': row.get('avg_difficulty', 0),
+            'avg_prep_time': row.get('avg_prep_time_minutes', 0),
+        }
+    return {}
 
 
-def get_new_recipes(conn: sqlite3.Connection, pull_date: str) -> List[Tuple]:
-    """Get recipes that appeared for the first time this week."""
-    cursor = conn.cursor()
-    cursor.execute("""
+def get_top_recipes(spark: SparkSession, limit: int = 10) -> list:
+    """Get top recipes by recent appearance."""
+    df = spark.sql(f"""
         SELECT 
+            r.recipe_id,
             r.name,
-            r.cuisine,
             r.difficulty,
-            COUNT(DISTINCT ri.ingredient_id) as ingredient_count
-        FROM recipes r
-        LEFT JOIN recipe_ingredients ri ON r.recipe_id = ri.recipe_id
-        WHERE r.first_seen_date = ?
-        GROUP BY r.recipe_id
-        ORDER BY r.name
-    """, (pull_date,))
+            r.prep_time,
+            COUNT(DISTINCT mr.menu_id) as menu_appearances
+        FROM {SILVER_RECIPES} r
+        LEFT JOIN {CATALOG}.{SILVER_SCHEMA}.menu_recipes mr 
+            ON r.recipe_id = mr.recipe_id AND mr.is_active = TRUE
+        WHERE r.is_active = TRUE
+        GROUP BY r.recipe_id, r.name, r.difficulty, r.prep_time
+        ORDER BY r.last_seen_date DESC, menu_appearances DESC
+        LIMIT {limit}
+    """)
     
-    return cursor.fetchall()
+    return [row.asDict() for row in df.collect()]
 
 
-def get_removed_recipes(conn: sqlite3.Connection, previous_pull: str, current_pull: str) -> List[Tuple]:
-    """Get recipes that disappeared since last week."""
-    cursor = conn.cursor()
-    cursor.execute("""
+def get_menu_stability(spark: SparkSession, limit: int = 5) -> list:
+    """Get recent menu stability metrics."""
+    df = spark.sql(f"""
         SELECT 
-            r.name,
-            r.cuisine,
-            COUNT(DISTINCT mr.menu_id) as total_appearances
-        FROM recipes r
-        LEFT JOIN menu_recipes mr ON r.recipe_id = mr.recipe_id
-        WHERE r.last_seen_date = ?
-        AND r.last_seen_date < ?
-        GROUP BY r.recipe_id
-        ORDER BY r.name
-    """, (previous_pull, current_pull))
+            week_start_date,
+            overlap_with_prev_week,
+            new_recipe_rate,
+            churned_recipe_rate,
+            recipes_added,
+            recipes_removed
+        FROM {GOLD_MENU_STABILITY}
+        ORDER BY week_start_date DESC
+        LIMIT {limit}
+    """)
     
-    return cursor.fetchall()
+    return [row.asDict() for row in df.collect()]
 
 
-def get_top_ingredients_this_week(conn: sqlite3.Connection, pull_date: str) -> List[Tuple]:
-    """Get most used ingredients this week."""
-    cursor = conn.cursor()
-    cursor.execute("""
+def get_ingredient_trends(spark: SparkSession, limit: int = 10) -> list:
+    """Get trending ingredients."""
+    df = spark.sql(f"""
         SELECT 
-            i.name,
-            COUNT(DISTINCT r.recipe_id) as recipe_count
-        FROM ingredients i
-        JOIN recipe_ingredients ri ON i.ingredient_id = ri.ingredient_id
-        JOIN recipes r ON ri.recipe_id = r.recipe_id
-        JOIN menu_recipes mr ON r.recipe_id = mr.recipe_id
-        JOIN menus m ON mr.menu_id = m.menu_id
-        WHERE m.first_seen_date = ?
-        GROUP BY i.ingredient_id
-        ORDER BY recipe_count DESC
-        LIMIT 10
-    """, (pull_date,))
+            ingredient_name,
+            recipe_count,
+            popularity_rank
+        FROM {GOLD_INGREDIENT_TRENDS}
+        WHERE popularity_rank <= {limit}
+        ORDER BY week_start_date DESC, popularity_rank ASC
+        LIMIT {limit}
+    """)
     
-    return cursor.fetchall()
-
-
-def get_cuisine_breakdown(conn: sqlite3.Connection, pull_date: str) -> List[Tuple]:
-    """Get cuisine distribution this week."""
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT 
-            COALESCE(r.cuisine, 'Unknown') as cuisine,
-            COUNT(DISTINCT r.recipe_id) as recipe_count
-        FROM recipes r
-        JOIN menu_recipes mr ON r.recipe_id = mr.recipe_id
-        JOIN menus m ON mr.menu_id = m.menu_id
-        WHERE m.first_seen_date = ?
-        GROUP BY cuisine
-        ORDER BY recipe_count DESC
-    """, (pull_date,))
-    
-    return cursor.fetchall()
-
-
-def get_difficulty_breakdown(conn: sqlite3.Connection, pull_date: str) -> Dict:
-    """Get average difficulty and distribution."""
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT 
-            AVG(r.difficulty) as avg_difficulty,
-            MIN(r.difficulty) as min_difficulty,
-            MAX(r.difficulty) as max_difficulty
-        FROM recipes r
-        JOIN menu_recipes mr ON r.recipe_id = mr.recipe_id
-        JOIN menus m ON mr.menu_id = m.menu_id
-        WHERE m.first_seen_date = ?
-        AND r.difficulty IS NOT NULL
-    """, (pull_date,))
-    
-    row = cursor.fetchone()
-    if row and row[0] is not None:
-        return {
-            'avg': round(row[0], 1),
-            'min': row[1],
-            'max': row[2]
-        }
-    else:
-        return {
-            'avg': None,
-            'min': None,
-            'max': None
-        }
+    return [row.asDict() for row in df.collect()]
 
 
 # ======================

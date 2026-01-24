@@ -1,0 +1,1 @@
+I have the API key how do i ensure that databricks can run 1_bronze.py without loading the key into the repo?

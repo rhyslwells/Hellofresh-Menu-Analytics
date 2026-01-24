@@ -1,23 +1,20 @@
 """
-HFRESH SILVER LAYER TRANSFORMATION
+DATABRICKS SILVER LAYER NORMALIZATION
 
 Purpose
 -------
-Reads bronze-layer snapshots and builds normalized, slowly-changing
-dimension tables. Tracks entity lifecycle (first_seen, last_seen, is_active).
+Transforms Bronze → Silver layer with SCD Type 2 tracking.
+Reads raw API responses and builds normalized, slowly-changing dimension tables.
 
 Architecture
 ------------
-Bronze → Silver transformation that:
-- Extracts recipes from embedded menu responses
-- Deduplicates entities across weekly pulls
-- Tracks temporal state (first/last seen dates)
-- Builds relational bridge tables
-- Enables historical analysis
+- Source: hfresh_bronze.api_responses Delta table
+- Output: hfresh_silver.* Delta tables
+- SCD Tracking: first_seen_date, last_seen_date, is_active
+- MERGE for idempotent updates
 
-Tables Created
---------------
-Core entities:
+Core Tables (SCD Type 2)
+------------------------
 - recipes
 - ingredients
 - allergens
@@ -25,7 +22,8 @@ Core entities:
 - labels
 - menus
 
-Bridge tables (many-to-many):
+Bridge Tables (Many-to-Many)
+----------------------------
 - recipe_ingredients
 - recipe_allergens
 - recipe_tags
@@ -34,22 +32,46 @@ Bridge tables (many-to-many):
 
 Usage
 -----
-python 2_silver.py
+In Databricks notebook:
+%run ./2_silver
+
+Or after Bronze:
+dbutils.notebook.run("2_silver", 60, {"pull_date": "2026-01-24"})
 """
 
+from pyspark.sql import SparkSession, functions as F
+from pyspark.sql.window import Window
 import json
-import sqlite3
-from pathlib import Path
 from datetime import datetime
-from typing import Any
+
+# Databricks imports
+try:
+    spark = SparkSession.builder.appName("hfresh_silver_normalization").getOrCreate()
+    IN_DATABRICKS = True
+except:
+    IN_DATABRICKS = False
 
 
 # ======================
 # Configuration
 # ======================
 
-BRONZE_DIR = Path("hfresh/bronze_data")
-SILVER_DB = Path("hfresh/silver_data.db")
+BRONZE_CATALOG = "hfresh_catalog"
+BRONZE_SCHEMA = "hfresh_bronze"
+SILVER_SCHEMA = "hfresh_silver"
+
+BRONZE_TABLE = f"{BRONZE_CATALOG}.{BRONZE_SCHEMA}.api_responses"
+SILVER_RECIPES = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipes"
+SILVER_INGREDIENTS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.ingredients"
+SILVER_ALLERGENS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.allergens"
+SILVER_TAGS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.tags"
+SILVER_LABELS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.labels"
+SILVER_MENUS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.menus"
+SILVER_RECIPE_INGREDIENTS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_ingredients"
+SILVER_RECIPE_ALLERGENS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_allergens"
+SILVER_RECIPE_TAGS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_tags"
+SILVER_RECIPE_LABELS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_labels"
+SILVER_MENU_RECIPES = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.menu_recipes"
 
 
 # ======================

@@ -1,101 +1,155 @@
 """
-HFRESH GOLD LAYER ANALYTICS
+DATABRICKS GOLD LAYER ANALYTICS
 
 Purpose
 -------
-Creates analytical tables from silver layer data.
-Computes metrics for menu drift, recipe trends, and ingredient patterns.
+Creates 5 analytical tables from Silver layer data.
+Implements blueprint metrics for menu evolution, recipe lifecycle, ingredient trends,
+and menu stability analysis.
 
-Gold Layer Tables
------------------
-- weekly_menu_summary: High-level menu composition metrics
-- recipe_lifecycle: Recipe lifespan and appearance frequency
-- ingredient_trends: Ingredient popularity over time
-- menu_stability: Week-over-week menu change metrics
-- recipe_complexity: Recipe difficulty and ingredient analysis
+Gold Layer Tables (5 total)
+---------------------------
+1. weekly_menu_metrics: Menu composition metrics per week
+2. recipe_survival_metrics: Recipe lifespan analysis
+3. ingredient_trends: Ingredient popularity over time
+4. menu_stability_metrics: Week-over-week menu changes
+5. allergen_density: Allergen coverage analysis
 
 Usage
 -----
-python 3_gold_analytics.py
+In Databricks notebook:
+%run ./3_gold_analytics
+
+Or after Silver transformation:
+dbutils.notebook.run("3_gold_analytics", 60)
 """
 
-import sqlite3
-from pathlib import Path
+from pyspark.sql import SparkSession, functions as F
+from pyspark.sql.window import Window
+from datetime import datetime
+
+# Databricks
+try:
+    spark = SparkSession.builder.appName("hfresh_gold_analytics").getOrCreate()
+    IN_DATABRICKS = True
+except:
+    IN_DATABRICKS = False
 
 
 # ======================
 # Configuration
 # ======================
 
-SILVER_DB = Path("hfresh/silver_data.db")
-GOLD_DB = Path("hfresh/gold_analytics.db")
+CATALOG = "hfresh_catalog"
+SILVER_SCHEMA = "hfresh_silver"
+GOLD_SCHEMA = "hfresh_gold"
+
+# Silver tables
+SILVER_RECIPES = f"{CATALOG}.{SILVER_SCHEMA}.recipes"
+SILVER_MENUS = f"{CATALOG}.{SILVER_SCHEMA}.menus"
+SILVER_INGREDIENTS = f"{CATALOG}.{SILVER_SCHEMA}.ingredients"
+SILVER_ALLERGENS = f"{CATALOG}.{SILVER_SCHEMA}.allergens"
+SILVER_RECIPE_INGREDIENTS = f"{CATALOG}.{SILVER_SCHEMA}.recipe_ingredients"
+SILVER_RECIPE_ALLERGENS = f"{CATALOG}.{SILVER_SCHEMA}.recipe_allergens"
+SILVER_MENU_RECIPES = f"{CATALOG}.{SILVER_SCHEMA}.menu_recipes"
+
+# Gold tables
+GOLD_WEEKLY_METRICS = f"{CATALOG}.{GOLD_SCHEMA}.weekly_menu_metrics"
+GOLD_RECIPE_SURVIVAL = f"{CATALOG}.{GOLD_SCHEMA}.recipe_survival_metrics"
+GOLD_INGREDIENT_TRENDS = f"{CATALOG}.{GOLD_SCHEMA}.ingredient_trends"
+GOLD_MENU_STABILITY = f"{CATALOG}.{GOLD_SCHEMA}.menu_stability_metrics"
+GOLD_ALLERGEN_DENSITY = f"{CATALOG}.{GOLD_SCHEMA}.allergen_density"
 
 
 # ======================
-# Gold Layer Schema
+# Gold Layer Schema - Databricks Delta
 # ======================
 
-GOLD_SCHEMA = """
--- Weekly menu summary
-CREATE TABLE IF NOT EXISTS weekly_menu_summary (
-    pull_date TEXT PRIMARY KEY,
-    menu_count INTEGER,
-    total_recipes INTEGER,
-    unique_recipes INTEGER,
-    avg_recipes_per_menu REAL,
-    total_ingredients INTEGER,
-    unique_ingredients INTEGER
-);
-
--- Recipe lifecycle metrics
-CREATE TABLE IF NOT EXISTS recipe_lifecycle (
-    recipe_id TEXT PRIMARY KEY,
-    recipe_name TEXT,
-    first_seen TEXT,
-    last_seen TEXT,
-    total_appearances INTEGER,
-    weeks_active INTEGER,
-    is_currently_active INTEGER,
-    avg_difficulty REAL,
-    cuisine TEXT
-);
-
--- Ingredient popularity trends
-CREATE TABLE IF NOT EXISTS ingredient_trends (
-    ingredient_id TEXT,
-    ingredient_name TEXT,
-    week_start TEXT,
-    recipe_count INTEGER,
-    menu_count INTEGER,
-    appearance_rank INTEGER,
-    PRIMARY KEY (ingredient_id, week_start)
-);
-
--- Menu stability (week-over-week changes)
-CREATE TABLE IF NOT EXISTS menu_stability (
-    current_week TEXT,
-    previous_week TEXT,
-    recipes_retained INTEGER,
-    recipes_added INTEGER,
-    recipes_removed INTEGER,
-    retention_rate REAL,
-    churn_rate REAL,
-    PRIMARY KEY (current_week)
-);
-
--- Recipe complexity analysis
-CREATE TABLE IF NOT EXISTS recipe_complexity (
-    recipe_id TEXT PRIMARY KEY,
-    recipe_name TEXT,
-    ingredient_count INTEGER,
-    allergen_count INTEGER,
-    tag_count INTEGER,
-    label_count INTEGER,
-    complexity_score REAL,
-    prep_time TEXT,
-    difficulty INTEGER
-);
-"""
+def create_gold_schema(spark: SparkSession) -> None:
+    """Create gold schema and all 5 analytical tables."""
+    
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{GOLD_SCHEMA}")
+    
+    # Table 1: Weekly menu metrics
+    spark.sql(f"""
+        CREATE TABLE IF NOT EXISTS {GOLD_WEEKLY_METRICS} (
+            week_start_date DATE,
+            locale STRING,
+            total_recipes INT,
+            unique_recipes INT,
+            new_recipes INT,
+            returning_recipes INT,
+            avg_difficulty DECIMAL(3,2),
+            avg_prep_time_minutes DECIMAL(5,2),
+            _created_at TIMESTAMP
+        )
+        USING DELTA
+        PARTITIONED BY (week_start_date)
+    """)
+    
+    # Table 2: Recipe survival metrics
+    spark.sql(f"""
+        CREATE TABLE IF NOT EXISTS {GOLD_RECIPE_SURVIVAL} (
+            recipe_id STRING,
+            recipe_name STRING,
+            first_appearance_date DATE,
+            last_appearance_date DATE,
+            total_weeks_active INT,
+            consecutive_weeks_active INT,
+            weeks_since_last_seen INT,
+            is_currently_active BOOLEAN,
+            _created_at TIMESTAMP
+        )
+        USING DELTA
+    """)
+    
+    # Table 3: Ingredient trends
+    spark.sql(f"""
+        CREATE TABLE IF NOT EXISTS {GOLD_INGREDIENT_TRENDS} (
+            ingredient_id STRING,
+            ingredient_name STRING,
+            week_start_date DATE,
+            recipe_count INT,
+            week_over_week_change INT,
+            popularity_rank INT,
+            _created_at TIMESTAMP
+        )
+        USING DELTA
+        PARTITIONED BY (week_start_date)
+    """)
+    
+    # Table 4: Menu stability metrics
+    spark.sql(f"""
+        CREATE TABLE IF NOT EXISTS {GOLD_MENU_STABILITY} (
+            week_start_date DATE,
+            locale STRING,
+            overlap_with_prev_week DECIMAL(5,2),
+            new_recipe_rate DECIMAL(5,2),
+            churned_recipe_rate DECIMAL(5,2),
+            recipes_retained INT,
+            recipes_added INT,
+            recipes_removed INT,
+            _created_at TIMESTAMP
+        )
+        USING DELTA
+        PARTITIONED BY (week_start_date)
+    """)
+    
+    # Table 5: Allergen density analysis
+    spark.sql(f"""
+        CREATE TABLE IF NOT EXISTS {GOLD_ALLERGEN_DENSITY} (
+            week_start_date DATE,
+            allergen_id STRING,
+            allergen_name STRING,
+            recipe_count INT,
+            percentage_of_menu DECIMAL(5,2),
+            _created_at TIMESTAMP
+        )
+        USING DELTA
+        PARTITIONED BY (week_start_date)
+    """)
+    
+    print("✓ Gold schema created")
 
 
 # ======================
