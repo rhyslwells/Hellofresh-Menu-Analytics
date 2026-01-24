@@ -180,17 +180,10 @@ def write_to_bronze(
 # ======================
 
 def create_session() -> requests.Session:
-    """Create authenticated session with API key from Databricks Secrets."""
-    try:
-        api_token = get_api_key()
-    except RuntimeError as e:
-        print(f"⚠️  {e}")
-        print("Falling back to environment variable...")
-        api_token = os.environ.get("HELLOFRESH_API_KEY")
-        if not api_token:
-            raise RuntimeError(
-                "API key not found! Set via Databricks Secrets or HELLOFRESH_API_KEY env var."
-            )
+    """Create authenticated session."""
+    api_token = os.environ.get("HFRESH_API_TOKEN")
+    if not api_token:
+        raise RuntimeError("HFRESH_API_TOKEN environment variable required")
 
     session = requests.Session()
     session.headers.update({

@@ -66,32 +66,6 @@ DATABRICKS_CATALOG = "hfresh_catalog"  # Or 'main' for default catalog
 BRONZE_SCHEMA = "hfresh_bronze"
 BRONZE_TABLE = f"{DATABRICKS_CATALOG}.{BRONZE_SCHEMA}.api_responses"
 
-# API Key Management (Databricks Secrets)
-# ⚠️ NEVER hardcode or commit API keys!
-# Store in Databricks Secret Scope instead (see SETUP_SECRETS.md)
-
-def get_api_key() -> str:
-    """Retrieve API key from Databricks Secrets (secure)."""
-    if not IN_DATABRICKS:
-        raise RuntimeError(
-            "API key retrieval requires Databricks environment. "
-            "Set HELLOFRESH_API_KEY environment variable locally."
-        )
-    
-    try:
-        # Retrieve from Databricks Secret Scope
-        # Scope name: hfresh_secrets
-        # Key name: api_key
-        api_key = dbutils.secrets.get(scope="hfresh_secrets", key="api_key")
-        return api_key
-    except Exception as e:
-        raise RuntimeError(
-            f"Failed to retrieve API key from Databricks Secrets. "
-            f"Ensure secret scope 'hfresh_secrets' with key 'api_key' exists. "
-            f"Error: {e}"
-        )
-
-
 # For local development (fallback)
 BRONZE_DIR_LOCAL = None  # Disabled - use Databricks only
 
@@ -180,17 +154,10 @@ def write_to_bronze(
 # ======================
 
 def create_session() -> requests.Session:
-    """Create authenticated session with API key from Databricks Secrets."""
-    try:
-        api_token = get_api_key()
-    except RuntimeError as e:
-        print(f"⚠️  {e}")
-        print("Falling back to environment variable...")
-        api_token = os.environ.get("HELLOFRESH_API_KEY")
-        if not api_token:
-            raise RuntimeError(
-                "API key not found! Set via Databricks Secrets or HELLOFRESH_API_KEY env var."
-            )
+    """Create authenticated session."""
+    api_token = os.environ.get("HFRESH_API_TOKEN")
+    if not api_token:
+        raise RuntimeError("HFRESH_API_TOKEN environment variable required")
 
     session = requests.Session()
     session.headers.update({
