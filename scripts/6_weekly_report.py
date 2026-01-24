@@ -77,11 +77,13 @@ if IN_DATABRICKS:
     REPORTS_DIR = f"{WORKSPACE_ROOT}/output/reports"
     GIT_REPO_PATH = None  # Git not available in Databricks compute
 else:
-    # Local filesystem paths
-    WORKSPACE_ROOT = os.path.join(os.path.dirname(__file__), "..")
-    CHARTS_DIR = os.path.join(WORKSPACE_ROOT, "hfresh", "output", "charts")
-    REPORTS_DIR = os.path.join(WORKSPACE_ROOT, "hfresh", "output", "reports")
-    GIT_REPO_PATH = os.path.join(WORKSPACE_ROOT, "hfresh")
+    # Local filesystem paths (scripts folder -> parent -> hfresh)
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # Go up from scripts/ to parent
+    HFRESH_DIR = os.path.join(PROJECT_ROOT, "hfresh")
+    CHARTS_DIR = os.path.join(HFRESH_DIR, "output", "charts")
+    REPORTS_DIR = os.path.join(HFRESH_DIR, "output", "reports")
+    GIT_REPO_PATH = HFRESH_DIR
 
 
 # ======================
