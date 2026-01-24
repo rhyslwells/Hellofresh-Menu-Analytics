@@ -500,7 +500,184 @@ def upsert_bridge_relationship(spark: SparkSession, table: str, df, pull_date: s
 # Entity Processors
 # ======================
 
-# Now handled by process_bronze_to_silver() above
+def process_recipe(conn: sqlite3.Connection, recipe: dict, pull_date: str) -> None:
+    """Process a single recipe and its relationships."""
+    if not recipe.get('id'):
+        return
+        
+    fields = {
+        'name': recipe.get('name'),
+        'headline': recipe.get('headline'),
+        'description': recipe.get('description'),
+        'difficulty': recipe.get('difficulty'),
+        'prep_time': recipe.get('prepTime'),
+        'total_time': recipe.get('totalTime'),
+        'serving_size': recipe.get('servingSize'),
+        'cuisine': recipe.get('cuisine', {}).get('name') if recipe.get('cuisine') else None,
+        'image_url': recipe.get('imagePath') or (recipe.get('image', {}).get('link') if recipe.get('image') else None),
+    }
+    
+    upsert_entity(conn, 'recipes', 'recipe_id', recipe, pull_date, fields)
+    
+    # Process ingredients relationship
+    for idx, ingredient in enumerate(recipe.get('ingredients', [])):
+        ing_id = ingredient.get('id')
+        if ing_id:
+            # Also upsert the ingredient itself (from embedded data)
+            ing_fields = {
+                'name': ingredient.get('name'),
+                'family': ingredient.get('family'),
+                'type': ingredient.get('type'),
+            }
+            upsert_entity(conn, 'ingredients', 'ingredient_id', ingredient, pull_date, ing_fields)
+            
+            # Create bridge relationship
+            upsert_bridge(
+                conn,
+                'recipe_ingredients',
+                {'recipe_id': recipe['id'], 'ingredient_id': ing_id},
+                pull_date,
+                {
+                    'quantity': ingredient.get('quantity'),
+                    'unit': ingredient.get('unit'),
+                    'position': idx,
+                }
+            )
+    
+    # Process allergens
+    for allergen in recipe.get('allergens', []):
+        if allergen.get('id'):
+            # Upsert allergen from embedded data
+            allergen_fields = {
+                'name': allergen.get('name'),
+                'type': allergen.get('type'),
+                'icon_url': allergen.get('iconPath'),
+            }
+            upsert_entity(conn, 'allergens', 'allergen_id', allergen, pull_date, allergen_fields)
+            
+            # Create bridge
+            upsert_bridge(
+                conn,
+                'recipe_allergens',
+                {'recipe_id': recipe['id'], 'allergen_id': allergen['id']},
+                pull_date
+            )
+    
+    # Process tags
+    for tag in recipe.get('tags', []):
+        if tag.get('id'):
+            tag_fields = {
+                'name': tag.get('name'),
+                'type': tag.get('type'),
+                'icon_url': tag.get('iconPath'),
+            }
+            upsert_entity(conn, 'tags', 'tag_id', tag, pull_date, tag_fields)
+            
+            upsert_bridge(
+                conn,
+                'recipe_tags',
+                {'recipe_id': recipe['id'], 'tag_id': tag['id']},
+                pull_date
+            )
+    
+    # Process labels
+    for label in recipe.get('labels', []):
+        if label.get('id'):
+            label_fields = {
+                'name': label.get('name'),
+                'description': label.get('description'),
+            }
+            upsert_entity(conn, 'labels', 'label_id', label, pull_date, label_fields)
+            
+            upsert_bridge(
+                conn,
+                'recipe_labels',
+                {'recipe_id': recipe['id'], 'label_id': label['id']},
+                pull_date
+            )
+
+
+def process_ingredients(conn: sqlite3.Connection, payload: dict, pull_date: str) -> None:
+    """Process ingredients from API response (reference data)."""
+    for ingredient in payload.get('data', []):
+        fields = {
+            'name': ingredient.get('name'),
+            'family': ingredient.get('family'),
+            'type': ingredient.get('type'),
+        }
+        upsert_entity(conn, 'ingredients', 'ingredient_id', ingredient, pull_date, fields)
+
+
+def process_allergens(conn: sqlite3.Connection, payload: dict, pull_date: str) -> None:
+    """Process allergens from API response (reference data)."""
+    for allergen in payload.get('data', []):
+        fields = {
+            'name': allergen.get('name'),
+            'type': allergen.get('type'),
+            'icon_url': allergen.get('iconPath'),
+        }
+        upsert_entity(conn, 'allergens', 'allergen_id', allergen, pull_date, fields)
+
+
+def process_tags(conn: sqlite3.Connection, payload: dict, pull_date: str) -> None:
+    """Process tags from API response (reference data)."""
+    for tag in payload.get('data', []):
+        fields = {
+            'name': tag.get('name'),
+            'type': tag.get('type'),
+            'icon_url': tag.get('iconPath'),
+        }
+        upsert_entity(conn, 'tags', 'tag_id', tag, pull_date, fields)
+
+
+def process_labels(conn: sqlite3.Connection, payload: dict, pull_date: str) -> None:
+    """Process labels from API response (reference data)."""
+    for label in payload.get('data', []):
+        fields = {
+            'name': label.get('name'),
+            'description': label.get('description'),
+        }
+        upsert_entity(conn, 'labels', 'label_id', label, pull_date, fields)
+
+
+def process_menus(conn: sqlite3.Connection, payload: dict, pull_date: str) -> None:
+    """
+    Process menus from API response.
+    
+    CRITICAL: Menus now have embedded recipes, so we need to:
+    1. Process the menu entity
+    2. Extract and process all embedded recipes
+    3. Create menu-recipe bridge relationships
+    """
+    for menu in payload.get('data', []):
+        if not menu.get('id'):
+            continue
+            
+        # Process menu entity
+        menu_fields = {
+            'url': menu.get('url'),
+            'year_week': menu.get('year_week'),
+            'start_date': menu.get('start'),
+        }
+        upsert_entity(conn, 'menus', 'menu_id', menu, pull_date, menu_fields)
+        
+        # Process embedded recipes
+        recipes = menu.get('recipes', [])
+        print(f"    Processing menu {menu['id']} with {len(recipes)} embedded recipes")
+        
+        for idx, recipe in enumerate(recipes):
+            # Process the recipe and all its relationships
+            process_recipe(conn, recipe, pull_date)
+            
+            # Create menu-recipe bridge
+            if recipe.get('id'):
+                upsert_bridge(
+                    conn,
+                    'menu_recipes',
+                    {'menu_id': menu['id'], 'recipe_id': recipe['id']},
+                    pull_date,
+                    {'position': idx}
+                )
 
 
 # ======================
@@ -510,58 +687,89 @@ def upsert_bridge_relationship(spark: SparkSession, table: str, df, pull_date: s
 def transform_bronze_to_silver() -> None:
     """
     Main transformation orchestrator.
-    Reads Bronze Delta table and writes to Silver with SCD Type 2.
+    Reads bronze snapshots and builds silver layer.
     """
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  Silver Layer Transformation                             ║
-    ║  Bronze → Normalized SCD Type 2 Tables                   ║
-    ║  Databricks Delta Lake                                   ║
+    ║  Bronze → Normalized Relational Tables                   ║
     ╚══════════════════════════════════════════════════════════╝
     """)
     
-    # Initialize Spark
-    if not IN_DATABRICKS:
-        print("⚠️  Not running in Databricks")
+    # Initialize database
+    print("Initializing silver database...")
+    conn = init_database()
     
-    spark = SparkSession.builder.appName("hfresh_silver_normalization").getOrCreate()
+    # Load all bronze snapshots
+    print("Loading bronze snapshots...")
+    snapshots = load_bronze_snapshots()
+    print(f"Found {len(snapshots)} snapshots\n")
     
-    # Create schema and tables
-    print("Creating silver schema...")
-    create_silver_schema(spark)
+    # Process by endpoint type
+    processors = {
+        'ingredients': process_ingredients,
+        'allergens': process_allergens,
+        'tags': process_tags,
+        'labels': process_labels,
+        'menus': process_menus,  # This now handles embedded recipes
+    }
     
-    # Process bronze data
-    print("\nProcessing bronze snapshots...")
-    process_bronze_to_silver(spark)
+    processed_count = 0
     
-    # Summary
+    for snapshot in snapshots:
+        endpoint = snapshot['metadata']['endpoint']
+        pull_date = snapshot['pull_date']
+        
+        print(f"Processing {endpoint} from {pull_date}...")
+        
+        if endpoint in processors:
+            processors[endpoint](conn, snapshot['payload'], pull_date)
+            processed_count += 1
+            
+            if processed_count % 10 == 0:
+                conn.commit()
+    
+    conn.commit()
+    
+    # Print summary statistics
     print(f"\n{'='*60}")
     print("Transformation complete!")
     print(f"{'='*60}\n")
     
-    # Show row counts
-    tables = [
-        (SILVER_RECIPES, "recipes"),
-        (SILVER_INGREDIENTS, "ingredients"),
-        (SILVER_ALLERGENS, "allergens"),
-        (SILVER_TAGS, "tags"),
-        (SILVER_LABELS, "labels"),
-        (SILVER_MENUS, "menus"),
-        (SILVER_RECIPE_INGREDIENTS, "recipe_ingredients"),
-        (SILVER_RECIPE_ALLERGENS, "recipe_allergens"),
-        (SILVER_RECIPE_TAGS, "recipe_tags"),
-        (SILVER_RECIPE_LABELS, "recipe_labels"),
-        (SILVER_MENU_RECIPES, "menu_recipes"),
-    ]
+    cursor = conn.cursor()
     
-    for table_name, label in tables:
-        try:
-            count = spark.sql(f"SELECT COUNT(*) as cnt FROM {table_name}").collect()[0][0]
-            print(f"  {label:25} {count:>8} records")
-        except:
-            print(f"  {label:25} {0:>8} records")
+    tables = ['recipes', 'ingredients', 'allergens', 'tags', 'labels', 'menus',
+              'recipe_ingredients', 'recipe_allergens', 'recipe_tags', 
+              'recipe_labels', 'menu_recipes']
     
-    print(f"\nSilver schema: {BRONZE_CATALOG}.{SILVER_SCHEMA}\n")
+    for table in tables:
+        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        count = cursor.fetchone()[0]
+        print(f"  {table:25} {count:>8} records")
+    
+    # Show menu composition
+    print(f"\n{'='*60}")
+    print("Menu composition:")
+    print(f"{'='*60}\n")
+    
+    cursor.execute("""
+        SELECT 
+            m.menu_id,
+            m.start_date,
+            m.year_week,
+            COUNT(mr.recipe_id) as recipe_count
+        FROM menus m
+        LEFT JOIN menu_recipes mr ON m.menu_id = mr.menu_id
+        GROUP BY m.menu_id, m.start_date, m.year_week
+        ORDER BY m.start_date DESC
+    """)
+    
+    for row in cursor.fetchall():
+        print(f"  Menu {row[0]:4} | Week {row[2]} ({row[1]}) | {row[3]:3} recipes")
+    
+    print(f"\nDatabase saved to: {SILVER_DB.absolute()}\n")
+    
+    conn.close()
 
 
 # ======================

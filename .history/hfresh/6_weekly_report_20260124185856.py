@@ -320,186 +320,27 @@ def save_report(content: str, pull_date: str) -> Path:
     return filepath
 
 
-def save_report(content: str, pull_date: str) -> Path:
-    """Save markdown report to file."""
-    filename = f"weekly_report_{pull_date}.md"
-    filepath = REPORTS_DIR / filename
-    
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(content)
-    
-    return filepath
-
-
-# ======================
-# Markdown Report Generation
-# ======================
-
-def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
-    """Generate markdown report with embedded chart references."""
-    
-    summary = get_week_summary(spark, week_date)
-    top_recipes = get_top_recipes(spark, limit=10)
-    stability = get_menu_stability(spark, limit=1)
-    ingredient_trends = get_ingredient_trends(spark, limit=10)
-    
-    lines = []
-    lines.append("# HelloFresh Data Analysis Report")
-    lines.append("")
-    lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    lines.append(f"**Analysis Period:** Week of {week_date}")
-    lines.append(f"**Data Source:** Databricks Gold Layer")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    
-    # Executive Summary
-    lines.append("## Executive Summary")
-    lines.append("")
-    if summary:
-        lines.append(f"- **Total Recipes This Week:** {summary.get('total_recipes', 0)}")
-        lines.append(f"- **New Recipes Introduced:** {summary.get('new_recipes', 0)}")
-        lines.append(f"- **Returning Recipes:** {summary.get('returning_recipes', 0)}")
-        lines.append(f"- **Average Difficulty:** {summary.get('avg_difficulty', 'N/A')}")
-        lines.append(f"- **Average Prep Time:** {summary.get('avg_prep_time', 'N/A')} minutes")
-    lines.append("")
-    
-    # Menu Evolution
-    lines.append("## 1. Menu Evolution")
-    lines.append("")
-    lines.append("![Menu Overlap Trends](../charts/menu_overlap_trends.png)")
-    lines.append("")
-    if stability:
-        first_week = stability[0]
-        lines.append("### Key Findings")
-        if first_week.get('overlap_with_prev_week'):
-            lines.append(f"- Week-over-week recipe overlap: {first_week.get('overlap_with_prev_week')}%")
-            lines.append(f"- New recipes added: {first_week.get('recipes_added', 0)}")
-            lines.append(f"- Recipes removed: {first_week.get('recipes_removed', 0)}")
-    lines.append("")
-    
-    # Recipe Lifecycle
-    lines.append("## 2. Recipe Lifecycle Analysis")
-    lines.append("")
-    lines.append("![Recipe Survival Distribution](../charts/recipe_survival_distribution.png)")
-    lines.append("")
-    lines.append("### Top Recipes (Current Week)")
-    if top_recipes:
-        for i, recipe in enumerate(top_recipes[:5], 1):
-            name = recipe.get('name', 'Unknown')
-            difficulty = recipe.get('difficulty', 'N/A')
-            lines.append(f"{i}. **{name}** (Difficulty {difficulty})")
-    lines.append("")
-    
-    # Ingredient Trends
-    lines.append("## 3. Ingredient Trends")
-    lines.append("")
-    lines.append("![Ingredient Popularity Over Time](../charts/ingredient_trends.png)")
-    lines.append("")
-    lines.append("### Trending Ingredients")
-    if ingredient_trends:
-        for i, ing in enumerate(ingredient_trends[:5], 1):
-            name = ing.get('ingredient_name', 'Unknown')
-            count = ing.get('recipe_count', 0)
-            lines.append(f"- **{name}**: {count} recipes")
-    lines.append("")
-    
-    # Allergen Analysis
-    lines.append("## 4. Allergen Analysis")
-    lines.append("")
-    lines.append("![Allergen Density Heatmap](../charts/allergen_density_heatmap.png)")
-    lines.append("")
-    
-    # Data Quality
-    lines.append("## Data Quality Notes")
-    lines.append("")
-    lines.append(f"- **Report Generated:** {datetime.now().isoformat()}")
-    lines.append(f"- **Week Start Date:** {week_date}")
-    lines.append(f"- **Data Source:** Databricks Delta Lake")
-    lines.append("")
-    
-    lines.append("---")
-    lines.append("")
-    lines.append("*This report was generated automatically by the HelloFresh Data Platform.*")
-    lines.append("*Charts are updated weekly and stored in the output/charts/ directory.*")
-    
-    return "\n".join(lines)
-
-
-def commit_report_to_git(week_date: str) -> bool:
-    """Commit report to Git repository."""
-    try:
-        # Change to git repo directory
-        os.chdir(GIT_REPO_PATH)
-        
-        # Git operations
-        report_file = f"output/reports/weekly_report_{week_date}.md"
-        subprocess.run(["git", "add", report_file], check=True, capture_output=True)
-        subprocess.run(["git", "config", "user.name", "hfresh-pipeline"], check=True, capture_output=True)
-        subprocess.run(["git", "config", "user.email", "hfresh@databricks.local"], check=True, capture_output=True)
-        subprocess.run(
-            ["git", "commit", "-m", f"Weekly report {week_date}"],
-            check=True,
-            capture_output=True
-        )
-        subprocess.run(["git", "push"], check=True, capture_output=True)
-        
-        print(f"✓ Report committed to Git")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"⚠️  Git commit failed: {e}")
-        return False
-    except Exception as e:
-        print(f"⚠️  Error during Git operations: {e}")
-        return False
-
-
 # ======================
 # Main Execution
 # ======================
 
 def main():
-    """Generate weekly report with charts and Git commit."""
-    print("""
-    ╔══════════════════════════════════════════════════════════╗
-    ║  Weekly Report Generation                                ║
-    ║  Gold Layer → Markdown + Charts                          ║
-    ║  Databricks Delta Lake                                   ║
-    ╚══════════════════════════════════════════════════════════╝
-    """)
+    """Generate and save weekly report."""
+    conn = sqlite3.connect(SILVER_DB)
     
-    if not IN_DATABRICKS:
-        print("⚠️  Not running in Databricks")
+    # Generate reports
+    markdown_content = generate_markdown_report(conn)
+    pull_date = get_latest_pull_date(conn)
     
-    spark = SparkSession.builder.appName("hfresh_weekly_report").getOrCreate()
+    # Save markdown
+    report_path = save_report(markdown_content, pull_date)
     
-    # Get latest week
-    week_date = get_latest_week(spark)
-    print(f"\nGenerating report for week: {week_date}\n")
+    # Print to terminal
+    generate_terminal_report(conn)
     
-    # Generate charts
-    print("Generating charts...")
-    if HAS_MATPLOTLIB:
-        generate_menu_overlap_chart(spark, f"{CHARTS_DIR}/menu_overlap_trends.png")
-        generate_recipe_survival_chart(spark, f"{CHARTS_DIR}/recipe_survival_distribution.png")
-        generate_ingredient_trends_chart(spark, f"{CHARTS_DIR}/ingredient_trends.png")
-        generate_allergen_density_chart(spark, f"{CHARTS_DIR}/allergen_density_heatmap.png")
-    else:
-        print("⚠️  Matplotlib not available, skipping chart generation")
+    print(f"\n✓ Markdown report: {report_path.name}\n")
     
-    # Generate markdown report
-    print("Generating markdown report...")
-    markdown_content = generate_markdown_report(spark, week_date)
-    report_path = save_report_to_file(markdown_content, week_date)
-    
-    # Commit to Git
-    if report_path:
-        print("Committing to Git...")
-        commit_report_to_git(week_date)
-    
-    print(f"\n{'='*60}")
-    print("✓ Report generation complete!")
-    print(f"{'='*60}\n")
+    conn.close()
 
 
 if __name__ == "__main__":

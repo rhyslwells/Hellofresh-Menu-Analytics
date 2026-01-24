@@ -329,19 +329,10 @@ def main() -> None:
     """Main execution."""
     print("""
     ╔══════════════════════════════════════════════════════════╗
-    ║  HelloFresh Bronze Layer Ingestion                       ║
-    ║  Databricks Delta Tables                                 ║
+    ║  HelloFresh Weekly Menu Ingestion                        ║
+    ║  Menus + Embedded Recipes                                ║
     ╚══════════════════════════════════════════════════════════╝
     """)
-    
-    if not IN_DATABRICKS:
-        print("⚠️  Warning: Not running in Databricks environment")
-        print("   This notebook is designed for Databricks clusters")
-        print("   For local development, use the legacy SQLite version\n")
-    
-    # Initialize Databricks
-    print("Initializing Databricks...")
-    spark = init_databricks()
     
     # Create session
     session = create_session()
@@ -349,10 +340,15 @@ def main() -> None:
     # Verify connectivity
     countries = get_with_rate_limit(session, f"{BASE_URL}/countries")
     print(f"✓ API connected: {len(countries.get('data', []))} countries available")
-    print(f"✓ Bronze table: {BRONZE_TABLE}\n")
+    
+    # Check run status
+    if is_first_run():
+        print(f"✓ First run - will fetch reference data baseline\n")
+    else:
+        print(f"✓ Subsequent run - menus only\n")
     
     # Execute weekly pull
-    results = perform_weekly_pull(session, spark)
+    results = perform_weekly_pull(session)
     
     print(f"\n{'='*60}")
     print(f"✓ Weekly pull complete!")
@@ -363,9 +359,9 @@ def main() -> None:
     for endpoint, data in results.items():
         print(f"  {endpoint:20} {len(data):>5} records")
     
-    # Show row count
-    row_count = spark.sql(f"SELECT COUNT(*) FROM {BRONZE_TABLE}").collect()[0][0]
-    print(f"\nBronze layer total: {row_count} records\n")
+    total_pulls = len([d for d in BRONZE_DIR.iterdir() if d.is_dir()])
+    print(f"\nTotal weekly snapshots: {total_pulls}")
+    print(f"Bronze layer: {BRONZE_DIR.absolute()}\n")
 
 
 if __name__ == "__main__":
