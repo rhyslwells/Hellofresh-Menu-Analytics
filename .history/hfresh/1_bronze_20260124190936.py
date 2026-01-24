@@ -115,37 +115,33 @@ def write_to_bronze(
     payload: dict,
 ) -> None:
     """Write API response to Bronze Delta table."""
-    try:
-        rows = [(
-            pull_date,
-            endpoint,
-            locale,
-            page,
-            json.dumps(payload),
-            datetime.utcnow().isoformat()
-        )]
-        
-        schema = StructType([
-            StructField("pull_date", StringType(), False),
-            StructField("endpoint", StringType(), False),
-            StructField("locale", StringType(), False),
-            StructField("page_number", IntegerType(), False),
-            StructField("payload", StringType(), False),
-            StructField("ingestion_timestamp", StringType(), False)
-        ])
-        
-        df = spark.createDataFrame(rows, schema=schema)
-        df = df.withColumn("pull_date", F.to_date(F.col("pull_date")))
-        df = df.withColumn("ingestion_timestamp", F.to_timestamp(F.col("ingestion_timestamp")))
-        
-        df.write \
-            .format("delta") \
-            .mode("append") \
-            .option("mergeSchema", "true") \
-            .insertInto(BRONZE_TABLE)
-    except Exception as e:
-        print(f"Error writing to Bronze: {e}")
-        raise
+    rows = [(
+        pull_date,
+        endpoint,
+        locale,
+        page,
+        json.dumps(payload),
+        datetime.utcnow().isoformat()
+    )]
+    
+    schema = StructType([
+        StructField("pull_date", StringType(), False),
+        StructField("endpoint", StringType(), False),
+        StructField("locale", StringType(), False),
+        StructField("page_number", IntegerType(), False),
+        StructField("payload", StringType(), False),
+        StructField("ingestion_timestamp", StringType(), False)
+    ])
+    
+    df = spark.createDataFrame(rows, schema=schema)
+    df = df.withColumn("pull_date", F.to_date(F.col("pull_date")))
+    df = df.withColumn("ingestion_timestamp", F.to_timestamp(F.col("ingestion_timestamp")))
+    
+    df.write \
+        .format("delta") \
+        .mode("append") \
+        .option("mergeSchema", "true") \
+        .insertInto(BRONZE_TABLE)
 
 
 # ======================

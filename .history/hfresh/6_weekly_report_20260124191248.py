@@ -31,7 +31,6 @@ from datetime import datetime, timedelta
 import json
 import os
 import subprocess
-from pathlib import Path
 
 # Data visualization
 try:
@@ -44,9 +43,10 @@ except ImportError:
 
 # Databricks
 try:
-    dbutils
+    from databricks.sdk.service.files import GetResponse
+    spark = SparkSession.builder.appName("hfresh_weekly_report").getOrCreate()
     IN_DATABRICKS = True
-except NameError:
+except:
     IN_DATABRICKS = False
 
 

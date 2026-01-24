@@ -360,60 +360,52 @@ def upsert_entity_with_scd(
 def process_bronze_to_silver(spark: SparkSession, pull_date: str = None) -> None:
     """
     Main transformation: Read Bronze → Transform → Write Silver with SCD Type 2.
+    
+    Strategy:
+    1. Read latest bronze data (or specific pull_date)
+    2. Parse JSON payloads
+    3. Extract entities and relationships
+    4. Upsert to Silver tables with SCD Type 2 logic
     """
     if not pull_date:
         # Get latest pull_date from bronze
-        try:
-            latest = spark.sql(f"SELECT MAX(pull_date) as latest FROM {BRONZE_TABLE}") \
-                .collect()[0][0]
-            pull_date = str(latest) if latest else str(datetime.now().date())
-        except:
-            pull_date = str(datetime.now().date())
+        pull_date = spark.sql(f"SELECT MAX(pull_date) FROM {BRONZE_TABLE}") \
+            .collect()[0][0]
     
     print(f"Processing pull_date: {pull_date}")
     
-    try:
-        # Read bronze data for this pull
-        bronze_data = spark.sql(f"""
-            SELECT 
-                pull_date,
-                endpoint,
-                payload
-            FROM {BRONZE_TABLE}
-            WHERE pull_date = '{pull_date}'
-        """)
+    # Read bronze data for this pull
+    bronze_data = spark.sql(f"""
+        SELECT 
+            pull_date,
+            endpoint,
+            payload
+        FROM {BRONZE_TABLE}
+        WHERE pull_date = '{pull_date}'
+    """)
+    
+    # Process each endpoint
+    for row in bronze_data.collect():
+        endpoint = row['endpoint']
+        payload_str = row['payload']
+        payload = json.loads(payload_str)
         
-        if bronze_data.rdd.isEmpty():
-            print("  ⚠️  No bronze data found for this date")
-            return
+        print(f"  Processing {endpoint}...")
         
-        # Process each endpoint
-        for row in bronze_data.collect():
-            endpoint = row['endpoint']
-            payload_str = row['payload']
-            
-            try:
-                payload = json.loads(payload_str)
-            except:
-                print(f"  ⚠️  Could not parse JSON for {endpoint}")
-                continue
-            
-            if endpoint == "menus":
-                process_menus_endpoint(spark, payload, pull_date)
-            elif endpoint == "ingredients":
-                process_reference_endpoint(spark, SILVER_INGREDIENTS, payload, pull_date, 
-                                         ['id', 'name', 'family', 'type'])
-            elif endpoint == "allergens":
-                process_reference_endpoint(spark, SILVER_ALLERGENS, payload, pull_date,
-                                         ['id', 'name', 'type', 'iconPath'])
-            elif endpoint == "tags":
-                process_reference_endpoint(spark, SILVER_TAGS, payload, pull_date,
-                                         ['id', 'name', 'type', 'iconPath'])
-            elif endpoint == "labels":
-                process_reference_endpoint(spark, SILVER_LABELS, payload, pull_date,
-                                         ['id', 'name', 'description'])
-    except Exception as e:
-        print(f"  ⚠️  Error in process_bronze_to_silver: {e}")
+        if endpoint == "menus":
+            process_menus_endpoint(spark, payload, pull_date)
+        elif endpoint == "ingredients":
+            process_reference_endpoint(spark, SILVER_INGREDIENTS, payload, pull_date, 
+                                     ['id', 'name', 'family', 'type'])
+        elif endpoint == "allergens":
+            process_reference_endpoint(spark, SILVER_ALLERGENS, payload, pull_date,
+                                     ['id', 'name', 'type', 'iconPath'])
+        elif endpoint == "tags":
+            process_reference_endpoint(spark, SILVER_TAGS, payload, pull_date,
+                                     ['id', 'name', 'type', 'iconPath'])
+        elif endpoint == "labels":
+            process_reference_endpoint(spark, SILVER_LABELS, payload, pull_date,
+                                     ['id', 'name', 'description'])
 
 
 def process_reference_endpoint(spark: SparkSession, table: str, payload: dict, 
@@ -423,28 +415,17 @@ def process_reference_endpoint(spark: SparkSession, table: str, payload: dict,
     if not data:
         return
     
-    try:
-        # Flatten data to rows
-        rows = []
-        for item in data:
-            row_dict = {}
-            for col in columns:
-                row_dict[col] = item.get(col)
-            rows.append(row_dict)
-        
-        # Create DataFrame
-        df = spark.createDataFrame(rows)
-        
-        # Rename 'id' column to match table schema
-        if 'id' in df.columns:
-            id_col = list(columns)[0]  # First column should be the ID
-            df = df.withColumnRenamed('id', id_col)
-        
-        # Upsert with SCD
-        upsert_entity_with_scd(spark, table, df, pull_date, columns[0])
-        print(f"  ✓ Processed {len(rows)} records to {table.split('.')[-1]}")
-    except Exception as e:
-        print(f"  ⚠️  Error processing {table}: {e}")
+    # Flatten data to rows
+    rows = []
+    for item in data:
+        rows.append({col: item.get(col) for col in columns})
+    
+    # Create DataFrame and upsert
+    df = spark.createDataFrame(rows)
+    df.createOrReplaceTempView("source_data")
+    
+    id_col = "id"
+    upsert_entity_scd(spark, table, id_col, df, pull_date)
 
 
 def process_menus_endpoint(spark: SparkSession, payload: dict, pull_date: str) -> None:
@@ -453,109 +434,89 @@ def process_menus_endpoint(spark: SparkSession, payload: dict, pull_date: str) -
     Handles: menus, recipes, recipe-ingredient relationships, menu-recipe relationships.
     """
     menus_data = payload.get('data', [])
-    if not menus_data:
-        return
     
-    try:
-        # Process menus
-        menu_rows = []
-        recipe_rows = []
-        recipe_ingredient_rows = []
-        menu_recipe_rows = []
+    # Process menus
+    menu_rows = []
+    recipe_rows = []
+    recipe_ingredient_rows = []
+    menu_recipe_rows = []
+    
+    for menu in menus_data:
+        menu_id = menu.get('id')
+        menu_rows.append({
+            'id': menu_id,
+            'url': menu.get('url'),
+            'year_week': menu.get('year_week'),
+            'start_date': menu.get('start'),
+        })
         
-        for menu in menus_data:
-            menu_id = menu.get('id')
-            if not menu_id:
-                continue
-                
-            menu_rows.append({
-                'id': menu_id,
-                'url': menu.get('url'),
-                'year_week': menu.get('year_week'),
-                'start_date': menu.get('start'),
+        # Process embedded recipes
+        for idx, recipe in enumerate(menu.get('recipes', [])):
+            recipe_id = recipe.get('id')
+            recipe_rows.append({
+                'id': recipe_id,
+                'name': recipe.get('name'),
+                'headline': recipe.get('headline'),
+                'description': recipe.get('description'),
+                'difficulty': recipe.get('difficulty'),
+                'prep_time': recipe.get('prepTime'),
+                'total_time': recipe.get('totalTime'),
+                'serving_size': recipe.get('servingSize'),
+                'cuisine': recipe.get('cuisine', {}).get('name'),
+                'image_url': recipe.get('imagePath'),
             })
             
-            # Process embedded recipes
-            for idx, recipe in enumerate(menu.get('recipes', [])):
-                recipe_id = recipe.get('id')
-                if not recipe_id:
-                    continue
-                    
-                recipe_rows.append({
-                    'id': recipe_id,
-                    'name': recipe.get('name'),
-                    'headline': recipe.get('headline'),
-                    'description': recipe.get('description'),
-                    'difficulty': recipe.get('difficulty'),
-                    'prep_time': recipe.get('prepTime'),
-                    'total_time': recipe.get('totalTime'),
-                    'serving_size': recipe.get('servingSize'),
-                    'cuisine': recipe.get('cuisine', {}).get('name') if recipe.get('cuisine') else None,
-                    'image_url': recipe.get('imagePath'),
-                })
-                
-                # Menu-Recipe relationship
-                menu_recipe_rows.append({
-                    'menu_id': menu_id,
+            # Menu-Recipe relationship
+            menu_recipe_rows.append({
+                'menu_id': menu_id,
+                'recipe_id': recipe_id,
+                'position': idx,
+            })
+            
+            # Recipe-Ingredient relationships
+            for ing_idx, ingredient in enumerate(recipe.get('ingredients', [])):
+                recipe_ingredient_rows.append({
                     'recipe_id': recipe_id,
-                    'position': idx,
+                    'ingredient_id': ingredient.get('id'),
+                    'quantity': ingredient.get('quantity'),
+                    'unit': ingredient.get('unit'),
+                    'position': ing_idx,
                 })
-                
-                # Recipe-Ingredient relationships
-                for ing_idx, ingredient in enumerate(recipe.get('ingredients', [])):
-                    ing_id = ingredient.get('id')
-                    if ing_id:
-                        recipe_ingredient_rows.append({
-                            'recipe_id': recipe_id,
-                            'ingredient_id': ing_id,
-                            'quantity': ingredient.get('quantity'),
-                            'unit': ingredient.get('unit'),
-                            'position': ing_idx,
-                        })
-        
-        # Write to Silver
-        if menu_rows:
-            df = spark.createDataFrame(menu_rows)
-            upsert_entity_with_scd(spark, SILVER_MENUS, df, pull_date, 'id')
-            print(f"  ✓ Processed {len(menu_rows)} menus")
-        
-        if recipe_rows:
-            df = spark.createDataFrame(recipe_rows)
-            upsert_entity_with_scd(spark, SILVER_RECIPES, df, pull_date, 'id')
-            print(f"  ✓ Processed {len(recipe_rows)} recipes")
-        
-        if recipe_ingredient_rows:
-            df = spark.createDataFrame(recipe_ingredient_rows)
-            upsert_bridge_relationship(spark, SILVER_RECIPE_INGREDIENTS, df, pull_date)
-            print(f"  ✓ Processed {len(recipe_ingredient_rows)} recipe-ingredient links")
-        
-        if menu_recipe_rows:
-            df = spark.createDataFrame(menu_recipe_rows)
-            upsert_bridge_relationship(spark, SILVER_MENU_RECIPES, df, pull_date)
-            print(f"  ✓ Processed {len(menu_recipe_rows)} menu-recipe links")
-    except Exception as e:
-        print(f"  ⚠️  Error processing menus: {e}")
+    
+    # Write to Silver (with SCD logic for entities, simple insert for relationships)
+    if menu_rows:
+        spark.createDataFrame(menu_rows).createOrReplaceTempView("source_data")
+        upsert_entity_scd(spark, SILVER_MENUS, 'id', spark.sql("SELECT * FROM source_data"), pull_date)
+    
+    if recipe_rows:
+        spark.createDataFrame(recipe_rows).createOrReplaceTempView("source_data")
+        upsert_entity_scd(spark, SILVER_RECIPES, 'id', spark.sql("SELECT * FROM source_data"), pull_date)
+    
+    if recipe_ingredient_rows:
+        df = spark.createDataFrame(recipe_ingredient_rows)
+        upsert_bridge_relationship(spark, SILVER_RECIPE_INGREDIENTS, df, pull_date)
+    
+    if menu_recipe_rows:
+        df = spark.createDataFrame(menu_recipe_rows)
+        upsert_bridge_relationship(spark, SILVER_MENU_RECIPES, df, pull_date)
 
 
 def upsert_bridge_relationship(spark: SparkSession, table: str, df, pull_date: str) -> None:
     """Insert or update bridge table relationships."""
-    try:
-        pull_date_col = F.to_date(F.lit(pull_date))
-        ingestion_ts = F.current_timestamp()
-        
-        df = df \
-            .withColumn("first_seen_date", pull_date_col) \
-            .withColumn("last_seen_date", pull_date_col) \
-            .withColumn("is_active", F.lit(True)) \
-            .withColumn("_ingestion_ts", ingestion_ts)
-        
-        df.write \
-            .format("delta") \
-            .mode("append") \
-            .option("mergeSchema", "true") \
-            .insertInto(table)
-    except Exception as e:
-        print(f"  ⚠️  Error writing bridge {table}: {e}")
+    pull_date_col = F.to_date(F.lit(pull_date))
+    ingestion_ts = F.current_timestamp()
+    
+    df = df \
+        .withColumn("first_seen_date", pull_date_col) \
+        .withColumn("last_seen_date", pull_date_col) \
+        .withColumn("is_active", F.lit(True)) \
+        .withColumn("_ingestion_ts", ingestion_ts)
+    
+    df.write \
+        .format("delta") \
+        .mode("append") \
+        .option("mergeSchema", "true") \
+        .insertInto(table)
 
 
 # ======================
