@@ -264,18 +264,6 @@ def create_silver_schema(spark: SparkSession) -> None:
 
 
 # ======================
-# Database Setup
-# ======================
-
-def init_database() -> sqlite3.Connection:
-    """Initialize SQLite database with schema."""
-    conn = sqlite3.connect(SILVER_DB)
-    conn.executescript(SCHEMA_SQL)
-    conn.commit()
-    return conn
-
-
-# ======================
 # Bronze Data Reader & SCD Merge Functions
 # ======================
 
