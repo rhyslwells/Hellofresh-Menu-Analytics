@@ -1,0 +1,57 @@
+{
+  "name": "hfresh_weekly_pipeline",
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "setup",
+      "notebook_task": {
+        "notebook_path": "/PATH/TO/REPO/scripts/0_setup" 
+      }
+    },
+    {
+      "task_key": "ingest_bronze",
+      "notebook_task": {
+        "notebook_path": "/PATH/TO/REPO/scripts/1_bronze"
+      },
+      "depends_on": [{ "task_key": "setup" }]
+    },
+    {
+      "task_key": "transform_silver",
+      "notebook_task": {
+        "notebook_path": "/PATH/TO/REPO/scripts/2_silver"
+      },
+      "depends_on": [{ "task_key": "ingest_bronze" }]
+    },
+    {
+      "task_key": "compute_gold",
+      "notebook_task": {
+        "notebook_path": "/PATH/TO/REPO/scripts/3_gold_analytics"
+      },
+      "depends_on": [{ "task_key": "transform_silver" }]
+    },
+    {
+      "task_key": "generate_report",
+      "notebook_task": {
+        "notebook_path": "/PATH/TO/REPO/scripts/6_weekly_report"
+      },
+      "depends_on": [{ "task_key": "compute_gold" }]
+    }
+  ],
+  "job_clusters": [
+    {
+      "job_cluster_key": "default-cluster",
+      "new_cluster": {
+        "spark_version": "12.1.x-scala2.12", 
+        "node_type_id": "i3.xlarge", 
+        "num_workers": 2,
+        "init_scripts": [
+          {
+            "dbfs": {
+              "destination": "dbfs:/databricks/init/cluster-init-install-packages.sh"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

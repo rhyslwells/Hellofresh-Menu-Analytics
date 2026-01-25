@@ -203,3 +203,30 @@ Done! ✅ All imports are correct and verified. Here's what I checked:
 **No changes needed to:** 0_setup.py, 1_bronze.py, 2_silver.py, 3_gold_analytics.py
 
 Your scripts folder is ready to use!
+
+
+# Change 4
+
+I'll add a cluster init script and a Job JSON template, then mark the todo items complete.
+
+Created [](file:///c%3A/Users/RhysL/Desktop/Databricks-Explorer/scripts/cluster-init-install-packages.sh)
+
+Created [](file:///c%3A/Users/RhysL/Desktop/Databricks-Explorer/scripts/databricks_job.json)
+
+Completed: *Create Databricks Job JSON for workflow import* (9/10)
+
+Done.
+
+What I added
+- cluster-init-install-packages.sh — cluster init script to install required Python packages.
+- databricks_job.json — Job template (replace notebook paths, cluster config, and DBFS init script path).
+- Marked the two todo items as completed.
+
+Next steps I can do for you
+- Upload the init script to DBFS and provide the exact CLI command to create the job from the JSON.
+- Generate a runnable Databricks Jobs API curl command and example cluster settings.
+- Automatically convert the Python scripts into notebooks if you prefer notebooks for Jobs.
+
+Which of those should I do now?
+
+Made changes.
