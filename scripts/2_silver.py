@@ -1,5 +1,5 @@
 """
-DATABRICKS SILVER LAYER NORMALIZATION
+SQLite SILVER LAYER NORMALIZATION
 
 Purpose
 -------
@@ -8,10 +8,10 @@ Reads raw API responses and builds normalized, slowly-changing dimension tables.
 
 Architecture
 ------------
-- Source: hfresh_bronze.api_responses Delta table
-- Output: hfresh_silver.* Delta tables
+- Source: hfresh.db, api_responses table
+- Output: hfresh.db, silver schema tables
 - SCD Tracking: first_seen_date, last_seen_date, is_active
-- MERGE for idempotent updates
+- UPDATE/INSERT for idempotent upserts
 
 Core Tables (SCD Type 2)
 ------------------------
@@ -32,410 +32,189 @@ Bridge Tables (Many-to-Many)
 
 Usage
 -----
-In Databricks notebook:
-%run ./2_silver
+From command line:
+python scripts/2_silver.py
 
-Or after Bronze:
-dbutils.notebook.run("2_silver", 60, {"pull_date": "2026-01-24"})
+With GitHub Actions (after 1_bronze.py):
+env HELLOFRESH_API_KEY="..." python scripts/2_silver.py
 """
 
-from pyspark.sql import SparkSession, functions as F
-from pyspark.sql.window import Window
 import json
+import sqlite3
 from datetime import datetime
-
-# Databricks imports
-try:
-    spark = SparkSession.builder.appName("hfresh_silver_normalization").getOrCreate()
-    IN_DATABRICKS = True
-except:
-    IN_DATABRICKS = False
+from pathlib import Path
+from typing import Any
 
 
 # ======================
 # Configuration
 # ======================
 
-BRONZE_CATALOG = "hfresh_catalog"
-BRONZE_SCHEMA = "hfresh_bronze"
-SILVER_SCHEMA = "hfresh_silver"
-
-BRONZE_TABLE = f"{BRONZE_CATALOG}.{BRONZE_SCHEMA}.api_responses"
-SILVER_RECIPES = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipes"
-SILVER_INGREDIENTS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.ingredients"
-SILVER_ALLERGENS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.allergens"
-SILVER_TAGS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.tags"
-SILVER_LABELS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.labels"
-SILVER_MENUS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.menus"
-SILVER_RECIPE_INGREDIENTS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_ingredients"
-SILVER_RECIPE_ALLERGENS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_allergens"
-SILVER_RECIPE_TAGS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_tags"
-SILVER_RECIPE_LABELS = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.recipe_labels"
-SILVER_MENU_RECIPES = f"{BRONZE_CATALOG}.{SILVER_SCHEMA}.menu_recipes"
+DB_PATH = Path("hfresh/hfresh.db")
 
 
 # ======================
-# Database Schema - Databricks Delta
+# Database Connection
 # ======================
 
-def create_silver_schema(spark: SparkSession) -> None:
-    """Create silver schema and all tables."""
-    
-    # Create catalog and schema
-    spark.sql(f"CREATE CATALOG IF NOT EXISTS {BRONZE_CATALOG}")
-    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {BRONZE_CATALOG}.{SILVER_SCHEMA}")
-    
-    # Recipes (SCD Type 2)
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_RECIPES} (
-            recipe_id STRING NOT NULL,
-            name STRING,
-            headline STRING,
-            description STRING,
-            difficulty INT,
-            prep_time STRING,
-            total_time STRING,
-            serving_size INT,
-            cuisine STRING,
-            image_url STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Ingredients (SCD Type 2)
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_INGREDIENTS} (
-            ingredient_id STRING NOT NULL,
-            name STRING,
-            family STRING,
-            type STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Allergens (SCD Type 2)
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_ALLERGENS} (
-            allergen_id STRING NOT NULL,
-            name STRING,
-            type STRING,
-            icon_url STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Tags (SCD Type 2)
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_TAGS} (
-            tag_id STRING NOT NULL,
-            name STRING,
-            type STRING,
-            icon_url STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Labels (SCD Type 2)
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_LABELS} (
-            label_id STRING NOT NULL,
-            name STRING,
-            description STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Menus
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_MENUS} (
-            menu_id STRING NOT NULL,
-            url STRING,
-            year_week INT,
-            start_date STRING,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Bridge: Recipe-Ingredients
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_RECIPE_INGREDIENTS} (
-            recipe_id STRING NOT NULL,
-            ingredient_id STRING NOT NULL,
-            quantity STRING,
-            unit STRING,
-            position INT,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Bridge: Recipe-Allergens
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_RECIPE_ALLERGENS} (
-            recipe_id STRING NOT NULL,
-            allergen_id STRING NOT NULL,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Bridge: Recipe-Tags
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_RECIPE_TAGS} (
-            recipe_id STRING NOT NULL,
-            tag_id STRING NOT NULL,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Bridge: Recipe-Labels
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_RECIPE_LABELS} (
-            recipe_id STRING NOT NULL,
-            label_id STRING NOT NULL,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    # Bridge: Menu-Recipes
-    spark.sql(f"""
-        CREATE TABLE IF NOT EXISTS {SILVER_MENU_RECIPES} (
-            menu_id STRING NOT NULL,
-            recipe_id STRING NOT NULL,
-            position INT,
-            first_seen_date DATE NOT NULL,
-            last_seen_date DATE NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            _ingestion_ts TIMESTAMP
-        )
-        USING DELTA
-        PARTITIONED BY (first_seen_date)
-    """)
-    
-    print("✓ Silver schema created")
+def get_db_connection() -> sqlite3.Connection:
+    """Get SQLite database connection."""
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    # Enable foreign keys
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
 
 
 # ======================
-# Bronze Data Reader & SCD Merge Functions
+# SCD Type 2 Upsert Logic
 # ======================
 
 def upsert_entity_with_scd(
-    spark: SparkSession,
-    target_table: str,
-    source_df,
+    conn: sqlite3.Connection,
+    table: str,
+    rows: list[dict],
     pull_date: str,
     id_column: str,
 ) -> None:
     """
-    Upsert entity with SCD Type 2 using Delta MERGE.
-    Handles both new and existing records properly.
-    """
-    try:
-        pull_date_col = F.to_date(F.lit(pull_date))
-        
-        # Add SCD columns to source (only for new records)
-        source_with_dates = source_df \
-            .withColumn("first_seen_date", pull_date_col) \
-            .withColumn("last_seen_date", pull_date_col) \
-            .withColumn("is_active", F.lit(True)) \
-            .withColumn("_ingestion_ts", F.current_timestamp())
-        
-        source_with_dates.createOrReplaceTempView("source_records")
-        
-        # Check if table has data
-        try:
-            spark.sql(f"SELECT COUNT(*) FROM {target_table}").collect()
-            table_exists = True
-        except:
-            table_exists = False
-        
-        if not table_exists or spark.sql(f"SELECT COUNT(*) FROM {target_table}").collect()[0][0] == 0:
-            # First load - just insert everything
-            source_with_dates.write \
-                .format("delta") \
-                .mode("append") \
-                .insertInto(target_table)
-        else:
-            # Upsert with SCD logic
-            merge_sql = f"""
-                MERGE INTO {target_table} t
-                USING source_records s
-                ON t.{id_column} = s.{id_column}
-                WHEN MATCHED THEN
-                    UPDATE SET 
-                        last_seen_date = s.last_seen_date,
-                        is_active = TRUE,
-                        _ingestion_ts = s._ingestion_ts
-                WHEN NOT MATCHED THEN
-                    INSERT (
-                        {id_column},
-                        first_seen_date,
-                        last_seen_date,
-                        is_active,
-                        _ingestion_ts
-                    )
-                    VALUES (
-                        s.{id_column},
-                        s.first_seen_date,
-                        s.last_seen_date,
-                        TRUE,
-                        s._ingestion_ts
-                    )
-            """
-            spark.sql(merge_sql)
-    except Exception as e:
-        print(f"Error during SCD upsert to {target_table}: {e}")
-        # Fallback to append mode
-        print(f"  Falling back to append mode")
-        source_df.write \
-            .format("delta") \
-            .mode("append") \
-            .insertInto(target_table)
-
-
-# ======================
-# Entity Extraction & Processing
-# ======================
-
-def process_bronze_to_silver(spark: SparkSession, pull_date: str = None) -> None:
-    """
-    Main transformation: Read Bronze → Transform → Write Silver with SCD Type 2.
-    """
-    if not pull_date:
-        # Get latest pull_date from bronze
-        try:
-            latest = spark.sql(f"SELECT MAX(pull_date) as latest FROM {BRONZE_TABLE}") \
-                .collect()[0][0]
-            pull_date = str(latest) if latest else str(datetime.now().date())
-        except:
-            pull_date = str(datetime.now().date())
+    Upsert entity with SCD Type 2 using UPDATE + INSERT pattern.
     
-    print(f"Processing pull_date: {pull_date}")
-    
-    try:
-        # Read bronze data for this pull
-        bronze_data = spark.sql(f"""
-            SELECT 
-                pull_date,
-                endpoint,
-                payload
-            FROM {BRONZE_TABLE}
-            WHERE pull_date = '{pull_date}'
-        """)
-        
-        if bronze_data.rdd.isEmpty():
-            print("  ⚠️  No bronze data found for this date")
-            return
-        
-        # Process each endpoint
-        for row in bronze_data.collect():
-            endpoint = row['endpoint']
-            payload_str = row['payload']
-            
-            try:
-                payload = json.loads(payload_str)
-            except:
-                print(f"  ⚠️  Could not parse JSON for {endpoint}")
-                continue
-            
-            if endpoint == "menus":
-                process_menus_endpoint(spark, payload, pull_date)
-            elif endpoint == "ingredients":
-                process_reference_endpoint(spark, SILVER_INGREDIENTS, payload, pull_date, 
-                                         ['id', 'name', 'family', 'type'])
-            elif endpoint == "allergens":
-                process_reference_endpoint(spark, SILVER_ALLERGENS, payload, pull_date,
-                                         ['id', 'name', 'type', 'iconPath'])
-            elif endpoint == "tags":
-                process_reference_endpoint(spark, SILVER_TAGS, payload, pull_date,
-                                         ['id', 'name', 'type', 'iconPath'])
-            elif endpoint == "labels":
-                process_reference_endpoint(spark, SILVER_LABELS, payload, pull_date,
-                                         ['id', 'name', 'description'])
-    except Exception as e:
-        print(f"  ⚠️  Error in process_bronze_to_silver: {e}")
-
-
-def process_reference_endpoint(spark: SparkSession, table: str, payload: dict, 
-                               pull_date: str, columns: list) -> None:
-    """Process reference data (ingredients, allergens, tags, labels)."""
-    data = payload.get('data', [])
-    if not data:
+    Strategy:
+    1. UPDATE existing records: set is_active=1, last_seen_date=pull_date if ID still exists
+    2. INSERT new records: set first_seen_date=pull_date, is_active=1
+    3. (Optional) Deactivate records not in this pull
+    """
+    if not rows:
         return
     
+    cursor = conn.cursor()
+    
     try:
-        # Flatten data to rows
-        rows = []
-        for item in data:
-            row_dict = {}
-            for col in columns:
-                row_dict[col] = item.get(col)
-            rows.append(row_dict)
+        # Extract all IDs from incoming records
+        incoming_ids = [row.get(id_column) for row in rows]
         
-        # Create DataFrame
-        df = spark.createDataFrame(rows)
+        # Step 1: Deactivate records that are no longer in source (optional, be careful)
+        # For now, we just update existing + insert new
         
-        # Rename 'id' column to match table schema
-        if 'id' in df.columns:
-            id_col = list(columns)[0]  # First column should be the ID
-            df = df.withColumnRenamed('id', id_col)
+        # Step 2: UPDATE existing records with new data + update last_seen_date
+        for row in rows:
+            record_id = row.get(id_column)
+            if not record_id:
+                continue
+            
+            # Build the SET clause dynamically
+            set_clauses = []
+            params = []
+            
+            for col, val in row.items():
+                if col != id_column:  # Don't update ID
+                    set_clauses.append(f"  {col} = ?")
+                    params.append(val)
+            
+            set_clauses.append("  last_seen_date = ?")
+            set_clauses.append("  is_active = 1")
+            set_clauses.append("  _ingestion_ts = ?")
+            params.append(pull_date)
+            params.append(datetime.utcnow().isoformat())
+            
+            # Try UPDATE first
+            update_sql = f"""
+            UPDATE {table}
+            SET {', '.join(set_clauses)}
+            WHERE {id_column} = ?
+            """
+            params.append(record_id)
+            
+            cursor.execute(update_sql, params)
+            
+            # If no rows updated, INSERT
+            if cursor.rowcount == 0:
+                # Build INSERT for this record
+                cols = list(row.keys()) + [
+                    'first_seen_date',
+                    'last_seen_date',
+                    'is_active',
+                    '_ingestion_ts'
+                ]
+                placeholders = ', '.join(['?' for _ in cols])
+                insert_sql = f"""
+                INSERT INTO {table} ({', '.join(cols)})
+                VALUES ({placeholders})
+                """
+                
+                values = [row.get(col) for col in list(row.keys())]
+                values.extend([
+                    pull_date,
+                    pull_date,
+                    1,
+                    datetime.utcnow().isoformat()
+                ])
+                
+                cursor.execute(insert_sql, values)
         
-        # Upsert with SCD
-        upsert_entity_with_scd(spark, table, df, pull_date, columns[0])
-        print(f"  ✓ Processed {len(rows)} records to {table.split('.')[-1]}")
+        conn.commit()
     except Exception as e:
-        print(f"  ⚠️  Error processing {table}: {e}")
+        conn.rollback()
+        print(f"Error during SCD upsert to {table}: {e}")
+        raise
 
 
-def process_menus_endpoint(spark: SparkSession, payload: dict, pull_date: str) -> None:
+def upsert_bridge_relationship(
+    conn: sqlite3.Connection,
+    table: str,
+    rows: list[dict],
+    pull_date: str,
+) -> None:
+    """Insert or update bridge table relationships with SCD columns."""
+    if not rows:
+        return
+    
+    cursor = conn.cursor()
+    
+    try:
+        for row in rows:
+            # Get the ID columns (typically two foreign keys)
+            cols = list(row.keys()) + [
+                'first_seen_date',
+                'last_seen_date',
+                'is_active',
+                '_ingestion_ts'
+            ]
+            placeholders = ', '.join(['?' for _ in cols])
+            
+            sql = f"""
+            INSERT OR IGNORE INTO {table} ({', '.join(cols)})
+            VALUES ({placeholders})
+            """
+            
+            values = [row.get(col) for col in list(row.keys())]
+            values.extend([
+                pull_date,
+                pull_date,
+                1,
+                datetime.utcnow().isoformat()
+            ])
+            
+            cursor.execute(sql, values)
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error during bridge upsert to {table}: {e}")
+        raise
+
+
+
+# ======================
+# Entity Processing
+# ======================
+
+def process_menus_endpoint(
+    conn: sqlite3.Connection,
+    payload: dict,
+    pull_date: str
+) -> None:
     """
     Process menus with embedded recipes.
     Handles: menus, recipes, recipe-ingredient relationships, menu-recipe relationships.
@@ -445,7 +224,6 @@ def process_menus_endpoint(spark: SparkSession, payload: dict, pull_date: str) -
         return
     
     try:
-        # Process menus
         menu_rows = []
         recipe_rows = []
         recipe_ingredient_rows = []
@@ -503,54 +281,122 @@ def process_menus_endpoint(spark: SparkSession, payload: dict, pull_date: str) -
         
         # Write to Silver
         if menu_rows:
-            df = spark.createDataFrame(menu_rows)
-            upsert_entity_with_scd(spark, SILVER_MENUS, df, pull_date, 'id')
+            upsert_entity_with_scd(conn, 'menus', menu_rows, pull_date, 'id')
             print(f"  ✓ Processed {len(menu_rows)} menus")
         
         if recipe_rows:
-            df = spark.createDataFrame(recipe_rows)
-            upsert_entity_with_scd(spark, SILVER_RECIPES, df, pull_date, 'id')
+            upsert_entity_with_scd(conn, 'recipes', recipe_rows, pull_date, 'id')
             print(f"  ✓ Processed {len(recipe_rows)} recipes")
         
         if recipe_ingredient_rows:
-            df = spark.createDataFrame(recipe_ingredient_rows)
-            upsert_bridge_relationship(spark, SILVER_RECIPE_INGREDIENTS, df, pull_date)
+            upsert_bridge_relationship(conn, 'recipe_ingredients', recipe_ingredient_rows, pull_date)
             print(f"  ✓ Processed {len(recipe_ingredient_rows)} recipe-ingredient links")
         
         if menu_recipe_rows:
-            df = spark.createDataFrame(menu_recipe_rows)
-            upsert_bridge_relationship(spark, SILVER_MENU_RECIPES, df, pull_date)
+            upsert_bridge_relationship(conn, 'menu_recipes', menu_recipe_rows, pull_date)
             print(f"  ✓ Processed {len(menu_recipe_rows)} menu-recipe links")
     except Exception as e:
         print(f"  ⚠️  Error processing menus: {e}")
 
 
-def upsert_bridge_relationship(spark: SparkSession, table: str, df, pull_date: str) -> None:
-    """Insert or update bridge table relationships."""
+def process_reference_endpoint(
+    conn: sqlite3.Connection,
+    table: str,
+    payload: dict,
+    pull_date: str,
+    columns: list
+) -> None:
+    """Process reference data (ingredients, allergens, tags, labels)."""
+    data = payload.get('data', [])
+    if not data:
+        return
+    
     try:
-        pull_date_col = F.to_date(F.lit(pull_date))
-        ingestion_ts = F.current_timestamp()
+        # Flatten data to rows, mapping API column names to DB column names
+        rows = []
+        for item in data:
+            row_dict = {}
+            for col in columns:
+                # Map common API patterns to DB column names
+                api_field = col
+                if col.endswith('_id'):
+                    api_field = 'id'
+                elif col == 'icon_url':
+                    api_field = 'iconPath'
+                
+                row_dict[col] = item.get(api_field)
+            rows.append(row_dict)
         
-        df = df \
-            .withColumn("first_seen_date", pull_date_col) \
-            .withColumn("last_seen_date", pull_date_col) \
-            .withColumn("is_active", F.lit(True)) \
-            .withColumn("_ingestion_ts", ingestion_ts)
-        
-        df.write \
-            .format("delta") \
-            .mode("append") \
-            .option("mergeSchema", "true") \
-            .insertInto(table)
+        # Upsert with SCD
+        upsert_entity_with_scd(conn, table, rows, pull_date, columns[0])
+        print(f"  ✓ Processed {len(rows)} records to {table}")
     except Exception as e:
-        print(f"  ⚠️  Error writing bridge {table}: {e}")
+        print(f"  ⚠️  Error processing {table}: {e}")
 
 
-# ======================
-# Entity Processors
-# ======================
-
-# Now handled by process_bronze_to_silver() above
+def process_bronze_to_silver(conn: sqlite3.Connection, pull_date: str = None) -> None:
+    """
+    Main transformation: Read Bronze → Transform → Write Silver with SCD Type 2.
+    """
+    cursor = conn.cursor()
+    
+    # Get latest pull_date if not specified
+    if not pull_date:
+        cursor.execute("SELECT MAX(pull_date) FROM api_responses")
+        result = cursor.fetchone()
+        pull_date = result[0] if result and result[0] else str(datetime.now().date())
+    
+    print(f"Processing pull_date: {pull_date}")
+    
+    try:
+        # Read bronze data for this pull
+        cursor.execute("""
+            SELECT DISTINCT endpoint, payload
+            FROM api_responses
+            WHERE pull_date = ?
+            ORDER BY endpoint
+        """, (pull_date,))
+        
+        rows = cursor.fetchall()
+        if not rows:
+            print("  ⚠️  No bronze data found for this date")
+            return
+        
+        # Process each endpoint
+        for row in rows:
+            endpoint = row[0]
+            payload_str = row[1]
+            
+            try:
+                payload = json.loads(payload_str)
+            except:
+                print(f"  ⚠️  Could not parse JSON for {endpoint}")
+                continue
+            
+            if endpoint == "menus":
+                process_menus_endpoint(conn, payload, pull_date)
+            elif endpoint == "ingredients":
+                process_reference_endpoint(
+                    conn, 'ingredients', payload, pull_date,
+                    ['ingredient_id', 'name', 'family', 'type']
+                )
+            elif endpoint == "allergens":
+                process_reference_endpoint(
+                    conn, 'allergens', payload, pull_date,
+                    ['allergen_id', 'name', 'type', 'icon_url']
+                )
+            elif endpoint == "tags":
+                process_reference_endpoint(
+                    conn, 'tags', payload, pull_date,
+                    ['tag_id', 'name', 'type', 'icon_url']
+                )
+            elif endpoint == "labels":
+                process_reference_endpoint(
+                    conn, 'labels', payload, pull_date,
+                    ['label_id', 'name', 'description']
+                )
+    except Exception as e:
+        print(f"  ⚠️  Error in process_bronze_to_silver: {e}")
 
 
 # ======================
@@ -560,29 +406,21 @@ def upsert_bridge_relationship(spark: SparkSession, table: str, df, pull_date: s
 def transform_bronze_to_silver() -> None:
     """
     Main transformation orchestrator.
-    Reads Bronze Delta table and writes to Silver with SCD Type 2.
+    Reads Bronze table and writes to Silver with SCD Type 2.
     """
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  Silver Layer Transformation                             ║
     ║  Bronze → Normalized SCD Type 2 Tables                   ║
-    ║  Databricks Delta Lake                                   ║
+    ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
     
-    # Initialize Spark
-    if not IN_DATABRICKS:
-        print("⚠️  Not running in Databricks")
-    
-    spark = SparkSession.builder.appName("hfresh_silver_normalization").getOrCreate()
-    
-    # Create schema and tables
-    print("Creating silver schema...")
-    create_silver_schema(spark)
+    conn = get_db_connection()
     
     # Process bronze data
     print("\nProcessing bronze snapshots...")
-    process_bronze_to_silver(spark)
+    process_bronze_to_silver(conn)
     
     # Summary
     print(f"\n{'='*60}")
@@ -590,28 +428,31 @@ def transform_bronze_to_silver() -> None:
     print(f"{'='*60}\n")
     
     # Show row counts
+    cursor = conn.cursor()
     tables = [
-        (SILVER_RECIPES, "recipes"),
-        (SILVER_INGREDIENTS, "ingredients"),
-        (SILVER_ALLERGENS, "allergens"),
-        (SILVER_TAGS, "tags"),
-        (SILVER_LABELS, "labels"),
-        (SILVER_MENUS, "menus"),
-        (SILVER_RECIPE_INGREDIENTS, "recipe_ingredients"),
-        (SILVER_RECIPE_ALLERGENS, "recipe_allergens"),
-        (SILVER_RECIPE_TAGS, "recipe_tags"),
-        (SILVER_RECIPE_LABELS, "recipe_labels"),
-        (SILVER_MENU_RECIPES, "menu_recipes"),
+        ('recipes', 'recipes'),
+        ('ingredients', 'ingredients'),
+        ('allergens', 'allergens'),
+        ('tags', 'tags'),
+        ('labels', 'labels'),
+        ('menus', 'menus'),
+        ('recipe_ingredients', 'recipe_ingredients'),
+        ('recipe_allergens', 'recipe_allergens'),
+        ('recipe_tags', 'recipe_tags'),
+        ('recipe_labels', 'recipe_labels'),
+        ('menu_recipes', 'menu_recipes'),
     ]
     
     for table_name, label in tables:
         try:
-            count = spark.sql(f"SELECT COUNT(*) as cnt FROM {table_name}").collect()[0][0]
-            print(f"  {label:25} {count:>8} records")
+            cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE is_active = 1")
+            count = cursor.fetchone()[0]
+            print(f"  {label:25} {count:>8} records (active)")
         except:
             print(f"  {label:25} {0:>8} records")
     
-    print(f"\nSilver schema: {BRONZE_CATALOG}.{SILVER_SCHEMA}\n")
+    print(f"\nSilver layer: {DB_PATH}\n")
+    conn.close()
 
 
 # ======================

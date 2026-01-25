@@ -2,3 +2,12 @@ venv
 .history
 .vscode
 setup-databricks-secrets.ps1
+
+# SQLite database
+hfresh/hfresh.db
+hfresh/hfresh_backup.db
+
+# Output files (except reports in git, but keep charts out)
+hfresh/output/charts/
+*.png
+*.csv

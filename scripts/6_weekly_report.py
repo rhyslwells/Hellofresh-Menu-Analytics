@@ -1,5 +1,5 @@
 """
-DATABRICKS WEEKLY REPORT GENERATOR
+SQLite WEEKLY REPORT GENERATOR
 
 Purpose
 -------
@@ -8,102 +8,81 @@ Pulls insights from Gold layer and creates visualizations.
 
 Output
 ------
-- Charts (PNG): stored in /Workspace/hfresh/output/charts/
+- Charts (PNG): stored in hfresh/output/charts/
   - menu_overlap_trends.png
   - recipe_survival_distribution.png
   - ingredient_trends.png
   - allergen_density_heatmap.png
-- Reports (Markdown): stored in /Workspace/hfresh/output/reports/
+- Reports (Markdown): stored in hfresh/output/reports/
   - weekly_report_YYYY-MM-DD.md
 - Git integration: Commits reports to repository
 
 Usage
 -----
-In Databricks notebook:
-%run ./6_weekly_report
+From command line:
+python scripts/6_weekly_report.py
 
-Or parameterized:
-dbutils.notebook.run("6_weekly_report", 60, {"pull_date": "2026-01-24"})
+With GitHub Actions (after 3_gold_analytics.py):
+python scripts/6_weekly_report.py
 """
 
-from pyspark.sql import SparkSession, functions as F
-from datetime import datetime, timedelta
-import json
-import os
-import subprocess
+import sqlite3
 from pathlib import Path
+from datetime import datetime
+import subprocess
+import os
 
 # Data visualization
 try:
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     import seaborn as sns
+    import pandas as pd
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
-
-# Databricks
-try:
-    dbutils
-    IN_DATABRICKS = True
-except NameError:
-    IN_DATABRICKS = False
 
 
 # ======================
 # Configuration
 # ======================
 
-CATALOG = "hfresh_catalog"
-GOLD_SCHEMA = "hfresh_gold"
-SILVER_SCHEMA = "hfresh_silver"
+DB_PATH = Path("hfresh/hfresh.db")
+PROJECT_ROOT = Path.cwd()
+CHARTS_DIR = PROJECT_ROOT / "hfresh" / "output" / "charts"
+REPORTS_DIR = PROJECT_ROOT / "hfresh" / "output" / "reports"
 
-# Gold tables
-GOLD_WEEKLY_METRICS = f"{CATALOG}.{GOLD_SCHEMA}.weekly_menu_metrics"
-GOLD_RECIPE_SURVIVAL = f"{CATALOG}.{GOLD_SCHEMA}.recipe_survival_metrics"
-GOLD_INGREDIENT_TRENDS = f"{CATALOG}.{GOLD_SCHEMA}.ingredient_trends"
-GOLD_MENU_STABILITY = f"{CATALOG}.{GOLD_SCHEMA}.menu_stability_metrics"
-GOLD_ALLERGEN_DENSITY = f"{CATALOG}.{GOLD_SCHEMA}.allergen_density"
 
-# Silver tables for report details
-SILVER_RECIPES = f"{CATALOG}.{SILVER_SCHEMA}.recipes"
-SILVER_MENUS = f"{CATALOG}.{SILVER_SCHEMA}.menus"
+# ======================
+# Database Connection
+# ======================
 
-# Output directories
-if IN_DATABRICKS:
-    # Databricks workspace paths
-    WORKSPACE_ROOT = "/Workspace/hfresh"
-    CHARTS_DIR = f"{WORKSPACE_ROOT}/output/charts"
-    REPORTS_DIR = f"{WORKSPACE_ROOT}/output/reports"
-    GIT_REPO_PATH = None  # Git not available in Databricks compute
-else:
-    # Local filesystem paths (scripts folder -> parent -> hfresh)
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # Go up from scripts/ to parent
-    HFRESH_DIR = os.path.join(PROJECT_ROOT, "hfresh")
-    CHARTS_DIR = os.path.join(HFRESH_DIR, "output", "charts")
-    REPORTS_DIR = os.path.join(HFRESH_DIR, "output", "reports")
-    GIT_REPO_PATH = HFRESH_DIR
+def get_db_connection() -> sqlite3.Connection:
+    """Get SQLite database connection."""
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 # ======================
 # Report Data Queries
 # ======================
 
-def get_latest_week(spark: SparkSession) -> str:
+def get_latest_week(conn: sqlite3.Connection) -> str:
     """Get the most recent week from Gold metrics."""
-    result = spark.sql(f"""
-        SELECT MAX(week_start_date) FROM {GOLD_WEEKLY_METRICS}
-    """).collect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(week_start_date) FROM weekly_menu_metrics")
+    result = cursor.fetchone()
     
-    if result and result[0][0]:
-        return str(result[0][0])
+    if result and result[0]:
+        return result[0]
     return datetime.now().strftime("%Y-%m-%d")
 
 
-def get_week_summary(spark: SparkSession, week_date: str) -> dict:
+def get_week_summary(conn: sqlite3.Connection, week_date: str) -> dict:
     """Get summary metrics for the week."""
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             week_start_date,
             total_recipes,
@@ -112,53 +91,55 @@ def get_week_summary(spark: SparkSession, week_date: str) -> dict:
             returning_recipes,
             avg_difficulty,
             avg_prep_time_minutes
-        FROM {GOLD_WEEKLY_METRICS}
-        WHERE week_start_date = '{week_date}'
+        FROM weekly_menu_metrics
+        WHERE week_start_date = ?
         LIMIT 1
-    """)
+    """, (week_date,))
     
-    if not df.rdd.isEmpty():
-        row = df.collect()[0].asDict()
+    row = cursor.fetchone()
+    if row:
         return {
             'week_date': week_date,
-            'total_recipes': row.get('total_recipes', 0),
-            'unique_recipes': row.get('unique_recipes', 0),
-            'new_recipes': row.get('new_recipes', 0),
-            'returning_recipes': row.get('returning_recipes', 0),
-            'avg_difficulty': row.get('avg_difficulty', 0),
-            'avg_prep_time': row.get('avg_prep_time_minutes', 0),
+            'total_recipes': row[1],
+            'unique_recipes': row[2],
+            'new_recipes': row[3],
+            'returning_recipes': row[4],
+            'avg_difficulty': row[5],
+            'avg_prep_time': row[6],
         }
     return {}
 
 
-def get_top_recipes(spark: SparkSession, limit: int = 10) -> list:
+def get_top_recipes(conn: sqlite3.Connection, limit: int = 10) -> list:
     """Get top recipes by recent appearance."""
     try:
-        df = spark.sql(f"""
+        cursor = conn.cursor()
+        cursor.execute("""
             SELECT 
                 r.id as recipe_id,
                 r.name,
                 r.difficulty,
                 r.prep_time,
                 COUNT(DISTINCT mr.menu_id) as menu_appearances
-            FROM {SILVER_RECIPES} r
-            LEFT JOIN {CATALOG}.{SILVER_SCHEMA}.menu_recipes mr 
-                ON r.id = mr.recipe_id AND mr.is_active = TRUE
-            WHERE r.is_active = TRUE
+            FROM recipes r
+            LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id AND mr.is_active = 1
+            WHERE r.is_active = 1
             GROUP BY r.id, r.name, r.difficulty, r.prep_time
             ORDER BY r.last_seen_date DESC, menu_appearances DESC
-            LIMIT {limit}
-        """)
+            LIMIT ?
+        """, (limit,))
         
-        return [row.asDict() for row in df.collect()]
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
     except Exception as e:
         print(f"⚠️  Error getting top recipes: {e}")
         return []
 
 
-def get_menu_stability(spark: SparkSession, limit: int = 5) -> list:
+def get_menu_stability(conn: sqlite3.Connection, limit: int = 5) -> list:
     """Get recent menu stability metrics."""
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             week_start_date,
             overlap_with_prev_week,
@@ -166,91 +147,98 @@ def get_menu_stability(spark: SparkSession, limit: int = 5) -> list:
             churned_recipe_rate,
             recipes_added,
             recipes_removed
-        FROM {GOLD_MENU_STABILITY}
+        FROM menu_stability_metrics
         ORDER BY week_start_date DESC
-        LIMIT {limit}
-    """)
+        LIMIT ?
+    """, (limit,))
     
-    return [row.asDict() for row in df.collect()]
+    columns = [desc[0] for desc in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def get_ingredient_trends(spark: SparkSession, limit: int = 10) -> list:
+def get_ingredient_trends(conn: sqlite3.Connection, limit: int = 10) -> list:
     """Get trending ingredients."""
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             ingredient_name,
             recipe_count,
             popularity_rank
-        FROM {GOLD_INGREDIENT_TRENDS}
-        WHERE popularity_rank <= {limit}
+        FROM ingredient_trends
+        WHERE popularity_rank <= ?
         ORDER BY week_start_date DESC, popularity_rank ASC
-        LIMIT {limit}
-    """)
+        LIMIT ?
+    """, (limit, limit))
     
-    return [row.asDict() for row in df.collect()]
+    columns = [desc[0] for desc in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-# ======================
-# Exploratory Insights (from 4_explore.py)
-# ======================
-
-def get_popular_ingredients(spark: SparkSession, limit: int = 15) -> list:
+def get_popular_ingredients(conn: sqlite3.Connection, limit: int = 15) -> list:
     """Top ingredients appearing most frequently."""
     try:
-        df = spark.sql(f"""
+        cursor = conn.cursor()
+        cursor.execute("""
             SELECT 
                 i.name as ingredient_name,
                 COUNT(DISTINCT ri.recipe_id) as recipe_count,
                 COUNT(DISTINCT mr.menu_id) as menu_count
-            FROM {SILVER_INGREDIENTS} i
-            JOIN {CATALOG}.{SILVER_SCHEMA}.recipe_ingredients ri ON i.id = ri.ingredient_id AND ri.is_active = TRUE
-            JOIN {SILVER_MENU_RECIPES} mr ON ri.recipe_id = mr.recipe_id AND mr.is_active = TRUE
-            GROUP BY i.id, i.name
+            FROM ingredients i
+            JOIN recipe_ingredients ri ON i.ingredient_id = ri.ingredient_id AND ri.is_active = 1
+            JOIN menu_recipes mr ON ri.recipe_id = mr.recipe_id AND mr.is_active = 1
+            GROUP BY i.ingredient_id, i.name
             ORDER BY recipe_count DESC
-            LIMIT {limit}
-        """)
-        return [row.asDict() for row in df.collect()]
+            LIMIT ?
+        """, (limit,))
+        
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
     except Exception as e:
         print(f"⚠️  Error getting popular ingredients: {e}")
         return []
 
 
-def get_cuisine_distribution(spark: SparkSession) -> list:
+def get_cuisine_distribution(conn: sqlite3.Connection) -> list:
     """Distribution of recipes by cuisine."""
     try:
-        df = spark.sql(f"""
+        cursor = conn.cursor()
+        cursor.execute("""
             SELECT 
                 COALESCE(r.cuisine, 'Unknown') as cuisine,
                 COUNT(DISTINCT r.id) as recipe_count,
                 COUNT(DISTINCT mr.menu_id) as menu_appearances
-            FROM {SILVER_RECIPES} r
-            LEFT JOIN {SILVER_MENU_RECIPES} mr ON r.id = mr.recipe_id AND mr.is_active = TRUE
+            FROM recipes r
+            LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id AND mr.is_active = 1
             GROUP BY r.cuisine
             ORDER BY recipe_count DESC
         """)
-        return [row.asDict() for row in df.collect()]
+        
+        columns = [desc[0] for desc in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
     except Exception as e:
         print(f"⚠️  Error getting cuisine distribution: {e}")
         return []
 
 
-def get_recipe_lifecycle(spark: SparkSession) -> dict:
+def get_recipe_lifecycle(conn: sqlite3.Connection) -> dict:
     """Active vs inactive recipe counts."""
     try:
-        df = spark.sql(f"""
+        cursor = conn.cursor()
+        cursor.execute("""
             SELECT 
                 is_active,
                 COUNT(*) as recipe_count,
-                ROUND(AVG(DATEDIFF(last_seen_date, first_seen_date)), 0) as avg_days_active
-            FROM {SILVER_RECIPES}
+                ROUND(AVG(CAST((JULIANDAY(last_seen_date) - JULIANDAY(first_seen_date)) AS REAL)), 0) as avg_days_active
+            FROM recipes
             GROUP BY is_active
         """)
+        
         result = {}
-        for row in df.collect():
-            status = 'Active' if row['is_active'] else 'Inactive'
+        for row in cursor.fetchall():
+            status = 'Active' if row[0] else 'Inactive'
             result[status] = {
-                'count': row['recipe_count'],
-                'avg_days': row['avg_days_active']
+                'count': row[1],
+                'avg_days': row[2]
             }
         return result
     except Exception as e:
@@ -262,20 +250,23 @@ def get_recipe_lifecycle(spark: SparkSession) -> dict:
 # Chart Generation
 # ======================
 
-def generate_menu_overlap_chart(spark: SparkSession, output_path: str) -> None:
+def generate_menu_overlap_chart(conn: sqlite3.Connection, output_path: Path) -> None:
     """Chart 1: Menu overlap trends over time."""
     if not HAS_MATPLOTLIB:
         print("⚠️  Matplotlib not available, skipping chart generation")
         return
     
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             week_start_date,
             overlap_with_prev_week
-        FROM {GOLD_MENU_STABILITY}
+        FROM menu_stability_metrics
         WHERE overlap_with_prev_week IS NOT NULL
         ORDER BY week_start_date
-    """).toPandas()
+    """)
+    
+    df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'overlap_with_prev_week'])
     
     if df.empty:
         return
@@ -293,24 +284,27 @@ def generate_menu_overlap_chart(spark: SparkSession, output_path: str) -> None:
     print(f"✓ Menu overlap chart saved")
 
 
-def generate_recipe_survival_chart(spark: SparkSession, output_path: str) -> None:
+def generate_recipe_survival_chart(conn: sqlite3.Connection, output_path: Path) -> None:
     """Chart 2: Recipe survival distribution."""
     if not HAS_MATPLOTLIB:
         return
     
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             total_weeks_active,
             is_currently_active
-        FROM {GOLD_RECIPE_SURVIVAL}
+        FROM recipe_survival_metrics
         WHERE total_weeks_active > 0
-    """).toPandas()
+    """)
+    
+    df = pd.DataFrame(cursor.fetchall(), columns=['total_weeks_active', 'is_currently_active'])
     
     if df.empty:
         return
     
-    active = df[df['is_currently_active'] == True]['total_weeks_active']
-    inactive = df[df['is_currently_active'] == False]['total_weeks_active']
+    active = df[df['is_currently_active'] == 1]['total_weeks_active']
+    inactive = df[df['is_currently_active'] == 0]['total_weeks_active']
     
     plt.figure(figsize=(12, 6))
     plt.hist([active, inactive], label=['Currently Active', 'Churned'], bins=15, alpha=0.7)
@@ -325,25 +319,28 @@ def generate_recipe_survival_chart(spark: SparkSession, output_path: str) -> Non
     print(f"✓ Recipe survival chart saved")
 
 
-def generate_ingredient_trends_chart(spark: SparkSession, output_path: str) -> None:
+def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path) -> None:
     """Chart 3: Top ingredients over time."""
     if not HAS_MATPLOTLIB:
         return
     
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             week_start_date,
             ingredient_name,
-            recipe_count,
-            ROW_NUMBER() OVER (PARTITION BY week_start_date ORDER BY recipe_count DESC) as rn
-        FROM {GOLD_INGREDIENT_TRENDS}
-        WHERE recipe_count > 0
-    """).filter(F.col("rn") <= 5).toPandas()
+            recipe_count
+        FROM ingredient_trends
+        WHERE recipe_count > 0 AND popularity_rank <= 5
+        ORDER BY week_start_date, popularity_rank
+    """)
+    
+    df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'ingredient_name', 'recipe_count'])
     
     if df.empty:
         return
     
-    pivot_df = df.pivot(index='week_start_date', columns='ingredient_name', values='recipe_count').fillna(0)
+    pivot_df = df.pivot_table(index='week_start_date', columns='ingredient_name', values='recipe_count', fill_value=0)
     
     plt.figure(figsize=(14, 6))
     pivot_df.plot(ax=plt.gca(), marker='o')
@@ -359,26 +356,29 @@ def generate_ingredient_trends_chart(spark: SparkSession, output_path: str) -> N
     print(f"✓ Ingredient trends chart saved")
 
 
-def generate_allergen_density_chart(spark: SparkSession, output_path: str) -> None:
+def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path) -> None:
     """Chart 4: Allergen density heatmap."""
     if not HAS_MATPLOTLIB:
         return
     
-    df = spark.sql(f"""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT 
             week_start_date,
             allergen_name,
             percentage_of_menu
-        FROM {GOLD_ALLERGEN_DENSITY}
+        FROM allergen_density
         WHERE allergen_name IS NOT NULL
         ORDER BY week_start_date DESC, percentage_of_menu DESC
         LIMIT 100
-    """).toPandas()
+    """)
+    
+    df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'allergen_name', 'percentage_of_menu'])
     
     if df.empty:
         return
     
-    pivot_df = df.pivot(index='allergen_name', columns='week_start_date', values='percentage_of_menu').fillna(0)
+    pivot_df = df.pivot_table(index='allergen_name', columns='week_start_date', values='percentage_of_menu', fill_value=0)
     
     plt.figure(figsize=(14, 8))
     sns.heatmap(pivot_df, annot=True, fmt='.1f', cmap='YlOrRd', cbar_kws={'label': '% of Menu'})
@@ -390,27 +390,17 @@ def generate_allergen_density_chart(spark: SparkSession, output_path: str) -> No
     plt.close()
     print(f"✓ Allergen density chart saved")
 
-
 def save_report_to_file(content: str, pull_date: str) -> str:
-    """Save markdown report to file (Databricks or local)."""
+    """Save markdown report to file (local filesystem)."""
     filename = f"weekly_report_{pull_date}.md"
     
     try:
-        if IN_DATABRICKS:
-            # Use dbutils for Databricks workspace
-            filepath = f"{REPORTS_DIR}/{filename}"
-            dbutils.fs.put(filepath, content, overwrite=True)
-            print(f"✓ Report saved to {filepath}")
-            return filepath
-        else:
-            # Use local filesystem
-            reports_path = Path(REPORTS_DIR)
-            reports_path.mkdir(parents=True, exist_ok=True)
-            filepath = reports_path / filename
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(content)
-            print(f"✓ Report saved to {filepath}")
-            return str(filepath)
+        REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        filepath = REPORTS_DIR / filename
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        print(f"✓ Report saved to {filepath}")
+        return str(filepath)
     except Exception as e:
         print(f"⚠️  Error saving report: {e}")
         return None
@@ -420,20 +410,20 @@ def save_report_to_file(content: str, pull_date: str) -> str:
 # Markdown Report Generation
 # ======================
 
-def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
+def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
     """Generate markdown report with embedded chart references."""
     
-    summary = get_week_summary(spark, week_date)
-    top_recipes = get_top_recipes(spark, limit=10)
-    stability = get_menu_stability(spark, limit=1)
-    ingredient_trends = get_ingredient_trends(spark, limit=10)
+    summary = get_week_summary(conn, week_date)
+    top_recipes = get_top_recipes(conn, limit=10)
+    stability = get_menu_stability(conn, limit=1)
+    ingredient_trends = get_ingredient_trends(conn, limit=10)
     
     lines = []
     lines.append("# HelloFresh Data Analysis Report")
     lines.append("")
     lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Analysis Period:** Week of {week_date}")
-    lines.append(f"**Data Source:** Databricks Gold Layer")
+    lines.append(f"**Data Source:** SQLite Gold Layer")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -498,7 +488,7 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
     # Additional Exploratory Insights
     lines.append("## 5. Ingredient Insights")
     lines.append("")
-    popular_ings = get_popular_ingredients(spark, limit=10)
+    popular_ings = get_popular_ingredients(conn, limit=10)
     if popular_ings:
         lines.append("### Top 10 Most Used Ingredients")
         for i, ing in enumerate(popular_ings[:10], 1):
@@ -509,7 +499,7 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
     
     lines.append("## 6. Cuisine Distribution")
     lines.append("")
-    cuisines = get_cuisine_distribution(spark)
+    cuisines = get_cuisine_distribution(conn)
     if cuisines:
         for i, cuisine in enumerate(cuisines[:8], 1):
             cuisine_name = cuisine.get('cuisine', 'Unknown')
@@ -519,7 +509,7 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
     
     lines.append("## 7. Recipe Lifecycle")
     lines.append("")
-    lifecycle = get_recipe_lifecycle(spark)
+    lifecycle = get_recipe_lifecycle(conn)
     if lifecycle:
         for status, data in lifecycle.items():
             lines.append(f"- **{status}:** {data.get('count', 0)} recipes (avg {data.get('avg_days', 0)} days active)")
@@ -530,7 +520,7 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
     lines.append("")
     lines.append(f"- **Report Generated:** {datetime.now().isoformat()}")
     lines.append(f"- **Week Start Date:** {week_date}")
-    lines.append(f"- **Data Source:** Databricks Delta Lake")
+    lines.append(f"- **Data Source:** SQLite Database")
     lines.append("")
     
     lines.append("---")
@@ -542,24 +532,15 @@ def generate_markdown_report(spark: SparkSession, week_date: str) -> str:
 
 
 def commit_report_to_git(week_date: str) -> bool:
-    """Commit report to Git repository (local only, not in Databricks)."""
-    if IN_DATABRICKS:
-        print("⚠️  Skipping Git commit (not available in Databricks compute)")
-        return False
-    
-    if not GIT_REPO_PATH:
-        print("⚠️  Git repo path not configured")
-        return False
-    
+    """Commit report to Git repository."""
     try:
-        # Change to git repo directory
-        os.chdir(GIT_REPO_PATH)
+        os.chdir(PROJECT_ROOT)
         
         # Git operations
-        report_file = f"output/reports/weekly_report_{week_date}.md"
+        report_file = f"hfresh/output/reports/weekly_report_{week_date}.md"
         subprocess.run(["git", "add", report_file], check=True, capture_output=True)
         subprocess.run(["git", "config", "user.name", "hfresh-pipeline"], check=True, capture_output=True)
-        subprocess.run(["git", "config", "user.email", "hfresh@databricks.local"], check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "hfresh@github.local"], check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", f"Weekly report {week_date}"],
             check=True,
@@ -587,32 +568,30 @@ def main():
     ╔══════════════════════════════════════════════════════════╗
     ║  Weekly Report Generation                                ║
     ║  Gold Layer → Markdown + Charts                          ║
-    ║  Databricks Delta Lake                                   ║
+    ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
     
-    if not IN_DATABRICKS:
-        print("⚠️  Not running in Databricks")
-    
-    spark = SparkSession.builder.appName("hfresh_weekly_report").getOrCreate()
+    conn = get_db_connection()
     
     # Get latest week
-    week_date = get_latest_week(spark)
+    week_date = get_latest_week(conn)
     print(f"\nGenerating report for week: {week_date}\n")
     
     # Generate charts
     print("Generating charts...")
     if HAS_MATPLOTLIB:
-        generate_menu_overlap_chart(spark, f"{CHARTS_DIR}/menu_overlap_trends.png")
-        generate_recipe_survival_chart(spark, f"{CHARTS_DIR}/recipe_survival_distribution.png")
-        generate_ingredient_trends_chart(spark, f"{CHARTS_DIR}/ingredient_trends.png")
-        generate_allergen_density_chart(spark, f"{CHARTS_DIR}/allergen_density_heatmap.png")
+        CHARTS_DIR.mkdir(parents=True, exist_ok=True)
+        generate_menu_overlap_chart(conn, CHARTS_DIR / "menu_overlap_trends.png")
+        generate_recipe_survival_chart(conn, CHARTS_DIR / "recipe_survival_distribution.png")
+        generate_ingredient_trends_chart(conn, CHARTS_DIR / "ingredient_trends.png")
+        generate_allergen_density_chart(conn, CHARTS_DIR / "allergen_density_heatmap.png")
     else:
         print("⚠️  Matplotlib not available, skipping chart generation")
     
     # Generate markdown report
     print("Generating markdown report...")
-    markdown_content = generate_markdown_report(spark, week_date)
+    markdown_content = generate_markdown_report(conn, week_date)
     report_path = save_report_to_file(markdown_content, week_date)
     
     # Commit to Git
@@ -623,6 +602,8 @@ def main():
     print(f"\n{'='*60}")
     print("✓ Report generation complete!")
     print(f"{'='*60}\n")
+    
+    conn.close()
 
 
 if __name__ == "__main__":
