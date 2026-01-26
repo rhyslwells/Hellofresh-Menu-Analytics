@@ -1,6 +1,6 @@
 # HelloFresh Data Analysis Report
 
-**Generated:** 2026-01-26 21:33
+**Generated:** 2026-01-26 21:35
 **Analysis Period:** Week of 2026-02-21
 **Data Source:** SQLite Gold Layer
 
@@ -110,7 +110,7 @@
 
 ## Data Quality Notes
 
-- **Report Generated:** 2026-01-26T21:33:33.738890
+- **Report Generated:** 2026-01-26T21:35:11.372841
 - **Week Start Date:** 2026-02-21
 - **Data Source:** SQLite Database (`hfresh/hfresh.db`)
 
