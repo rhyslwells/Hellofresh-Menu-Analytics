@@ -250,42 +250,97 @@ def get_recipe_lifecycle(conn: sqlite3.Connection) -> dict:
 # Chart Generation
 # ======================
 
+def check_data_available(conn: sqlite3.Connection) -> dict:
+    """Check how much data is available for charting."""
+    cursor = conn.cursor()
+    
+    data_check = {}
+    
+    cursor.execute("SELECT COUNT(DISTINCT week_start_date) FROM menu_stability_metrics")
+    data_check['stability_weeks'] = cursor.fetchone()[0] or 0
+    
+    cursor.execute("SELECT COUNT(*) FROM ingredient_trends")
+    data_check['ingredient_trends'] = cursor.fetchone()[0] or 0
+    
+    cursor.execute("SELECT COUNT(*) FROM allergen_density")
+    data_check['allergen_density'] = cursor.fetchone()[0] or 0
+    
+    cursor.execute("SELECT COUNT(DISTINCT week_start_date) FROM weekly_menu_metrics")
+    data_check['weeks_in_metrics'] = cursor.fetchone()[0] or 0
+    
+    return data_check
+
 def generate_menu_overlap_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 1: Menu overlap trends over time."""
+    """Chart 1: Menu overlap trends (last 3 weeks)."""
     if not HAS_MATPLOTLIB:
         print("⚠️  Matplotlib not available, skipping chart generation")
         return
     
     cursor = conn.cursor()
+    # Get last 3 weeks of overlap data
     cursor.execute("""
         SELECT 
             week_start_date,
-            overlap_with_prev_week
+            overlap_with_prev_week,
+            recipes_added,
+            recipes_removed
         FROM menu_stability_metrics
         WHERE overlap_with_prev_week IS NOT NULL
-        ORDER BY week_start_date
+        ORDER BY week_start_date DESC
+        LIMIT 3
     """)
     
-    df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'overlap_with_prev_week'])
-    
-    if df.empty:
+    rows = cursor.fetchall()
+    if not rows:
+        print("  ⚠️  No menu stability data, skipping chart")
         return
     
-    plt.figure(figsize=(12, 6))
-    plt.plot(df['week_start_date'], df['overlap_with_prev_week'], marker='o', linewidth=2, markersize=8)
-    plt.title('Menu Overlap Trends (Week-over-Week)', fontsize=14, fontweight='bold')
-    plt.xlabel('Week Start Date')
-    plt.ylabel('Overlap Percentage (%)')
-    plt.grid(True, alpha=0.3)
-    plt.xticks(rotation=45)
+    df = pd.DataFrame(rows, columns=['week_start_date', 'overlap', 'added', 'removed'])
+    df = df.sort_values('week_start_date')
+    
+    print(f"  → Generated chart with {len(df)} weeks of data")
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+    
+    # Top chart: Overlap percentage
+    ax1.plot(df['week_start_date'], df['overlap'], marker='o', linewidth=3, markersize=12, color='#2E86AB', label='Overlap %')
+    ax1.fill_between(range(len(df)), df['overlap'], alpha=0.3, color='#2E86AB')
+    ax1.set_title('Menu Overlap Trend (Last 3 Weeks)', fontsize=14, fontweight='bold', pad=15)
+    ax1.set_ylabel('Overlap Percentage (%)', fontsize=12, fontweight='bold')
+    ax1.grid(True, alpha=0.3, linestyle='--')
+    ax1.set_ylim(0, 105)
+    for i, (x, y) in enumerate(zip(range(len(df)), df['overlap'])):
+        ax1.text(x, y + 3, f'{y:.1f}%', ha='center', fontsize=10, fontweight='bold')
+    
+    # Bottom chart: Added vs Removed
+    x = range(len(df))
+    width = 0.35
+    bars1 = ax2.bar([i - width/2 for i in x], df['added'], width, label='Added', color='#A23B72', alpha=0.8, edgecolor='black', linewidth=1.5)
+    bars2 = ax2.bar([i + width/2 for i in x], df['removed'], width, label='Removed', color='#F18F01', alpha=0.8, edgecolor='black', linewidth=1.5)
+    ax2.set_title('Recipes Added vs Removed', fontsize=14, fontweight='bold', pad=15)
+    ax2.set_ylabel('Count', fontsize=12, fontweight='bold')
+    ax2.set_xlabel('Week', fontsize=12, fontweight='bold')
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(df['week_start_date'], rotation=45, ha='right', fontsize=10)
+    ax2.legend(fontsize=11, loc='upper right')
+    ax2.grid(True, alpha=0.3, axis='y', linestyle='--')
+    
+    # Add value labels on bars
+    for bars in [bars1, bars2]:
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                ax2.text(bar.get_x() + bar.get_width()/2., height,
+                        f'{int(height)}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+    
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
-    print(f"✓ Menu overlap chart saved")
+    print(f"  ✓ Menu overlap chart saved")
 
 
 def generate_recipe_survival_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 2: Recipe survival distribution."""
+    """Chart 2: Recipe survival distribution with improved styling."""
     if not HAS_MATPLOTLIB:
         return
     
@@ -298,41 +353,48 @@ def generate_recipe_survival_chart(conn: sqlite3.Connection, output_path: Path) 
         WHERE total_weeks_active > 0
     """)
     
-    df = pd.DataFrame(cursor.fetchall(), columns=['total_weeks_active', 'is_currently_active'])
-    
-    if df.empty:
+    rows = cursor.fetchall()
+    if not rows:
+        print("  ⚠️  No recipe survival data, skipping chart")
         return
+    
+    df = pd.DataFrame(rows, columns=['total_weeks_active', 'is_currently_active'])
     
     active = df[df['is_currently_active'] == 1]['total_weeks_active']
     inactive = df[df['is_currently_active'] == 0]['total_weeks_active']
     
-    plt.figure(figsize=(12, 6))
-    plt.hist([active, inactive], label=['Currently Active', 'Churned'], bins=15, alpha=0.7)
-    plt.title('Recipe Survival Distribution', fontsize=14, fontweight='bold')
-    plt.xlabel('Weeks Active')
-    plt.ylabel('Number of Recipes')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
+    print(f"  → Generated chart with {len(active)} active and {len(inactive)} inactive recipes")
+    
+    fig, ax = plt.subplots(figsize=(13, 7))
+    n, bins, patches = ax.hist([active, inactive], label=['Currently Active', 'Churned'], bins=20, alpha=0.8, edgecolor='black', linewidth=1.5, color=['#2E86AB', '#A23B72'])
+    ax.set_title('Recipe Survival Distribution', fontsize=14, fontweight='bold', pad=15)
+    ax.set_xlabel('Weeks Active', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Number of Recipes', fontsize=12, fontweight='bold')
+    ax.legend(fontsize=12, loc='upper right')
+    ax.grid(True, alpha=0.3, axis='y', linestyle='--')
+    
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
-    print(f"✓ Recipe survival chart saved")
+    print(f"  ✓ Recipe survival chart saved")
 
 
 def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 3: Top ingredients over time."""
+    """Chart 3: Top ingredients over last 3 weeks."""
     if not HAS_MATPLOTLIB:
         return
     
     cursor = conn.cursor()
+    # Get last 3 weeks of top ingredient data
     cursor.execute("""
         SELECT 
             week_start_date,
             ingredient_name,
             recipe_count
         FROM ingredient_trends
-        WHERE recipe_count > 0 AND popularity_rank <= 5
-        ORDER BY week_start_date, popularity_rank
+        WHERE recipe_count > 0 AND popularity_rank <= 8
+        ORDER BY week_start_date DESC, recipe_count DESC
+        LIMIT 24
     """)
     
     df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'ingredient_name', 'recipe_count'])
@@ -340,14 +402,22 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path
     if df.empty:
         return
     
+    df = df.sort_values('week_start_date')
     pivot_df = df.pivot_table(index='week_start_date', columns='ingredient_name', values='recipe_count', fill_value=0)
     
-    plt.figure(figsize=(14, 6))
-    pivot_df.plot(ax=plt.gca(), marker='o')
-    plt.title('Top Ingredients Over Time', fontsize=14, fontweight='bold')
-    plt.xlabel('Week Start Date')
-    plt.ylabel('Recipe Count')
-    plt.legend(title='Ingredient', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    fig, ax = plt.subplots(figsize=(14, 7))
+    pivot_df.plot(ax=ax, marker='o', linewidth=2.5, markersize=10, color=sns.color_palette("husl", len(pivot_df.columns)))
+    ax.set_title('Top 8 Ingredients Over Last 3 Weeks', fontsize=14, fontweight='bold', pad=15)
+    ax.set_xlabel('Week Start Date', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Recipe Count', fontsize=12, fontweight='bold')
+    ax.legend(title='Ingredient', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=11)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    print(f"  ✓ Ingredient trends chart saved")
     plt.grid(True, alpha=0.3)
     plt.xticks(rotation=45)
     plt.tight_layout()
@@ -357,11 +427,12 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path
 
 
 def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 4: Allergen density heatmap."""
+    """Chart 4: Allergen density heatmap (last 3 weeks)."""
     if not HAS_MATPLOTLIB:
         return
     
     cursor = conn.cursor()
+    # Get last 3 weeks of allergen data
     cursor.execute("""
         SELECT 
             week_start_date,
@@ -369,8 +440,8 @@ def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path)
             percentage_of_menu
         FROM allergen_density
         WHERE allergen_name IS NOT NULL
-        ORDER BY week_start_date DESC, percentage_of_menu DESC
-        LIMIT 100
+        ORDER BY week_start_date DESC
+        LIMIT 90
     """)
     
     df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'allergen_name', 'percentage_of_menu'])
@@ -378,15 +449,18 @@ def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path)
     if df.empty:
         return
     
+    df = df.sort_values('week_start_date')
     pivot_df = df.pivot_table(index='allergen_name', columns='week_start_date', values='percentage_of_menu', fill_value=0)
     
-    plt.figure(figsize=(14, 8))
-    sns.heatmap(pivot_df, annot=True, fmt='.1f', cmap='YlOrRd', cbar_kws={'label': '% of Menu'})
-    plt.title('Allergen Density Heatmap (%)', fontsize=14, fontweight='bold')
-    plt.xlabel('Week Start Date')
-    plt.ylabel('Allergen')
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(pivot_df, annot=True, fmt='.1f', cmap='RdYlGn_r', cbar_kws={'label': '% of Menu'}, linewidths=0.5)
+    plt.title('Allergen Density Heatmap - Last 3 Weeks (%)', fontsize=14, fontweight='bold')
+    plt.xlabel('Week Start Date', fontsize=11)
+    plt.ylabel('Allergen', fontsize=11)
+    plt.xticks(rotation=45, ha='right')
+    
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close()
     print(f"✓ Allergen density chart saved")
 
@@ -411,12 +485,15 @@ def save_report_to_file(content: str, pull_date: str) -> str:
 # ======================
 
 def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
-    """Generate markdown report with embedded chart references."""
+    """Generate markdown report with embedded chart references and SQL tables."""
     
     summary = get_week_summary(conn, week_date)
     top_recipes = get_top_recipes(conn, limit=10)
-    stability = get_menu_stability(conn, limit=1)
+    stability = get_menu_stability(conn, limit=5)
     ingredient_trends = get_ingredient_trends(conn, limit=10)
+    popular_ings = get_popular_ingredients(conn, limit=10)
+    cuisines = get_cuisine_distribution(conn)
+    lifecycle = get_recipe_lifecycle(conn)
     
     lines = []
     lines.append("# HelloFresh Data Analysis Report")
@@ -439,80 +516,112 @@ def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
         lines.append(f"- **Average Prep Time:** {summary.get('avg_prep_time', 'N/A')} minutes")
     lines.append("")
     
+    # Weekly Menu Metrics Table
+    lines.append("### Weekly Metrics Table")
+    lines.append("")
+    lines.append("| Metric | Value |")
+    lines.append("|--------|-------|")
+    if summary:
+        lines.append(f"| Total Recipes | {summary.get('total_recipes', 0)} |")
+        lines.append(f"| Unique Recipes | {summary.get('unique_recipes', 0)} |")
+        lines.append(f"| New Recipes | {summary.get('new_recipes', 0)} |")
+        lines.append(f"| Returning Recipes | {summary.get('returning_recipes', 0)} |")
+        lines.append(f"| Avg Difficulty | {summary.get('avg_difficulty', 'N/A')} |")
+        lines.append(f"| Avg Prep Time (min) | {summary.get('avg_prep_time', 'N/A')} |")
+    lines.append("")
+    
     # Menu Evolution
     lines.append("## 1. Menu Evolution")
     lines.append("")
-    lines.append("![Menu Overlap Trends](../charts/menu_overlap_trends.png)")
+    lines.append(f"![Menu Overlap Trends](../charts/menu_overlap_trends.png)")
     lines.append("")
+    
+    # Menu Stability Table
+    lines.append("### Recent Menu Stability")
+    lines.append("")
+    lines.append("| Week | Overlap % | New | Removed | Retained |")
+    lines.append("|------|-----------|-----|---------|----------|")
     if stability:
-        first_week = stability[0]
-        lines.append("### Key Findings")
-        if first_week.get('overlap_with_prev_week'):
-            lines.append(f"- Week-over-week recipe overlap: {first_week.get('overlap_with_prev_week')}%")
-            lines.append(f"- New recipes added: {first_week.get('recipes_added', 0)}")
-            lines.append(f"- Recipes removed: {first_week.get('recipes_removed', 0)}")
+        for week in stability[:5]:
+            overlap = week.get('overlap_with_prev_week') or 'N/A'
+            lines.append(f"| {week.get('week_start_date')} | {overlap} | {week.get('recipes_added', 0)} | {week.get('recipes_removed', 0)} | - |")
     lines.append("")
     
     # Recipe Lifecycle
     lines.append("## 2. Recipe Lifecycle Analysis")
     lines.append("")
-    lines.append("![Recipe Survival Distribution](../charts/recipe_survival_distribution.png)")
+    lines.append(f"![Recipe Survival Distribution](../charts/recipe_survival_distribution.png)")
     lines.append("")
-    lines.append("### Top Recipes (Current Week)")
+    lines.append("### Top 10 Active Recipes (Current Week)")
+    lines.append("")
+    lines.append("| Rank | Recipe Name | Difficulty | Prep Time | Appearances |")
+    lines.append("|------|-------------|-----------|-----------|-------------|")
     if top_recipes:
-        for i, recipe in enumerate(top_recipes[:5], 1):
+        for i, recipe in enumerate(top_recipes[:10], 1):
             name = recipe.get('name', 'Unknown')
             difficulty = recipe.get('difficulty', 'N/A')
-            lines.append(f"{i}. **{name}** (Difficulty {difficulty})")
+            prep = recipe.get('prep_time', 'N/A')
+            apps = recipe.get('menu_appearances', 0)
+            lines.append(f"| {i} | {name} | {difficulty} | {prep} | {apps} |")
     lines.append("")
     
     # Ingredient Trends
     lines.append("## 3. Ingredient Trends")
     lines.append("")
-    lines.append("![Ingredient Popularity Over Time](../charts/ingredient_trends.png)")
+    lines.append(f"![Ingredient Popularity Over Time](../charts/ingredient_trends.png)")
     lines.append("")
-    lines.append("### Trending Ingredients")
+    lines.append("### Top Trending Ingredients (Latest Week)")
+    lines.append("")
+    lines.append("| Rank | Ingredient | Recipes | Popularity |")
+    lines.append("|------|-----------|---------|------------|")
     if ingredient_trends:
-        for i, ing in enumerate(ingredient_trends[:5], 1):
+        for i, ing in enumerate(ingredient_trends[:10], 1):
             name = ing.get('ingredient_name', 'Unknown')
             count = ing.get('recipe_count', 0)
-            lines.append(f"- **{name}**: {count} recipes")
+            rank = ing.get('popularity_rank', 'N/A')
+            lines.append(f"| {i} | {name} | {count} | #{rank} |")
+    lines.append("")
+    
+    # Most Used Ingredients
+    lines.append("### Most Used Ingredients (All Time)")
+    lines.append("")
+    lines.append("| Rank | Ingredient | In Recipes | Menu Appearances |")
+    lines.append("|------|------------|-----------|------------------|")
+    if popular_ings:
+        for i, ing in enumerate(popular_ings[:10], 1):
+            name = ing.get('ingredient_name', 'Unknown')
+            recipes = ing.get('recipe_count', 0)
+            menus = ing.get('menu_count', 0)
+            lines.append(f"| {i} | {name} | {recipes} | {menus} |")
     lines.append("")
     
     # Allergen Analysis
     lines.append("## 4. Allergen Analysis")
     lines.append("")
-    lines.append("![Allergen Density Heatmap](../charts/allergen_density_heatmap.png)")
+    lines.append(f"![Allergen Density Heatmap](../charts/allergen_density_heatmap.png)")
     lines.append("")
     
-    # Additional Exploratory Insights
-    lines.append("## 5. Ingredient Insights")
+    lines.append("## 5. Cuisine Distribution")
     lines.append("")
-    popular_ings = get_popular_ingredients(conn, limit=10)
-    if popular_ings:
-        lines.append("### Top 10 Most Used Ingredients")
-        for i, ing in enumerate(popular_ings[:10], 1):
-            name = ing.get('ingredient_name', 'Unknown')
-            count = ing.get('recipe_count', 0)
-            lines.append(f"{i}. **{name}** ({count} recipes)")
-    lines.append("")
-    
-    lines.append("## 6. Cuisine Distribution")
-    lines.append("")
-    cuisines = get_cuisine_distribution(conn)
+    lines.append("| Rank | Cuisine | Recipes | Menu Appearances |")
+    lines.append("|------|---------|---------|------------------|")
     if cuisines:
-        for i, cuisine in enumerate(cuisines[:8], 1):
+        for i, cuisine in enumerate(cuisines[:10], 1):
             cuisine_name = cuisine.get('cuisine', 'Unknown')
             count = cuisine.get('recipe_count', 0)
-            lines.append(f"{i}. **{cuisine_name}** - {count} recipes")
+            apps = cuisine.get('menu_appearances', 0)
+            lines.append(f"| {i} | {cuisine_name} | {count} | {apps} |")
     lines.append("")
     
-    lines.append("## 7. Recipe Lifecycle")
+    lines.append("## 6. Recipe Lifecycle Status")
     lines.append("")
-    lifecycle = get_recipe_lifecycle(conn)
+    lines.append("| Status | Count | Avg Days Active |")
+    lines.append("|--------|-------|-----------------|")
     if lifecycle:
         for status, data in lifecycle.items():
-            lines.append(f"- **{status}:** {data.get('count', 0)} recipes (avg {data.get('avg_days', 0)} days active)")
+            count = data.get('count', 0)
+            days = data.get('avg_days', 0)
+            lines.append(f"| {status} | {count} | {days} |")
     lines.append("")
     
     # Data Quality
@@ -520,13 +629,13 @@ def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
     lines.append("")
     lines.append(f"- **Report Generated:** {datetime.now().isoformat()}")
     lines.append(f"- **Week Start Date:** {week_date}")
-    lines.append(f"- **Data Source:** SQLite Database")
+    lines.append(f"- **Data Source:** SQLite Database (`hfresh/hfresh.db`)")
     lines.append("")
     
     lines.append("---")
     lines.append("")
     lines.append("*This report was generated automatically by the HelloFresh Data Platform.*")
-    lines.append("*Charts are updated weekly and stored in the output/charts/ directory.*")
+    lines.append("*Charts are stored in the output/charts/ directory.*")
     
     return "\n".join(lines)
 
@@ -580,6 +689,11 @@ def main():
     
     # Generate charts
     print("Generating charts...")
+    
+    # Check data availability first
+    data_check = check_data_available(conn)
+    print(f"  Data check: {data_check}")
+    
     if HAS_MATPLOTLIB:
         CHARTS_DIR.mkdir(parents=True, exist_ok=True)
         generate_menu_overlap_chart(conn, CHARTS_DIR / "menu_overlap_trends.png")

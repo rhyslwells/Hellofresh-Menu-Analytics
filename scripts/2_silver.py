@@ -13,7 +13,7 @@ python scripts/2_silver.py
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -79,7 +79,7 @@ def upsert_entity_with_scd(
                 set_clauses.append("is_active = 1")
                 set_clauses.append("_ingestion_ts = ?")
                 
-                params.extend([pull_date, datetime.utcnow().isoformat(), record_id])
+                params.extend([pull_date, datetime.now(timezone.utc).isoformat(), record_id])
                 
                 update_sql = f"""
                 UPDATE {table}
@@ -97,7 +97,7 @@ def upsert_entity_with_scd(
                 VALUES ({placeholders})
                 """
                 
-                values = list(row.values()) + [pull_date, pull_date, 1, datetime.utcnow().isoformat()]
+                values = list(row.values()) + [pull_date, pull_date, 1, datetime.now(timezone.utc).isoformat()]
                 cursor.execute(insert_sql, values)
         
         conn.commit()
@@ -155,7 +155,7 @@ def upsert_bridge_relationship(
                     set_clauses.append("last_seen_date = ?")
                     set_clauses.append("is_active = 1")
                     set_clauses.append("_ingestion_ts = ?")
-                    params.extend([pull_date, datetime.utcnow().isoformat()])
+                    params.extend([pull_date, datetime.now(timezone.utc).isoformat()])
                     params.extend(pk_values)
                     
                     update_sql = f"UPDATE {table} SET {', '.join(set_clauses)} WHERE {where_clause}"
@@ -164,7 +164,7 @@ def upsert_bridge_relationship(
                     # INSERT
                     cols = list(row.keys()) + ['first_seen_date', 'last_seen_date', 'is_active', '_ingestion_ts']
                     placeholders = ', '.join(['?' for _ in cols])
-                    values = list(row.values()) + [pull_date, pull_date, 1, datetime.utcnow().isoformat()]
+                    values = list(row.values()) + [pull_date, pull_date, 1, datetime.now(timezone.utc).isoformat()]
                     
                     insert_sql = f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})"
                     cursor.execute(insert_sql, values)
@@ -306,6 +306,120 @@ def process_reference_endpoint(
         print(f"  ⚠️  Error processing {table}: {e}")
 
 
+def process_recipes_endpoint(
+    conn: sqlite3.Connection,
+    payload: dict,
+    pull_date: str
+) -> None:
+    """
+    Process recipe detail payloads and populate recipes + bridge tables.
+    Accepts either a single recipe dict or a payload with `data` list.
+    """
+    # Normalize to a list of recipe dicts
+    if not payload:
+        return
+
+    if isinstance(payload, dict) and 'data' in payload:
+        # payload['data'] may be a list (paginated) or a single dict (detail endpoint)
+        if isinstance(payload['data'], list):
+            recipes = payload['data']
+        elif isinstance(payload['data'], dict):
+            recipes = [payload['data']]
+    elif isinstance(payload, list):
+        recipes = payload
+    elif isinstance(payload, dict) and payload.get('id'):
+        recipes = [payload]
+    else:
+        return
+
+    try:
+        recipe_rows = []
+        recipe_ingredient_rows = []
+        recipe_allergen_rows = []
+        recipe_tag_rows = []
+        recipe_label_rows = []
+
+        for recipe in recipes:
+            rid = recipe.get('id')
+            if not rid:
+                continue
+
+            recipe_rows.append({
+                'id': rid,
+                'name': recipe.get('name'),
+                'headline': recipe.get('headline'),
+                'description': recipe.get('description'),
+                'difficulty': recipe.get('difficulty'),
+                'prep_time': recipe.get('prepTime'),
+                'total_time': recipe.get('totalTime'),
+                'serving_size': recipe.get('servingSize'),
+                'cuisine': recipe.get('cuisine', {}).get('name') if recipe.get('cuisine') else None,
+                'image_url': recipe.get('imagePath'),
+            })
+
+            # ingredients
+            for idx, ing in enumerate(recipe.get('ingredients', [])):
+                ing_id = ing.get('id')
+                if ing_id:
+                    recipe_ingredient_rows.append({
+                        'recipe_id': rid,
+                        'ingredient_id': ing_id,
+                        'quantity': ing.get('quantity'),
+                        'unit': ing.get('unit'),
+                        'position': idx,
+                    })
+
+            # allergens
+            for a in recipe.get('allergens', []):
+                aid = a.get('id')
+                if aid:
+                    recipe_allergen_rows.append({
+                        'recipe_id': rid,
+                        'allergen_id': aid,
+                    })
+
+            # tags
+            for t in recipe.get('tags', []):
+                tid = t.get('id')
+                if tid:
+                    recipe_tag_rows.append({
+                        'recipe_id': rid,
+                        'tag_id': tid,
+                    })
+
+            # labels
+            for l in recipe.get('labels', []):
+                lid = l.get('id')
+                if lid:
+                    recipe_label_rows.append({
+                        'recipe_id': rid,
+                        'label_id': lid,
+                    })
+
+        if recipe_rows:
+            upsert_entity_with_scd(conn, 'recipes', recipe_rows, pull_date, 'id')
+            print(f"  ✓ Processed {len(recipe_rows)} recipes (details)")
+
+        if recipe_ingredient_rows:
+            upsert_bridge_relationship(conn, 'recipe_ingredients', recipe_ingredient_rows, pull_date)
+            print(f"  ✓ Processed {len(recipe_ingredient_rows)} recipe-ingredient links")
+
+        if recipe_allergen_rows:
+            upsert_bridge_relationship(conn, 'recipe_allergens', recipe_allergen_rows, pull_date)
+            print(f"  ✓ Processed {len(recipe_allergen_rows)} recipe-allergen links")
+
+        if recipe_tag_rows:
+            upsert_bridge_relationship(conn, 'recipe_tags', recipe_tag_rows, pull_date)
+            print(f"  ✓ Processed {len(recipe_tag_rows)} recipe-tag links")
+
+        if recipe_label_rows:
+            upsert_bridge_relationship(conn, 'recipe_labels', recipe_label_rows, pull_date)
+            print(f"  ✓ Processed {len(recipe_label_rows)} recipe-label links")
+
+    except Exception as e:
+        print(f"  ⚠️  Error processing recipes endpoint: {e}")
+
+
 def process_bronze_to_silver(conn: sqlite3.Connection, pull_date: str = None) -> None:
     """
     Main transformation: Read Bronze → Transform → Write Silver with SCD Type 2.
@@ -347,6 +461,8 @@ def process_bronze_to_silver(conn: sqlite3.Connection, pull_date: str = None) ->
             
             if endpoint == "menus":
                 process_menus_endpoint(conn, payload, pull_date)
+            elif endpoint == "recipes":
+                process_recipes_endpoint(conn, payload, pull_date)
             elif endpoint == "ingredients":
                 process_reference_endpoint(conn, 'ingredients', payload, pull_date, 'ingredient_id')
             elif endpoint == "allergens":

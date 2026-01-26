@@ -26,7 +26,7 @@ python scripts/3_gold_analytics.py
 
 import sqlite3
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 
@@ -67,7 +67,7 @@ def compute_weekly_menu_metrics(conn: sqlite3.Connection) -> None:
         cursor.execute("""
             INSERT INTO weekly_menu_metrics
             (week_start_date, locale, total_recipes, unique_recipes, new_recipes, 
-             returning_recipes, avg_difficulty, avg_prep_time_minutes, _created_at)
+             returning_recipes, avg_difficulty, avg_prep_time_minutes, created_at)
             SELECT 
                 m.start_date as week_start_date,
                 'en-GB' as locale,
@@ -82,13 +82,13 @@ def compute_weekly_menu_metrics(conn: sqlite3.Connection) -> None:
                         0
                     ) AS REAL
                 )), 2) as avg_prep_time_minutes,
-                ? as _created_at
+                ? as created_at
             FROM menus m
             LEFT JOIN menu_recipes mr ON m.id = mr.menu_id AND mr.is_active = 1
             LEFT JOIN recipes r ON mr.recipe_id = r.id
             WHERE m.is_active = 1
             GROUP BY m.start_date
-        """, (datetime.utcnow().isoformat(),))
+        """, (datetime.now(timezone.utc).isoformat(),))
         
         conn.commit()
         print("  ✓ Weekly menu metrics computed")
@@ -112,7 +112,7 @@ def compute_recipe_survival_metrics(conn: sqlite3.Connection) -> None:
             INSERT INTO recipe_survival_metrics
             (recipe_id, recipe_name, first_appearance_date, last_appearance_date,
              total_weeks_active, consecutive_weeks_active, weeks_since_last_seen,
-             is_currently_active, _created_at)
+             is_currently_active, created_at)
             SELECT 
                 r.id as recipe_id,
                 r.name as recipe_name,
@@ -131,9 +131,9 @@ def compute_recipe_survival_metrics(conn: sqlite3.Connection) -> None:
                     JULIANDAY(DATE('now')) - JULIANDAY(r.last_seen_date)
                 ) / 7.0 AS INTEGER)) as weeks_since_last_seen,
                 r.is_active as is_currently_active,
-                ? as _created_at
+                ? as created_at
             FROM recipes r
-        """, (datetime.utcnow().isoformat(),))
+        """, (datetime.now(timezone.utc).isoformat(),))
         
         conn.commit()
         print("  ✓ Recipe survival metrics computed")
@@ -155,7 +155,7 @@ def compute_ingredient_trends(conn: sqlite3.Connection) -> None:
         cursor.execute("""
             INSERT INTO ingredient_trends
             (ingredient_id, ingredient_name, week_start_date, recipe_count,
-             week_over_week_change, popularity_rank, _created_at)
+             week_over_week_change, popularity_rank, created_at)
             WITH weekly_ingredients AS (
                 SELECT 
                     i.ingredient_id,
@@ -178,9 +178,9 @@ def compute_ingredient_trends(conn: sqlite3.Connection) -> None:
                 recipe_count,
                 0 as week_over_week_change,
                 popularity_rank,
-                ? as _created_at
+                ? as created_at
             FROM weekly_ingredients
-        """, (datetime.utcnow().isoformat(),))
+        """, (datetime.now(timezone.utc).isoformat(),))
         
         conn.commit()
         print("  ✓ Ingredient trends computed")
@@ -263,11 +263,11 @@ def compute_menu_stability_metrics(conn: sqlite3.Connection) -> None:
             cursor.execute("""
                 INSERT INTO menu_stability_metrics
                 (week_start_date, locale, overlap_with_prev_week, new_recipe_rate,
-                 churned_recipe_rate, recipes_retained, recipes_added, recipes_removed, _created_at)
+                 churned_recipe_rate, recipes_retained, recipes_added, recipes_removed, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 week_date, 'en-GB', overlap, new_rate, churned_rate,
-                retained, added, removed, datetime.utcnow().isoformat()
+                retained, added, removed, datetime.now(timezone.utc).isoformat()
             ))
         
         conn.commit()
@@ -302,7 +302,7 @@ def compute_allergen_density(conn: sqlite3.Connection) -> None:
         # Now compute allergen density
         cursor.execute("""
             INSERT INTO allergen_density
-            (week_start_date, allergen_id, allergen_name, recipe_count, percentage_of_menu, _created_at)
+            (week_start_date, allergen_id, allergen_name, recipe_count, percentage_of_menu, created_at)
             SELECT 
                 m.start_date as week_start_date,
                 a.allergen_id,
@@ -311,7 +311,7 @@ def compute_allergen_density(conn: sqlite3.Connection) -> None:
                 ROUND(100.0 * COUNT(DISTINCT r.id) / 
                     NULLIF((SELECT total_recipes FROM temp_total_recipes_per_week WHERE week_start_date = m.start_date), 0), 
                     2) as percentage_of_menu,
-                ? as _created_at
+                ? as created_at
             FROM menus m
             LEFT JOIN menu_recipes mr ON m.id = mr.menu_id AND mr.is_active = 1
             LEFT JOIN recipes r ON mr.recipe_id = r.id
@@ -319,7 +319,7 @@ def compute_allergen_density(conn: sqlite3.Connection) -> None:
             LEFT JOIN allergens a ON ra.allergen_id = a.allergen_id
             WHERE m.is_active = 1 AND a.allergen_id IS NOT NULL
             GROUP BY m.start_date, a.allergen_id, a.name
-        """, (datetime.utcnow().isoformat(),))
+        """, (datetime.now(timezone.utc).isoformat(),))
         
         cursor.execute("DROP TABLE IF EXISTS temp_total_recipes_per_week")
         

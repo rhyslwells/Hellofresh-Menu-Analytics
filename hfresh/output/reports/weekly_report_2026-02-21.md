@@ -27,7 +27,7 @@
 
 ## 1. Menu Evolution
 
-![Menu Overlap Trends](../../charts/menu_overlap_trends.png)
+![Menu Overlap Trends](../charts/menu_overlap_trends.png)
 
 ### Recent Menu Stability
 

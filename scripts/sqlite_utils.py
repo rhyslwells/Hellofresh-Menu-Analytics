@@ -3,7 +3,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
-DB_PATH = Path("hfresh/silver_data.db")
+DB_PATH = Path("hfresh") / "hfresh.db"
+
 
 
 def get_conn():

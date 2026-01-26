@@ -19,8 +19,6 @@
 - [ ] How will it run using gitactions, with hfresh api token non-locally?
 
 
-
-
 ## Key Implementation Notes
 
 ### SCD Type 2 Pattern

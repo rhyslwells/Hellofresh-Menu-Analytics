@@ -38,7 +38,7 @@ import os
 import json
 import sqlite3
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from pathlib import Path
 import requests
@@ -101,7 +101,7 @@ def write_to_bronze(
                 locale,
                 page,
                 json.dumps(payload),
-                datetime.utcnow().isoformat(),
+                datetime.now(timezone.utc).isoformat(),
             ),
         )
         conn.commit()
@@ -299,6 +299,38 @@ def perform_weekly_pull(session: requests.Session, conn: sqlite3.Connection) -> 
     results["menus"] = fetch_menus_for_week(
         session, conn, LOCALE_COUNTRY, pull_date, next_monday, next_sunday
     )
+
+    # Fetch full recipe details for every recipe referenced in menus
+    # so downstream Silver transformation can populate bridge tables.
+    def fetch_recipe_detail(session: requests.Session, locale: str, recipe_id: str) -> dict:
+        url = f"{BASE_URL}/{locale}/recipes/{recipe_id}"
+        return get_with_rate_limit(session, url)
+
+    def fetch_and_store_recipe_details(session: requests.Session, conn: sqlite3.Connection, recipe_ids: list[str], locale: str, pull_date: str) -> None:
+        unique_ids = sorted(set(recipe_ids))
+        print(f"\n  Fetching {len(unique_ids)} recipe details to bronze")
+        for rid in unique_ids:
+            try:
+                payload = fetch_recipe_detail(session, locale, rid)
+                # Store each recipe detail under the `recipes` endpoint in bronze
+                write_to_bronze(conn, pull_date, "recipes", locale, 1, payload)
+                time.sleep(0.05)
+            except Exception as e:
+                print(f"  ⚠️ Error fetching recipe {rid}: {e}")
+
+    # collect recipe ids from menus
+    recipe_ids = []
+    for menu in results.get("menus", []):
+        for r in menu.get("recipes", []):
+            if r.get("id"):
+                recipe_ids.append(r.get("id"))
+
+    if recipe_ids:
+        fetch_details = os.environ.get('FETCH_RECIPE_DETAILS', '0').lower() in ('1', 'true', 'yes')
+        if fetch_details:
+            fetch_and_store_recipe_details(session, conn, recipe_ids, LOCALE_COUNTRY, pull_date)
+        else:
+            print(f"  → Skipping per-recipe detail fetch (set FETCH_RECIPE_DETAILS=1 to enable)")
     
     # FIRST RUN: Fetch reference data baseline
     has_ref_data = reference_data_exists(conn)
