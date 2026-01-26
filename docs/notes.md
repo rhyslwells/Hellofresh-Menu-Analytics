@@ -8,10 +8,18 @@
 - [x] Convert 6_weekly_report.py with GitHub Actions
 - [x] Create GitHub Actions workflow (pipeline.yml)
 - [x] Create setup documentation (GITHUB_SETUP.md, LOCAL_DEV.md)
+- [x] Is this suitable to do using sqlite? Or is there a better alternative?
+- [x] Does the database have relationships or is it just a collection of flat tables? See ER diagram.
+
 - [ ] Test end-to-end pipeline locally
 - [ ] Test GitHub Actions workflow execution
 - [ ] Monitor first automated run (Friday 02:00 UTC)
 - [ ] Adjust schedule/retention as needed
+- [ ] Set up Hfresh api key
+- [ ] How will it run using gitactions, with hfresh api token non-locally?
+
+
+
 
 ## Key Implementation Notes
 
@@ -115,6 +123,8 @@ Red flags:
 
 ## Useful Commands
 
+Ensure sqlite is an environment variable in your shell.
+
 ```bash
 # Explore database
 sqlite3 hfresh/hfresh.db ".schema"
@@ -137,10 +147,6 @@ python scripts/6_weekly_report.py
 
 ## Future Enhancements
 
-- [ ] Add Slack notifications on workflow completion
-- [ ] Add data quality checks (duplicate detection, nullability)
+
 - [ ] Create GitHub Pages dashboard for reports
 - [ ] Add email alerts for anomalies
-- [ ] Set up dbt for complex silver/gold transformations
-- [ ] Add Apache Airflow orchestration (if scaling beyond GitHub Actions)
-- [ ] Export gold tables to cloud data warehouse

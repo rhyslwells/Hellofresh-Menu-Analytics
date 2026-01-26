@@ -53,34 +53,66 @@ def init_database():
             image_url TEXT,
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
         )
     """)
     print("  ✓ recipes")
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS ingredients (
-            id TEXT PRIMARY KEY,
+            ingredient_id TEXT PRIMARY KEY,
             name TEXT,
             family TEXT,
+            type TEXT,
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
         )
     """)
     print("  ✓ ingredients")
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS allergens (
-            id TEXT PRIMARY KEY,
+            allergen_id TEXT PRIMARY KEY,
             name TEXT,
             type TEXT,
+            icon_url TEXT,
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
         )
     """)
     print("  ✓ allergens")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS tags (
+            tag_id TEXT PRIMARY KEY,
+            name TEXT,
+            type TEXT,
+            icon_url TEXT,
+            first_seen_date TEXT NOT NULL,
+            last_seen_date TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
+        )
+    """)
+    print("  ✓ tags")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS labels (
+            label_id TEXT PRIMARY KEY,
+            name TEXT,
+            description TEXT,
+            first_seen_date TEXT NOT NULL,
+            last_seen_date TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
+        )
+    """)
+    print("  ✓ labels")
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS menus (
@@ -88,10 +120,10 @@ def init_database():
             url TEXT,
             year_week TEXT,
             start_date TEXT,
-            locale TEXT,
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT
         )
     """)
     print("  ✓ menus")
@@ -107,6 +139,7 @@ def init_database():
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
             is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT,
             PRIMARY KEY (recipe_id, ingredient_id)
         )
     """)
@@ -119,10 +152,37 @@ def init_database():
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
             is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT,
             PRIMARY KEY (recipe_id, allergen_id)
         )
     """)
     print("  ✓ recipe_allergens")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS recipe_tags (
+            recipe_id TEXT NOT NULL,
+            tag_id TEXT NOT NULL,
+            first_seen_date TEXT NOT NULL,
+            last_seen_date TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT,
+            PRIMARY KEY (recipe_id, tag_id)
+        )
+    """)
+    print("  ✓ recipe_tags")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS recipe_labels (
+            recipe_id TEXT NOT NULL,
+            label_id TEXT NOT NULL,
+            first_seen_date TEXT NOT NULL,
+            last_seen_date TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT,
+            PRIMARY KEY (recipe_id, label_id)
+        )
+    """)
+    print("  ✓ recipe_labels")
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS menu_recipes (
@@ -132,6 +192,7 @@ def init_database():
             first_seen_date TEXT NOT NULL,
             last_seen_date TEXT NOT NULL,
             is_active INTEGER DEFAULT 1,
+            _ingestion_ts TEXT,
             PRIMARY KEY (menu_id, recipe_id)
         )
     """)

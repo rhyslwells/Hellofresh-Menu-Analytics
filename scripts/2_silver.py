@@ -6,44 +6,15 @@ Purpose
 Transforms Bronze → Silver layer with SCD Type 2 tracking.
 Reads raw API responses and builds normalized, slowly-changing dimension tables.
 
-Architecture
-------------
-- Source: hfresh.db, api_responses table
-- Output: hfresh.db, silver schema tables
-- SCD Tracking: first_seen_date, last_seen_date, is_active
-- UPDATE/INSERT for idempotent upserts
-
-Core Tables (SCD Type 2)
-------------------------
-- recipes
-- ingredients
-- allergens
-- tags
-- labels
-- menus
-
-Bridge Tables (Many-to-Many)
-----------------------------
-- recipe_ingredients
-- recipe_allergens
-- recipe_tags
-- recipe_labels
-- menu_recipes
-
 Usage
 -----
-From command line:
 python scripts/2_silver.py
-
-With GitHub Actions (after 1_bronze.py):
-env HELLOFRESH_API_KEY="..." python scripts/2_silver.py
 """
 
 import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 
 # ======================
@@ -61,7 +32,6 @@ def get_db_connection() -> sqlite3.Connection:
     """Get SQLite database connection."""
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
-    # Enable foreign keys
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -79,11 +49,6 @@ def upsert_entity_with_scd(
 ) -> None:
     """
     Upsert entity with SCD Type 2 using UPDATE + INSERT pattern.
-    
-    Strategy:
-    1. UPDATE existing records: set is_active=1, last_seen_date=pull_date if ID still exists
-    2. INSERT new records: set first_seen_date=pull_date, is_active=1
-    3. (Optional) Deactivate records not in this pull
     """
     if not rows:
         return
@@ -91,66 +56,48 @@ def upsert_entity_with_scd(
     cursor = conn.cursor()
     
     try:
-        # Extract all IDs from incoming records
-        incoming_ids = [row.get(id_column) for row in rows]
-        
-        # Step 1: Deactivate records that are no longer in source (optional, be careful)
-        # For now, we just update existing + insert new
-        
-        # Step 2: UPDATE existing records with new data + update last_seen_date
         for row in rows:
             record_id = row.get(id_column)
             if not record_id:
                 continue
             
-            # Build the SET clause dynamically
-            set_clauses = []
-            params = []
+            # Check if record exists
+            cursor.execute(f"SELECT {id_column} FROM {table} WHERE {id_column} = ?", (record_id,))
+            exists = cursor.fetchone()
             
-            for col, val in row.items():
-                if col != id_column:  # Don't update ID
-                    set_clauses.append(f"  {col} = ?")
-                    params.append(val)
-            
-            set_clauses.append("  last_seen_date = ?")
-            set_clauses.append("  is_active = 1")
-            set_clauses.append("  _ingestion_ts = ?")
-            params.append(pull_date)
-            params.append(datetime.utcnow().isoformat())
-            
-            # Try UPDATE first
-            update_sql = f"""
-            UPDATE {table}
-            SET {', '.join(set_clauses)}
-            WHERE {id_column} = ?
-            """
-            params.append(record_id)
-            
-            cursor.execute(update_sql, params)
-            
-            # If no rows updated, INSERT
-            if cursor.rowcount == 0:
-                # Build INSERT for this record
-                cols = list(row.keys()) + [
-                    'first_seen_date',
-                    'last_seen_date',
-                    'is_active',
-                    '_ingestion_ts'
-                ]
+            if exists:
+                # UPDATE existing record
+                set_clauses = []
+                params = []
+                
+                for col, val in row.items():
+                    if col != id_column:
+                        set_clauses.append(f"{col} = ?")
+                        params.append(val)
+                
+                set_clauses.append("last_seen_date = ?")
+                set_clauses.append("is_active = 1")
+                set_clauses.append("_ingestion_ts = ?")
+                
+                params.extend([pull_date, datetime.utcnow().isoformat(), record_id])
+                
+                update_sql = f"""
+                UPDATE {table}
+                SET {', '.join(set_clauses)}
+                WHERE {id_column} = ?
+                """
+                cursor.execute(update_sql, params)
+            else:
+                # INSERT new record
+                cols = list(row.keys()) + ['first_seen_date', 'last_seen_date', 'is_active', '_ingestion_ts']
                 placeholders = ', '.join(['?' for _ in cols])
+                
                 insert_sql = f"""
                 INSERT INTO {table} ({', '.join(cols)})
                 VALUES ({placeholders})
                 """
                 
-                values = [row.get(col) for col in list(row.keys())]
-                values.extend([
-                    pull_date,
-                    pull_date,
-                    1,
-                    datetime.utcnow().isoformat()
-                ])
-                
+                values = list(row.values()) + [pull_date, pull_date, 1, datetime.utcnow().isoformat()]
                 cursor.execute(insert_sql, values)
         
         conn.commit()
@@ -174,36 +121,59 @@ def upsert_bridge_relationship(
     
     try:
         for row in rows:
-            # Get the ID columns (typically two foreign keys)
-            cols = list(row.keys()) + [
-                'first_seen_date',
-                'last_seen_date',
-                'is_active',
-                '_ingestion_ts'
-            ]
-            placeholders = ', '.join(['?' for _ in cols])
+            # Get primary key columns (depends on table)
+            if table == 'recipe_ingredients':
+                pk_cols = ['recipe_id', 'ingredient_id']
+            elif table == 'recipe_allergens':
+                pk_cols = ['recipe_id', 'allergen_id']
+            elif table == 'recipe_tags':
+                pk_cols = ['recipe_id', 'tag_id']
+            elif table == 'recipe_labels':
+                pk_cols = ['recipe_id', 'label_id']
+            elif table == 'menu_recipes':
+                pk_cols = ['menu_id', 'recipe_id']
+            else:
+                pk_cols = []
             
-            sql = f"""
-            INSERT OR IGNORE INTO {table} ({', '.join(cols)})
-            VALUES ({placeholders})
-            """
-            
-            values = [row.get(col) for col in list(row.keys())]
-            values.extend([
-                pull_date,
-                pull_date,
-                1,
-                datetime.utcnow().isoformat()
-            ])
-            
-            cursor.execute(sql, values)
+            # Check if exists
+            if pk_cols:
+                where_clause = ' AND '.join([f"{col} = ?" for col in pk_cols])
+                pk_values = [row.get(col) for col in pk_cols]
+                
+                cursor.execute(f"SELECT * FROM {table} WHERE {where_clause}", pk_values)
+                exists = cursor.fetchone()
+                
+                if exists:
+                    # UPDATE
+                    set_clauses = []
+                    params = []
+                    for col, val in row.items():
+                        if col not in pk_cols:
+                            set_clauses.append(f"{col} = ?")
+                            params.append(val)
+                    
+                    set_clauses.append("last_seen_date = ?")
+                    set_clauses.append("is_active = 1")
+                    set_clauses.append("_ingestion_ts = ?")
+                    params.extend([pull_date, datetime.utcnow().isoformat()])
+                    params.extend(pk_values)
+                    
+                    update_sql = f"UPDATE {table} SET {', '.join(set_clauses)} WHERE {where_clause}"
+                    cursor.execute(update_sql, params)
+                else:
+                    # INSERT
+                    cols = list(row.keys()) + ['first_seen_date', 'last_seen_date', 'is_active', '_ingestion_ts']
+                    placeholders = ', '.join(['?' for _ in cols])
+                    values = list(row.values()) + [pull_date, pull_date, 1, datetime.utcnow().isoformat()]
+                    
+                    insert_sql = f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders})"
+                    cursor.execute(insert_sql, values)
         
         conn.commit()
     except Exception as e:
         conn.rollback()
         print(f"Error during bridge upsert to {table}: {e}")
         raise
-
 
 
 # ======================
@@ -217,7 +187,6 @@ def process_menus_endpoint(
 ) -> None:
     """
     Process menus with embedded recipes.
-    Handles: menus, recipes, recipe-ingredient relationships, menu-recipe relationships.
     """
     menus_data = payload.get('data', [])
     if not menus_data:
@@ -304,7 +273,7 @@ def process_reference_endpoint(
     table: str,
     payload: dict,
     pull_date: str,
-    columns: list
+    id_column: str,
 ) -> None:
     """Process reference data (ingredients, allergens, tags, labels)."""
     data = payload.get('data', [])
@@ -312,23 +281,26 @@ def process_reference_endpoint(
         return
     
     try:
-        # Flatten data to rows, mapping API column names to DB column names
         rows = []
         for item in data:
-            row_dict = {}
-            for col in columns:
-                # Map common API patterns to DB column names
-                api_field = col
-                if col.endswith('_id'):
-                    api_field = 'id'
-                elif col == 'icon_url':
-                    api_field = 'iconPath'
-                
-                row_dict[col] = item.get(api_field)
+            row_dict = {id_column: item.get('id')}
+            
+            # Map common fields
+            if 'name' in item:
+                row_dict['name'] = item.get('name')
+            if 'type' in item:
+                row_dict['type'] = item.get('type')
+            if 'family' in item:
+                row_dict['family'] = item.get('family')
+            if 'iconPath' in item:
+                row_dict['icon_url'] = item.get('iconPath')
+            if 'description' in item:
+                row_dict['description'] = item.get('description')
+            
             rows.append(row_dict)
         
         # Upsert with SCD
-        upsert_entity_with_scd(conn, table, rows, pull_date, columns[0])
+        upsert_entity_with_scd(conn, table, rows, pull_date, id_column)
         print(f"  ✓ Processed {len(rows)} records to {table}")
     except Exception as e:
         print(f"  ⚠️  Error processing {table}: {e}")
@@ -376,25 +348,13 @@ def process_bronze_to_silver(conn: sqlite3.Connection, pull_date: str = None) ->
             if endpoint == "menus":
                 process_menus_endpoint(conn, payload, pull_date)
             elif endpoint == "ingredients":
-                process_reference_endpoint(
-                    conn, 'ingredients', payload, pull_date,
-                    ['ingredient_id', 'name', 'family', 'type']
-                )
+                process_reference_endpoint(conn, 'ingredients', payload, pull_date, 'ingredient_id')
             elif endpoint == "allergens":
-                process_reference_endpoint(
-                    conn, 'allergens', payload, pull_date,
-                    ['allergen_id', 'name', 'type', 'icon_url']
-                )
+                process_reference_endpoint(conn, 'allergens', payload, pull_date, 'allergen_id')
             elif endpoint == "tags":
-                process_reference_endpoint(
-                    conn, 'tags', payload, pull_date,
-                    ['tag_id', 'name', 'type', 'icon_url']
-                )
+                process_reference_endpoint(conn, 'tags', payload, pull_date, 'tag_id')
             elif endpoint == "labels":
-                process_reference_endpoint(
-                    conn, 'labels', payload, pull_date,
-                    ['label_id', 'name', 'description']
-                )
+                process_reference_endpoint(conn, 'labels', payload, pull_date, 'label_id')
     except Exception as e:
         print(f"  ⚠️  Error in process_bronze_to_silver: {e}")
 
@@ -406,7 +366,6 @@ def process_bronze_to_silver(conn: sqlite3.Connection, pull_date: str = None) ->
 def transform_bronze_to_silver() -> None:
     """
     Main transformation orchestrator.
-    Reads Bronze table and writes to Silver with SCD Type 2.
     """
     print("""
     ╔══════════════════════════════════════════════════════════╗
@@ -448,8 +407,8 @@ def transform_bronze_to_silver() -> None:
             cursor.execute(f"SELECT COUNT(*) FROM {table_name} WHERE is_active = 1")
             count = cursor.fetchone()[0]
             print(f"  {label:25} {count:>8} records (active)")
-        except:
-            print(f"  {label:25} {0:>8} records")
+        except Exception as e:
+            print(f"  {label:25} {'ERROR':>8}")
     
     print(f"\nSilver layer: {DB_PATH}\n")
     conn.close()
