@@ -1,150 +1,86 @@
-# Project Tasks & Notes
+# Build notes, todos, and development details
 
-## Active Tasks
+This file contains the practical developer notes, the TODO checklist, and
+the exact commands for building and running the repository locally. High-
+level project information and links live in the repository `README.md`.
 
-- [x] Convert 1_bronze.py from Databricks to SQLite
-- [x] Convert 2_silver.py with SCD Type 2 logic
-- [x] Convert 3_gold_analytics.py to SQLite SQL
-- [x] Convert 6_weekly_report.py with GitHub Actions
-- [x] Create GitHub Actions workflow (pipeline.yml)
-- [x] Create setup documentation (GITHUB_SETUP.md, LOCAL_DEV.md)
-- [x] Is this suitable to do using sqlite? Or is there a better alternative?
-- [x] Does the database have relationships or is it just a collection of flat tables? See ER diagram.
+Active tasks
+- [x] Convert `1_bronze.py` from Databricks to SQLite
+- [x] Convert `2_silver.py` with SCD Type 2 logic
+- [x] Convert `3_gold_analytics.py` to SQLite SQL
+- [x] Convert `6_weekly_report.py` with GitHub Actions
+- [x] Add CI workflow (`.github/workflows/pipeline.yml`)
+- [x] Add `GITHUB_SETUP.md` and `LOCAL_DEV.md`
 
-- [ ] Test end-to-end pipeline locally
-- [ ] Test GitHub Actions workflow execution
+Todo:
+- [ ] Test end-to-end pipeline locally (run historical week)
+- [ ] Validate GitHub Actions execution on first scheduled run
+- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
+- [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
+
+Later
 - [ ] Monitor first automated run (Friday 02:00 UTC)
-- [ ] Adjust schedule/retention as needed
-- [ ] Set up Hfresh api key
-- [ ] How will it run using gitactions, with hfresh api token non-locally?
 
+### Notes
 
-## Key Implementation Notes
+SCD Type 2 pattern (implementation notes)
+- Each entity row tracks lifecycle: `first_seen_date`, `last_seen_date`, `is_active`.
+- Pattern: on each run, compare current API entities →
+	- UPDATE existing rows' `last_seen_date` and `is_active` as needed
+	- INSERT rows that are new with `first_seen_date = last_seen_date = run_week`
+	- Mark rows not present in current payload as `is_active = FALSE` (and set `last_seen_date`)
 
-### SCD Type 2 Pattern
-Records track their lifetime in the dataset:
-- `first_seen_date` - Week when first encountered
-- `last_seen_date` - Most recent update (every week)
-- `is_active` - TRUE if in current API data
+Database layout (developer view)
+- Single DB: `hfresh/hfresh.db` (14 tables total)
+- Bronze: `api_responses` (raw JSON, append-only)
+- Silver: normalized entity tables (recipes, ingredients, allergens, tags, labels, menus) and bridge tables (recipe_ingredients, recipe_allergens, recipe_tags, recipe_labels, menu_recipes)
+- Gold: analytics tables (weekly_menu_metrics, recipe_survival_metrics, ingredient_trends, menu_stability_metrics, allergen_density)
 
-**Logic:** UPDATE existing record's dates, INSERT if new, mark missing as inactive
+Charts generated weekly
+- `menu_overlap.png`, `recipe_survival.png`, `ingredient_trends.png`, `allergen_heatmap.png`
 
-### Database Structure
-- **Single file:** `hfresh/hfresh.db` (14 tables)
-- **Bronze (1):** api_responses (raw API payloads)
-- **Silver (11):** Normalized entities + bridge relationships
-- **Gold (5):** Analytics tables
+API integration
+- Endpoint: HelloFresh API (API key required)
+- Rate limit: 60 requests/minute (throttle calls accordingly)
+- Auth: runner/local env var or GitHub Secret `HELLOFRESH_API_KEY`
 
-### Charts Generated Weekly
-1. `menu_overlap.png` - Week-over-week recipe stability
-2. `recipe_survival.png` - Recipe lifespan distribution
-3. `ingredient_trends.png` - Popularity rankings over time
-4. `allergen_heatmap.png` - Allergen coverage by week
+Known gotchas
+- SQLite has no `MERGE` and limited array/JSON functions — implement joins and set logic in Python when helpful.
+- Use `julianday()` for date math when necessary.
+- Database file can be locked if concurrent scripts run — avoid parallel runs against the same DB.
 
-### API Integration
-- Endpoint: HelloFresh API (requires API key)
-- Rate limit: 60 requests/minute
-- Pagination: Automatic with recursive retry logic
-- Auth: GitHub Secret `HELLOFRESH_API_KEY`
-
-## Known Gotchas
-
-### SQLite Limitations
-- No native ARRAY operations (use Python set operations instead)
-- No MERGE statement (use UPDATE + INSERT pattern)
-- JULIANDAY() for date calculations (not DATE_ADD like Spark)
-
-### GitHub Actions
-- Workflow runs Friday 02:00 UTC
-- Needs repository secret configured (case-sensitive: `HELLOFRESH_API_KEY`)
-- Database file persists between runs (append-only design)
-- Reports auto-commit to main branch
-
-### Local Development
-- Must set environment variable: `export HELLOFRESH_API_KEY="..."`
-- Create venv: `python -m venv venv && source venv/bin/activate`
-- Install deps: `pip install -r requirements.txt`
-- Run scripts in order: init → 1_bronze → 2_silver → 3_gold → 6_report
-
-## Schema Validation Queries
-
-```sql
--- Verify all tables exist
-SELECT COUNT(*) FROM recipes;
-SELECT COUNT(*) FROM ingredients;
-SELECT COUNT(*) FROM menus;
-SELECT COUNT(*) FROM weekly_menu_metrics;
-
--- Check SCD tracking is active
-SELECT COUNT(DISTINCT recipe_id) FROM recipes WHERE is_active = 1;
-SELECT DATE(MAX(last_seen_date)) FROM recipes;
-
--- Verify relationships
-SELECT COUNT(*) FROM recipe_ingredients;
-SELECT COUNT(*) FROM menu_recipes;
-
--- Check gold analytics
-SELECT COUNT(*) FROM weekly_menu_metrics;
-SELECT COUNT(DISTINCT week_start_date) FROM ingredient_trends;
-```
-
-## Performance Tips
-
-1. **First run is slow** - API rate limiting takes ~5-10 min for bronze
-2. **Subsequent runs are faster** - Only append new rows to bronze
-3. **Gold layer recomputes fully** - Uses DELETE then INSERT pattern (idempotent)
-4. **Charts take ~1 min** - matplotlib rendering on full history
-
-## Backup Strategy
-
-```bash
-# Backup database
-cp hfresh/hfresh.db hfresh/hfresh_backup_$(date +%Y%m%d).db
-
-# Verify backup
-sqlite3 hfresh/hfresh_backup_*.db "SELECT COUNT(*) FROM recipes;"
-```
-
-## Monitoring & Alerts
-
-Check weekly:
-- GitHub Actions successful runs (green checkmarks)
-- New report + charts in `hfresh/output/`
-- Report committed to main branch
-- No data quality warnings in logs
-
-Red flags:
-- API key expired → Update GitHub Secret
-- Database locked → Ensure no concurrent runs
-- Out of memory → Increase runner specs or reduce retention
-- Charts not generating → Check matplotlib installation
-
-## Useful Commands
-
-Ensure sqlite is an environment variable in your shell.
-
-```bash
-# Explore database
-sqlite3 hfresh/hfresh.db ".schema"
-sqlite3 hfresh/hfresh.db ".tables"
-
-# Query results
-sqlite3 hfresh/hfresh.db "SELECT * FROM weekly_menu_metrics LIMIT 5;"
-
-# Check file size
-ls -lh hfresh/hfresh.db
-
-# Git operations
-git log --oneline hfresh/output/reports/
-git diff <commit1> <commit2> -- hfresh/output/reports/
-
-# Run specific script
+Local development (exact commands)
+Windows (PowerShell/cmd):
+```powershell
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+set HELLOFRESH_API_KEY=your_key_here
+python scripts/init_sqlite.py
 python scripts/1_bronze.py
+python scripts/2_silver.py
+python scripts/3_gold_analytics.py
 python scripts/6_weekly_report.py
 ```
 
-## Future Enhancements
+Useful sqlite commands (quick checks)
+```bash
+sqlite3 hfresh/hfresh.db ".tables"
+sqlite3 hfresh/hfresh.db "SELECT COUNT(*) FROM recipes;"
+sqlite3 hfresh/hfresh.db ".schema recipes"
+```
 
+Backup procedure
+```bash
+cp hfresh/hfresh.db hfresh/hfresh_backup_$(date +%Y%m%d).db
+sqlite3 hfresh/hfresh_backup_*.db "SELECT COUNT(*) FROM recipes;"
+```
 
-- [ ] Create GitHub Pages dashboard for reports
-- [ ] Add email alerts for anomalies
+Performance notes
+- First full bronze ingestion will be slow (API rate limits).
+- Subsequent runs append new rows to bronze and update silver; gold recomputes are idempotent.
+
+Monitoring checklist
+- Confirm GitHub Actions run succeeded
+- Check `hfresh/output/<week>/report.md` and charts
+- Verify `weekly_menu_metrics` and `recipe_survival_metrics` contain expected rows
