@@ -1,55 +1,47 @@
 """
-DATABRICKS BRONZE LAYER INGESTION
+SQLite BRONZE LAYER INGESTION
 
 Purpose
 -------
 Fetches weekly menus (with embedded recipes) from the HelloFresh API.
-Writes raw JSON responses to Databricks Delta tables in the bronze layer.
+Writes raw JSON responses to SQLite database in the bronze layer.
 
 Architecture
 ------------
 - Bronze Layer: Raw API responses (immutable, append-only)
-- Delta Tables: ACID-compliant, versioned, scalable
-- Partitioned by: pull_date, endpoint
-- Full audit trail with metadata
+- SQLite: Local database, suitable for <1GB datasets
+- Table: api_responses
+- Full audit trail with ingestion timestamps
 
 Output
 ------
-Database: hfresh_bronze
+Database: hfresh/hfresh.db
 Table: api_responses
 Columns:
-  - pull_date (DATE, partition key)
-  - endpoint (STRING, partition key)
-  - locale (STRING)
-  - page_number (INT)
-  - payload (STRING - JSON)
-  - ingestion_timestamp (TIMESTAMP)
+  - pull_date (TEXT)
+  - endpoint (TEXT)
+  - locale (TEXT)
+  - page_number (INTEGER)
+  - payload (TEXT - JSON)
+  - ingestion_timestamp (TEXT)
 
 Usage
 -----
-In Databricks notebook:
-%run ./1_bronze
+From command line:
+python scripts/1_bronze.py
 
-Or parameterized:
-dbutils.notebook.run("1_bronze", 60, {"pull_date": "2026-01-24"})
+With GitHub Actions:
+env HELLOFRESH_API_KEY="..." python scripts/1_bronze.py
 """
 
 import os
 import json
+import sqlite3
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
+from pathlib import Path
 import requests
-
-# Databricks imports (when running in Databricks)
-try:
-    from databricks.sql import sql
-    from pyspark.sql import SparkSession, functions as F
-    from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
-    dbutils
-    IN_DATABRICKS = True
-except (ImportError, NameError):
-    IN_DATABRICKS = False
 
 
 # ======================
@@ -61,115 +53,58 @@ LOCALE_COUNTRY = "en-GB"
 PER_PAGE = 50
 RATE_LIMIT_SLEEP_SECONDS = 1
 
-# Databricks Configuration
-DATABRICKS_CATALOG = "hfresh_catalog"  # Or 'main' for default catalog
-BRONZE_SCHEMA = "hfresh_bronze"
-BRONZE_TABLE = f"{DATABRICKS_CATALOG}.{BRONZE_SCHEMA}.api_responses"
+# SQLite Configuration
+DB_PATH = Path("hfresh/hfresh.db")
 
-# API Key Management (Databricks Secrets)
-# ⚠️ NEVER hardcode or commit API keys!
-# Store in Databricks Secret Scope instead (see SETUP_SECRETS.md)
 
 def get_api_key() -> str:
-    """Retrieve API key from Databricks Secrets (secure)."""
-    if not IN_DATABRICKS:
+    """Retrieve API key from environment variable."""
+    api_key = os.environ.get("HELLOFRESH_API_KEY")
+    if not api_key:
         raise RuntimeError(
-            "API key retrieval requires Databricks environment. "
-            "Set HELLOFRESH_API_KEY environment variable locally."
+            "API key not found! Set HELLOFRESH_API_KEY environment variable."
         )
-    
-    try:
-        # Retrieve from Databricks Secret Scope
-        # Scope name: hfresh_secrets
-        # Key name: api_key
-        api_key = dbutils.secrets.get(scope="hfresh_secrets", key="api_key")
-        return api_key
-    except Exception as e:
-        raise RuntimeError(
-            f"Failed to retrieve API key from Databricks Secrets. "
-            f"Ensure secret scope 'hfresh_secrets' with key 'api_key' exists. "
-            f"Error: {e}"
-        )
-
-
-# For local development (fallback)
-BRONZE_DIR_LOCAL = None  # Disabled - use Databricks only
+    return api_key
 
 
 # ======================
-# Databricks Setup
+# SQLite Setup
 # ======================
 
-def init_databricks() -> SparkSession:
-    """Initialize Spark session and create schema if needed."""
-    spark = SparkSession.builder.appName("hfresh_bronze_ingestion").getOrCreate()
-    
-    # Enable Delta Lake
-    spark.sql("SET spark.databricks.delta.preview.enabled = true")
-    
-    try:
-        # Create catalog and schema (idempotent)
-        spark.sql(f"CREATE CATALOG IF NOT EXISTS {DATABRICKS_CATALOG}")
-        spark.sql(f"CREATE SCHEMA IF NOT EXISTS {DATABRICKS_CATALOG}.{BRONZE_SCHEMA}")
-        
-        # Create bronze table if it doesn't exist
-        spark.sql(f"""
-            CREATE TABLE IF NOT EXISTS {BRONZE_TABLE} (
-                pull_date DATE,
-                endpoint STRING,
-                locale STRING,
-                page_number INT,
-                payload STRING,
-                ingestion_timestamp TIMESTAMP
-            )
-            USING DELTA
-            PARTITIONED BY (pull_date, endpoint)
-        """)
-        print("✓ Bronze schema initialized")
-        return spark
-    except Exception as e:
-        print(f"⚠️  Schema initialization warning: {e}")
-        print("   Continuing - table may already exist")
-        return spark
+def get_db_connection() -> sqlite3.Connection:
+    """Get SQLite database connection."""
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def write_to_bronze(
-    spark: SparkSession,
+    conn: sqlite3.Connection,
     pull_date: str,
     endpoint: str,
     locale: str,
     page: int,
     payload: dict,
 ) -> None:
-    """Write API response to Bronze Delta table."""
+    """Write API response to Bronze table."""
     try:
-        rows = [(
-            pull_date,
-            endpoint,
-            locale,
-            page,
-            json.dumps(payload),
-            datetime.utcnow().isoformat()
-        )]
-        
-        schema = StructType([
-            StructField("pull_date", StringType(), False),
-            StructField("endpoint", StringType(), False),
-            StructField("locale", StringType(), False),
-            StructField("page_number", IntegerType(), False),
-            StructField("payload", StringType(), False),
-            StructField("ingestion_timestamp", StringType(), False)
-        ])
-        
-        df = spark.createDataFrame(rows, schema=schema)
-        df = df.withColumn("pull_date", F.to_date(F.col("pull_date")))
-        df = df.withColumn("ingestion_timestamp", F.to_timestamp(F.col("ingestion_timestamp")))
-        
-        df.write \
-            .format("delta") \
-            .mode("append") \
-            .option("mergeSchema", "true") \
-            .insertInto(BRONZE_TABLE)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO api_responses 
+            (pull_date, endpoint, locale, page_number, payload, ingestion_timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                pull_date,
+                endpoint,
+                locale,
+                page,
+                json.dumps(payload),
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+        conn.commit()
     except Exception as e:
         print(f"Error writing to Bronze: {e}")
         raise
@@ -180,17 +115,8 @@ def write_to_bronze(
 # ======================
 
 def create_session() -> requests.Session:
-    """Create authenticated session with API key from Databricks Secrets."""
-    try:
-        api_token = get_api_key()
-    except RuntimeError as e:
-        print(f"⚠️  {e}")
-        print("Falling back to environment variable...")
-        api_token = os.environ.get("HELLOFRESH_API_KEY")
-        if not api_token:
-            raise RuntimeError(
-                "API key not found! Set via Databricks Secrets or HELLOFRESH_API_KEY env var."
-            )
+    """Create authenticated session with API key."""
+    api_token = get_api_key()
 
     session = requests.Session()
     session.headers.update({
@@ -200,13 +126,29 @@ def create_session() -> requests.Session:
     return session
 
 
+def get_with_rate_limit(
+    session: requests.Session,
+    url: str,
+    params: dict | None = None,
+) -> dict:
+    """Perform a GET request with basic handling for rate limits and errors."""
+    response = session.get(url, params=params)
+
+    if response.status_code == 429:
+        time.sleep(RATE_LIMIT_SLEEP_SECONDS)
+        return get_with_rate_limit(session, url, params)
+
+    response.raise_for_status()
+    return response.json()
+
+
 # ======================
 # API Extraction Functions
 # ======================
 
 def fetch_paginated_endpoint(
     session: requests.Session,
-    spark: SparkSession,
+    conn: sqlite3.Connection,
     endpoint_name: str,
     locale: str,
     pull_date: str,
@@ -214,7 +156,7 @@ def fetch_paginated_endpoint(
     per_page: int = PER_PAGE,
 ) -> list[dict]:
     """
-    Fetch all pages from an endpoint and write to Bronze Delta table.
+    Fetch all pages from an endpoint and write to Bronze table.
     Returns all records.
     """
     url = f"{BASE_URL}/{locale}/{endpoint_name}"
@@ -228,9 +170,9 @@ def fetch_paginated_endpoint(
         
         payload = get_with_rate_limit(session, url, params)
         
-        # Write to Bronze Delta table
+        # Write to Bronze table
         write_to_bronze(
-            spark=spark,
+            conn=conn,
             pull_date=pull_date,
             endpoint=endpoint_name,
             locale=locale,
@@ -259,7 +201,7 @@ def fetch_paginated_endpoint(
 
 def fetch_menus_for_week(
     session: requests.Session,
-    spark: SparkSession,
+    conn: sqlite3.Connection,
     locale: str,
     pull_date: str,
     start_date: datetime,
@@ -276,7 +218,7 @@ def fetch_menus_for_week(
     
     menus = fetch_paginated_endpoint(
         session=session,
-        spark=spark,
+        conn=conn,
         endpoint_name="menus",
         locale=locale,
         pull_date=pull_date,
@@ -307,12 +249,18 @@ def fetch_menus_for_week(
 # Reference Data Logic
 # ======================
 
-def reference_data_exists(spark: SparkSession) -> bool:
+def reference_data_exists(conn: sqlite3.Connection) -> bool:
     """Check if reference data has already been ingested."""
     try:
-        spark.sql(f"SELECT COUNT(*) FROM {BRONZE_TABLE} WHERE endpoint IN ('ingredients', 'allergens', 'tags', 'labels')")
-        result = spark.sql(f"SELECT COUNT(*) FROM {BRONZE_TABLE} WHERE endpoint IN ('ingredients', 'allergens', 'tags', 'labels')").collect()
-        return result[0][0] > 0
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT COUNT(*) FROM api_responses 
+            WHERE endpoint IN ('ingredients', 'allergens', 'tags', 'labels')
+            """
+        )
+        result = cursor.fetchone()
+        return result[0] > 0 if result else False
     except:
         return False
 
@@ -321,7 +269,7 @@ def reference_data_exists(spark: SparkSession) -> bool:
 # Weekly Pull Orchestration
 # ======================
 
-def perform_weekly_pull(session: requests.Session, spark: SparkSession) -> dict[str, Any]:
+def perform_weekly_pull(session: requests.Session, conn: sqlite3.Connection) -> dict[str, Any]:
     """
     Execute this week's data pull.
     
@@ -349,17 +297,49 @@ def perform_weekly_pull(session: requests.Session, spark: SparkSession) -> dict[
     
     # ALWAYS: Fetch next week's menus with embedded recipes
     results["menus"] = fetch_menus_for_week(
-        session, spark, LOCALE_COUNTRY, pull_date, next_monday, next_sunday
+        session, conn, LOCALE_COUNTRY, pull_date, next_monday, next_sunday
     )
+
+    # Fetch full recipe details for every recipe referenced in menus
+    # so downstream Silver transformation can populate bridge tables.
+    def fetch_recipe_detail(session: requests.Session, locale: str, recipe_id: str) -> dict:
+        url = f"{BASE_URL}/{locale}/recipes/{recipe_id}"
+        return get_with_rate_limit(session, url)
+
+    def fetch_and_store_recipe_details(session: requests.Session, conn: sqlite3.Connection, recipe_ids: list[str], locale: str, pull_date: str) -> None:
+        unique_ids = sorted(set(recipe_ids))
+        print(f"\n  Fetching {len(unique_ids)} recipe details to bronze")
+        for rid in unique_ids:
+            try:
+                payload = fetch_recipe_detail(session, locale, rid)
+                # Store each recipe detail under the `recipes` endpoint in bronze
+                write_to_bronze(conn, pull_date, "recipes", locale, 1, payload)
+                time.sleep(0.05)
+            except Exception as e:
+                print(f"  ⚠️ Error fetching recipe {rid}: {e}")
+
+    # collect recipe ids from menus
+    recipe_ids = []
+    for menu in results.get("menus", []):
+        for r in menu.get("recipes", []):
+            if r.get("id"):
+                recipe_ids.append(r.get("id"))
+
+    if recipe_ids:
+        fetch_details = os.environ.get('FETCH_RECIPE_DETAILS', '0').lower() in ('1', 'true', 'yes')
+        if fetch_details:
+            fetch_and_store_recipe_details(session, conn, recipe_ids, LOCALE_COUNTRY, pull_date)
+        else:
+            print(f"  → Skipping per-recipe detail fetch (set FETCH_RECIPE_DETAILS=1 to enable)")
     
     # FIRST RUN: Fetch reference data baseline
-    has_ref_data = reference_data_exists(spark)
+    has_ref_data = reference_data_exists(conn)
     if not has_ref_data:
         print(f"\n  → First run detected - fetching reference data baseline")
         
         for endpoint in ["ingredients", "allergens", "tags", "labels"]:
             results[endpoint] = fetch_paginated_endpoint(
-                session, spark, endpoint, LOCALE_COUNTRY, pull_date
+                session, conn, endpoint, LOCALE_COUNTRY, pull_date
             )
     else:
         print(f"\n  → Reference data already exists, skipping")
@@ -376,18 +356,13 @@ def main() -> None:
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  HelloFresh Bronze Layer Ingestion                       ║
-    ║  Databricks Delta Tables                                 ║
+    ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
     
-    if not IN_DATABRICKS:
-        print("⚠️  Warning: Not running in Databricks environment")
-        print("   This notebook is designed for Databricks clusters")
-        print("   For local development, use the legacy SQLite version\n")
-    
-    # Initialize Databricks
-    print("Initializing Databricks...")
-    spark = init_databricks()
+    # Initialize SQLite connection
+    print("Connecting to database...")
+    conn = get_db_connection()
     
     # Create session
     session = create_session()
@@ -395,10 +370,10 @@ def main() -> None:
     # Verify connectivity
     countries = get_with_rate_limit(session, f"{BASE_URL}/countries")
     print(f"✓ API connected: {len(countries.get('data', []))} countries available")
-    print(f"✓ Bronze table: {BRONZE_TABLE}\n")
+    print(f"✓ Database: {DB_PATH}\n")
     
     # Execute weekly pull
-    results = perform_weekly_pull(session, spark)
+    results = perform_weekly_pull(session, conn)
     
     print(f"\n{'='*60}")
     print(f"✓ Weekly pull complete!")
@@ -410,8 +385,12 @@ def main() -> None:
         print(f"  {endpoint:20} {len(data):>5} records")
     
     # Show row count
-    row_count = spark.sql(f"SELECT COUNT(*) FROM {BRONZE_TABLE}").collect()[0][0]
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM api_responses")
+    row_count = cursor.fetchone()[0]
     print(f"\nBronze layer total: {row_count} records\n")
+    
+    conn.close()
 
 
 if __name__ == "__main__":
