@@ -17,6 +17,7 @@ Todo:
 - [ ] Validate GitHub Actions execution on first scheduled run
 - [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
 - [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
+- [ ] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
 
 Later
 - [ ] Monitor first automated run (Friday 02:00 UTC)
