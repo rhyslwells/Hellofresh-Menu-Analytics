@@ -4,23 +4,31 @@ This file contains the practical developer notes, the TODO checklist, and
 the exact commands for building and running the repository locally. High-
 level project information and links live in the repository `README.md`.
 
-Active tasks
+Todo:
+- [ ] Validate GitHub Actions execution on first scheduled run
+- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
+- [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
+- [ ] Test sql_queries scripts for useful queries to explore the database.
+- [ ] Set up pyproject.toml for dependency management using UV.
+- [ ] Its not 6_weekly_report.py anymore, rename to 4_weekly_report.py and adjust repo files accordingly.
+- [ ] Ensure that blueprint.md has been updated to reflect the project.
+
+---
+
 - [x] Convert `1_bronze.py` from Databricks to SQLite
 - [x] Convert `2_silver.py` with SCD Type 2 logic
 - [x] Convert `3_gold_analytics.py` to SQLite SQL
 - [x] Convert `6_weekly_report.py` with GitHub Actions
 - [x] Add CI workflow (`.github/workflows/pipeline.yml`)
 - [x] Add `GITHUB_SETUP.md` and `LOCAL_DEV.md`
+- [x] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
 
-Todo:
-- [ ] Test end-to-end pipeline locally (run historical week)
-- [ ] Validate GitHub Actions execution on first scheduled run
-- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
-- [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
-- [ ] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
+---
 
 Later
 - [ ] Monitor first automated run (Friday 02:00 UTC)
+- [ ] Test end-to-end pipeline locally (run historical week)
+
 
 ### Notes
 
@@ -64,16 +72,9 @@ python scripts/3_gold_analytics.py
 python scripts/6_weekly_report.py
 ```
 
-Useful sqlite commands (quick checks)
+Backup procedure (git bash)
 ```bash
-sqlite3 hfresh/hfresh.db ".tables"
-sqlite3 hfresh/hfresh.db "SELECT COUNT(*) FROM recipes;"
-sqlite3 hfresh/hfresh.db ".schema recipes"
-```
-
-Backup procedure
-```bash
-cp hfresh/hfresh.db hfresh/hfresh_backup_$(date +%Y%m%d).db
+cp hfresh/hfresh.db hfresh/backups/hfresh_backup_$(date +%Y%m%d).db
 sqlite3 hfresh/hfresh_backup_*.db "SELECT COUNT(*) FROM recipes;"
 ```
 
