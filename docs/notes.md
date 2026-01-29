@@ -12,6 +12,8 @@ Todo:
 - [ ] Set up pyproject.toml for dependency management using UV.
 - [ ] Its not 6_weekly_report.py anymore, rename to 4_weekly_report.py and adjust repo files accordingly.
 - [ ] Ensure that blueprint.md has been updated to reflect the project.
+- [ ] Rename the repository to something more descriptive than Databricks-Explorer.
+- [ ] Set up github pages to publish the weekly report automatically (see publishing.yml), so that plotly graphs can be viewed interactively.
 
 ---
 
