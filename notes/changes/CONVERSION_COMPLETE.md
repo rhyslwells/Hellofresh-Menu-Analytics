@@ -17,7 +17,7 @@ This document provides a checklist of all completed components and next steps.
 | `scripts/1_bronze.py` | Raw API ingestion | ✅ Complete | SparkSession → sqlite3, Delta append → INSERT |
 | `scripts/2_silver.py` | Data normalization | ✅ Complete | Delta MERGE → UPDATE+INSERT (SCD Type 2) |
 | `scripts/3_gold_analytics.py` | Analytics computation | ✅ Complete | Spark SQL → SQLite SQL + Python set ops |
-| `scripts/6_weekly_report.py` | Report generation | ✅ Complete | dbutils → Path, spark.sql → sqlite3 cursor |
+| `scripts/4_weekly_report.py` | Report generation | ✅ Complete | dbutils → Path, spark.sql → sqlite3 cursor |
 
 ### Infrastructure & Setup
 
@@ -79,7 +79,7 @@ This document provides a checklist of all completed components and next steps.
 3_gold_analytics.py (Analytics)
     ↓ [Compute 5 analytics tables]
     ↓
-6_weekly_report.py (Reporting)
+4_weekly_report.py (Reporting)
     ↓ [Generate markdown + 4 charts]
     ↓
 Git Commit (auto-commit report)
@@ -107,7 +107,7 @@ python scripts/init_sqlite.py     # Create schema
 python scripts/1_bronze.py        # Ingest API data
 python scripts/2_silver.py        # Normalize
 python scripts/3_gold_analytics.py # Compute analytics
-python scripts/6_weekly_report.py # Generate report
+python scripts/4_weekly_report.py # Generate report
 ```
 
 ### Outputs
@@ -253,7 +253,7 @@ Before using in production, verify:
 - [ ] `python scripts/1_bronze.py` populates `api_responses` table
 - [ ] `python scripts/2_silver.py` populates 11 silver tables with >0 rows
 - [ ] `python scripts/3_gold_analytics.py` computes 5 analytics tables
-- [ ] `python scripts/6_weekly_report.py` generates `weekly_report_*.md` and 4 PNG charts
+- [ ] `python scripts/4_weekly_report.py` generates `weekly_report_*.md` and 4 PNG charts
 - [ ] `.gitignore` excludes `*.db` and `output/` (files not in git)
 - [ ] `hfresh/hfresh.db` is NOT committed to repository (check .gitignore)
 - [ ] GitHub Secrets include `HELLOFRESH_API_KEY`
@@ -281,7 +281,7 @@ Before using in production, verify:
    python scripts/1_bronze.py
    python scripts/2_silver.py
    python scripts/3_gold_analytics.py
-   python scripts/6_weekly_report.py
+   python scripts/4_weekly_report.py
    ```
 
 2. **Push to GitHub**

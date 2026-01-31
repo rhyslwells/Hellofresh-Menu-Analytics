@@ -20,10 +20,10 @@ Output
 Usage
 -----
 From command line:
-python scripts/6_weekly_report.py
+python scripts/4_weekly_report.py
 
 With GitHub Actions (after 3_gold_analytics.py):
-python scripts/6_weekly_report.py
+python scripts/4_weekly_report.py
 """
 
 import sqlite3

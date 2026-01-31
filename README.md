@@ -1,4 +1,4 @@
-# Databricks-Explorer (HelloFresh weekly pipeline)
+# HelloFresh weekly pipeline
 
 Lightweight weekly data pipeline that ingests HelloFresh API data,
 stores it in a single SQLite file, applies SCD Type 2 normalization,
@@ -17,7 +17,7 @@ Quick links:
 - GitHub Actions setup: [GITHUB_SETUP.md](GITHUB_SETUP.md)
 
 Repository layout (high level):
-- `scripts/` — pipeline steps (`init_sqlite.py`, `1_bronze.py`, `2_silver.py`, `3_gold_analytics.py`, `6_weekly_report.py`)
+- `scripts/` — pipeline steps (`init_sqlite.py`, `1_bronze.py`, `2_silver.py`, `3_gold_analytics.py`, `4_weekly_report.py`)
 - `hfresh/` — `hfresh.db` and `output/` (charts + reports)
 - `docs/` — design docs and implementation notes
 

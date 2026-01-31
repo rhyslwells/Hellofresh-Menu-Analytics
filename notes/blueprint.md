@@ -71,7 +71,7 @@
    - Uses SQLite SQL + Python set operations
    - Calculates weekly metrics, trends, stability
 
-5. **Report Generation** (`6_weekly_report.py`)
+5. **Report Generation** (`4_weekly_report.py`)
    - Generates 4 PNG charts (matplotlib/seaborn)
    - Creates markdown report with embedded charts
    - Auto-commits report to Git repository
@@ -272,7 +272,7 @@ CREATE TABLE allergen_density (
 | `scripts/1_bronze.py` | Fetch API data, write to SQLite | ~5-10 min |
 | `scripts/2_silver.py` | SCD Type 2 normalization | ~5 min |
 | `scripts/3_gold_analytics.py` | Compute 5 gold tables | ~3-5 min |
-| `scripts/6_weekly_report.py` | Generate charts & markdown report | ~3-5 min |
+| `scripts/4_weekly_report.py` | Generate charts & markdown report | ~3-5 min |
 
 **Key Libraries:**
 - `requests` - HelloFresh API calls
@@ -309,7 +309,7 @@ Databricks-Explorer/
 │   ├── 1_bronze.py             # API ingestion
 │   ├── 2_silver.py             # SCD normalization
 │   ├── 3_gold_analytics.py     # Analytics
-│   ├── 6_weekly_report.py      # Reports & charts
+│   ├── 4_weekly_report.py      # Reports & charts
 │   └── sqlite_utils.py         # Utility functions
 ├── hfresh/
 │   ├── hfresh.db               # SQLite database (all 14 tables)
@@ -350,7 +350,7 @@ export HELLOFRESH_API_KEY="your_key"
 python scripts/1_bronze.py     # Fetch API data
 python scripts/2_silver.py     # Normalize with SCD
 python scripts/3_gold_analytics.py  # Compute analytics
-python scripts/6_weekly_report.py   # Generate charts & report
+python scripts/4_weekly_report.py   # Generate charts & report
 
 # Verify results
 sqlite3 hfresh/hfresh.db "SELECT COUNT(*) FROM recipes;"

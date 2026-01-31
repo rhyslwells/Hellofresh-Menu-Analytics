@@ -6,22 +6,28 @@ level project information and links live in the repository `README.md`.
 
 Todo:
 - [ ] Validate GitHub Actions execution on first scheduled run
-- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
 - [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
 - [ ] Test sql_queries scripts for useful queries to explore the database.
 - [ ] Set up pyproject.toml for dependency management using UV.
-- [ ] Its not 6_weekly_report.py anymore, rename to 4_weekly_report.py and adjust repo files accordingly.
 - [ ] Ensure that blueprint.md has been updated to reflect the project.
-- [ ] Rename the repository to something more descriptive than Databricks-Explorer.
-- [ ] Set up github pages to publish the weekly report automatically (see publishing.yml), so that plotly graphs can be viewed interactively.
 - [ ] Convert todos to issues in GitHub issues.
 
----
 
+Focus:
+- [ ] Set up github pages to publish the weekly report automatically (see publishing.yml), so that plotly graphs can be viewed interactively.
+- This focuses on docs folder:
+  -  so we need to ensure that the weekly reports are copied to docs/mkd-reports/<week>/report.md similar for the html reports.
+  - done: We also need to move the contents of /docs to another folder
+- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
+
+
+---
+- [x] Its not 4_weekly_report.py anymore, rename to 4_weekly_report.py and adjust repo files accordingly.
+- [x] Rename the repository to something more descriptive than Databricks-Explorer.
 - [x] Convert `1_bronze.py` from Databricks to SQLite
 - [x] Convert `2_silver.py` with SCD Type 2 logic
 - [x] Convert `3_gold_analytics.py` to SQLite SQL
-- [x] Convert `6_weekly_report.py` with GitHub Actions
+- [x] Convert `4_weekly_report.py` with GitHub Actions
 - [x] Add CI workflow (`.github/workflows/pipeline.yml`)
 - [x] Add `GITHUB_SETUP.md` and `LOCAL_DEV.md`
 - [x] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
@@ -31,6 +37,7 @@ Todo:
 Later
 - [ ] Monitor first automated run (Friday 02:00 UTC)
 - [ ] Test end-to-end pipeline locally (run historical week)
+- [ ] You can get a better host name using namecheep (min £5 per year) instead of using the github pages URL.
 
 
 ### Notes
@@ -72,7 +79,7 @@ python scripts/init_sqlite.py
 python scripts/1_bronze.py
 python scripts/2_silver.py
 python scripts/3_gold_analytics.py
-python scripts/6_weekly_report.py
+python scripts/4_weekly_report.py
 ```
 
 Backup procedure (git bash)

@@ -42,7 +42,7 @@ The pipeline runs automatically on a schedule defined in `.github/workflows/pipe
 5. **Bronze Ingestion** - Fetches API data via `1_bronze.py`
 6. **Silver Transformation** - Normalizes data via `2_silver.py`
 7. **Gold Analytics** - Computes metrics via `3_gold_analytics.py`
-8. **Weekly Report** - Generates report via `6_weekly_report.py`
+8. **Weekly Report** - Generates report via `4_weekly_report.py`
 9. **Upload Artifacts** - Stores charts and reports (30-day retention)
 10. **Commit Reports** - Automatically commits generated reports to the repository
 
@@ -60,7 +60,7 @@ python scripts/init_sqlite.py
 python scripts/1_bronze.py      # Requires HELLOFRESH_API_KEY env var
 python scripts/2_silver.py
 python scripts/3_gold_analytics.py
-python scripts/6_weekly_report.py
+python scripts/4_weekly_report.py
 ```
 
 ### Set API Key:
