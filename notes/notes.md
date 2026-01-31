@@ -1,28 +1,43 @@
-# Build notes, todos, and development details
-
-This file contains the practical developer notes, the TODO checklist, and
-the exact commands for building and running the repository locally. High-
-level project information and links live in the repository `README.md`.
-
-Todo:
+# TODOs
+Fix Github Actions:
 - [ ] Validate GitHub Actions execution on first scheduled run
+
+Presentation:
 - [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
-- [ ] Test sql_queries scripts for useful queries to explore the database.
-- [ ] Set up pyproject.toml for dependency management using UV.
-- [ ] Ensure that blueprint.md has been updated to reflect the project.
-- [ ] Convert todos to issues in GitHub issues.
-- [ ] Update folder links from docs/ to notes/ in README.md and GITHUB_SETUP.md etc.
-
-
-Focus:
 - [ ] Set up github pages to publish the weekly report automatically (see publishing.yml), so that plotly graphs can be viewed interactively.
 - This focuses on docs folder:
   -  so we need to ensure that the weekly reports are copied to docs/mkd-reports/<week>/report.md similar for the html reports.
   - done: We also need to move the contents of /docs to another folder
-- [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
+  - [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
+  - [ ] Of the key files in ./docs do they need to be hard coded edited each time, or can we automate this in the pipeline?
+  - [ ] Review:
+    - [ ] embedded plotly into makrdown fails, showing just markdown dones not show images, its straight text.
+    - [ ] Weekly html report - I dont see the need for open in new tab button.
+    - [ ] files in docs/ root have no back button.
+- [ ] Add a Jekyl theme to the github pages. (hacker theme). Use this link: https://github.com/pages-themes/hacker and this a guidence: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll
 
 
----
+Repo:
+- [ ] Set up pyproject.toml for dependency management using UV.
+
+Documentation:
+- [ ] Ensure that blueprint.md has been updated to reflect the project.
+- [ ] Update folder links from docs/ to notes/ in README.md and GITHUB_SETUP.md etc.
+
+Issues:
+- [ ] Convert todos to issues in GitHub issues.
+  - [ ] GPT issues integrate.
+
+Testing:
+- [ ] Monitor first automated run (Friday 02:00 UTC)
+- [ ] Test end-to-end pipeline locally (run historical week)
+- [ ] Test sql_queries scripts for useful queries to explore the database.
+
+
+
+### Notes
+
+Done:
 - [x] Its not 4_weekly_report.py anymore, rename to 4_weekly_report.py and adjust repo files accordingly.
 - [x] Rename the repository to something more descriptive than Databricks-Explorer.
 - [x] Convert `1_bronze.py` from Databricks to SQLite
@@ -33,15 +48,11 @@ Focus:
 - [x] Add `GITHUB_SETUP.md` and `LOCAL_DEV.md`
 - [x] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
 
----
+This file contains the practical developer notes, the TODO checklist, and
+the exact commands for building and running the repository locally. High-
+level project information and links live in the repository `README.md`.
 
-Later
-- [ ] Monitor first automated run (Friday 02:00 UTC)
-- [ ] Test end-to-end pipeline locally (run historical week)
-- [ ] You can get a better host name using namecheep (min £5 per year) instead of using the github pages URL.
-
-
-### Notes
+- You can get a better host name using namecheep (min £5 per year) instead of using the github pages URL.
 
 SCD Type 2 pattern (implementation notes)
 - Each entity row tracks lifecycle: `first_seen_date`, `last_seen_date`, `is_active`.
