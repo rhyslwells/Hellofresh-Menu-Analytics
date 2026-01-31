@@ -1,29 +1,29 @@
-name: Publish reports to GitHub Pages
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
+# name: Publish reports to GitHub Pages
+# on:
+#   push:
+#     branches: [ main ]
+#   workflow_dispatch:
 
-jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install deps
-        run: pip install -r requirements.txt
-      - name: Run report generator
-        run: python scripts/embed_plotly_to_md.py --out hfresh/output/plotly_test/report.md
-      - name: Copy generated files to public folder
-        run: |
-          rm -rf public || true
-          mkdir -p public
-          cp -r hfresh/output/plotly_test/* public/
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+# jobs:
+#   build-and-publish:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.10'
+#       - name: Install deps
+#         run: pip install -r requirements.txt
+#       - name: Run report generator
+#         run: python scripts/embed_plotly_to_md.py --out hfresh/output/plotly_test/report.md
+#       - name: Copy generated files to public folder
+#         run: |
+#           rm -rf public || true
+#           mkdir -p public
+#           cp -r hfresh/output/plotly_test/* public/
+#       - name: Deploy to GitHub Pages
+#         uses: peaceiris/actions-gh-pages@v4
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: ./public
