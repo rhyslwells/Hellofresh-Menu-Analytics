@@ -11,6 +11,7 @@ Todo:
 - [ ] Set up pyproject.toml for dependency management using UV.
 - [ ] Ensure that blueprint.md has been updated to reflect the project.
 - [ ] Convert todos to issues in GitHub issues.
+- [ ] Update folder links from docs/ to notes/ in README.md and GITHUB_SETUP.md etc.
 
 
 Focus:

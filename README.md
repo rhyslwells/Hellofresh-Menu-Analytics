@@ -1,5 +1,7 @@
 # HelloFresh weekly pipeline
 
+https://rhyslwells.github.io/Hellofresh-Menu-Analytics/
+
 Lightweight weekly data pipeline that ingests HelloFresh API data,
 stores it in a single SQLite file, applies SCD Type 2 normalization,
 computes analytics and generates markdown reports + charts.
