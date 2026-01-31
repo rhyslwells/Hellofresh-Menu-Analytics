@@ -1,37 +1,4 @@
 # TODOs
-Fix Github Actions:
-- [ ] Validate GitHub Actions execution on first scheduled run
-
-Presentation:
-- [ ] In the weekly report can we integrate plotly charts directly instead of PNGs? As emedded HTML?
-- [ ] Set up github pages to publish the weekly report automatically (see publishing.yml), so that plotly graphs can be viewed interactively.
-- This focuses on docs folder:
-  -  so we need to ensure that the weekly reports are copied to docs/mkd-reports/<week>/report.md similar for the html reports.
-  - done: We also need to move the contents of /docs to another folder
-  - [ ] Ensure weekly outputs are placed under `hfresh/output/<YYYY-MM-DD>/` so that it contains a report and a folder for the charts for the week.
-  - [ ] Of the key files in ./docs do they need to be hard coded edited each time, or can we automate this in the pipeline?
-  - [ ] Review:
-    - [ ] embedded plotly into makrdown fails, showing just markdown dones not show images, its straight text.
-    - [ ] Weekly html report - I dont see the need for open in new tab button.
-    - [ ] files in docs/ root have no back button.
-- [ ] Add a Jekyl theme to the github pages. (hacker theme). Use this link: https://github.com/pages-themes/hacker and this a guidence: https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/adding-a-theme-to-your-github-pages-site-using-jekyll
-
-
-Repo:
-- [ ] Set up pyproject.toml for dependency management using UV.
-
-Documentation:
-- [ ] Ensure that blueprint.md has been updated to reflect the project.
-- [ ] Update folder links from docs/ to notes/ in README.md and GITHUB_SETUP.md etc.
-
-Issues:
-- [ ] Convert todos to issues in GitHub issues.
-  - [ ] GPT issues integrate.
-
-Testing:
-- [ ] Monitor first automated run (Friday 02:00 UTC)
-- [ ] Test end-to-end pipeline locally (run historical week)
-- [ ] Test sql_queries scripts for useful queries to explore the database.
 
 
 
