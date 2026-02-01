@@ -12,4 +12,11 @@ hfresh/output/charts/
 *.png
 *.csv
 
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+Gemfile.lock
+vendor/
 *hellofresh_menu_analytics.egg-info
