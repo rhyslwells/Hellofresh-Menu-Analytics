@@ -74,8 +74,13 @@
         files.forEach((f, i) => {
           const li = document.createElement('li');
           const a = document.createElement('a');
-          a.href = f;
+          a.href = '#';
           a.textContent = f;
+          a.style.cursor = 'pointer';
+          a.onclick = (e) => {
+            e.preventDefault();
+            loadIndex(i);
+          };
           if (i === idx) {
             a.style.fontWeight = 'bold';
             a.style.color = '#0f0';
@@ -84,7 +89,6 @@
             marker.textContent = ' ← viewing';
             a.appendChild(marker);
           }
-          a.target = '_blank';
           li.appendChild(a);
           fileList.appendChild(li);
         });
