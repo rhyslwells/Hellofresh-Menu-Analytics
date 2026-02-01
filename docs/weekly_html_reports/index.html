@@ -6,119 +6,63 @@
     <title>Weekly HTML Reports</title>
     <style>
       * { box-sizing: border-box }
-      body { font-family: "Courier New", Courier, monospace; padding: 1rem 2rem; color: #0f0; margin: 0; background: #0d0d0d }
-      header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; border-bottom: 2px solid #0f0; padding-bottom: 1rem }
+      body { font-family: "Courier New", Courier, monospace; padding: 2rem; color: #0f0; margin: 0; background: #0d0d0d }
+      header { margin-bottom: 2rem; border-bottom: 2px solid #0f0; padding-bottom: 1rem }
       h1 { margin: 0; font-size: 1.5rem; color: #0f0; text-shadow: 0 0 10px #0f0 }
-      .back-link { color: #0f0; text-decoration: none; font-size: 0.95rem; transition: all 0.2s }
+      .back-link { display: inline-block; margin-top: 1rem; color: #0f0; text-decoration: none; font-size: 0.95rem; transition: all 0.2s }
       .back-link:hover { text-shadow: 0 0 5px #0f0; text-decoration: underline }
-      .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem }
-      button { padding: 0.5rem 1rem; background: #0f0; color: #0d0d0d; border: 2px solid #0f0; cursor: pointer; border-radius: 2px; font-size: 0.95rem; font-weight: bold; font-family: "Courier New", Courier, monospace; transition: all 0.2s }
-      button:hover { background: #0d0d0d; color: #0f0; text-shadow: 0 0 5px #0f0; box-shadow: 0 0 10px #0f0 }
-      button:disabled { background: #333; color: #666; border-color: #666; cursor: not-allowed; box-shadow: none }
-      .pos { color: #0f0; font-size: 0.9rem; padding: 0 0.5rem }
-      .viewer-wrapper { margin: 1rem 0; border: 2px solid #0f0; border-radius: 2px; background: #1a1a1a }
-      iframe { width: 100%; height: 60vh; border: none; display: block }
-      .file-list { margin-top: 1.5rem; padding: 1rem; background: #1a1a1a; border-radius: 2px; border: 1px solid #0f0 }
-      .file-list h2 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #0f0; text-shadow: 0 0 5px #0f0 }
-      .file-list ul { margin: 0; padding-left: 1.5rem; line-height: 1.8 }
-      .file-list a { color: #0f0; text-decoration: none; font-size: 0.95rem; transition: all 0.2s }
-      .file-list a:hover { text-shadow: 0 0 5px #0f0; text-decoration: underline }
-      .current-marker { color: #0f0; font-weight: bold; margin-left: 0.3rem; text-shadow: 0 0 5px #0f0 }
+      .reports { margin-top: 2rem }
+      .reports h2 { color: #0f0; text-shadow: 0 0 5px #0f0; margin-top: 0 }
+      .report-item { margin: 1rem 0; padding: 1rem; background: #1a1a1a; border: 1px solid #0f0; border-radius: 2px; transition: all 0.2s }
+      .report-item:hover { box-shadow: 0 0 10px #0f0; border-color: #00ff00 }
+      .report-item a { color: #0f0; text-decoration: none; font-size: 1rem; font-weight: bold; transition: all 0.2s }
+      .report-item a:hover { text-shadow: 0 0 5px #0f0; text-decoration: underline }
+      .report-date { color: #888; font-size: 0.85rem; margin-top: 0.5rem }
       @media (max-width: 600px) {
         body { padding: 1rem }
         h1 { font-size: 1.2rem }
-        header { flex-direction: column; align-items: flex-start }
-        iframe { height: 50vh }
-        .controls { flex-direction: column; width: 100% }
-        button { width: 100% }
       }
     </style>
   </head>
   <body>
     <header>
       <h1>Weekly HTML Reports</h1>
-      <a href="../" class="back-link">← Back to Docs</a>
+      <a href="../" class="back-link">← Back to Documentation</a>
     </header>
 
-    <div class="controls">
-      <button id="prev" disabled>◀ Prev</button>
-      <button id="next" disabled>Next ▶</button>
-      <span class="pos" id="pos"></span>
-    </div>
-
-    <div class="viewer-wrapper">
-      <iframe id="viewer" title="report viewer"></iframe>
-    </div>
-
-    <div class="file-list">
-      <h2>All Reports</h2>
-      <ul id="fileList"></ul>
+    <div class="reports">
+      <h2>Available Reports</h2>
+      <div id="reportList"></div>
     </div>
 
     <script>
       // Files in this folder, in the desired order
       const files = [
-        '2026-01-01-report.html',
-        '2026-01-08-report.html'
+        { name: '2026-01-01-report.html', date: 'January 1, 2026' },
+        { name: '2026-01-08-report.html', date: 'January 8, 2026' }
       ];
 
-      let idx = 0;
-      const viewer = document.getElementById('viewer');
-      const pos = document.getElementById('pos');
-      const fileList = document.getElementById('fileList');
-      const prevBtn = document.getElementById('prev');
-      const nextBtn = document.getElementById('next');
+      const reportList = document.getElementById('reportList');
 
-      function renderList() {
-        fileList.innerHTML = '';
-        files.forEach((f, i) => {
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.href = '#';
-          a.textContent = f;
-          a.style.cursor = 'pointer';
-          a.onclick = (e) => {
-            e.preventDefault();
-            loadIndex(i);
-          };
-          if (i === idx) {
-            a.style.fontWeight = 'bold';
-            a.style.color = '#0f0';
-            const marker = document.createElement('span');
-            marker.className = 'current-marker';
-            marker.textContent = ' ← viewing';
-            a.appendChild(marker);
-          }
-          li.appendChild(a);
-          fileList.appendChild(li);
-        });
-      }
-
-      function updateButtons() {
-        prevBtn.disabled = idx === 0;
-        nextBtn.disabled = idx === files.length - 1;
-      }
-
-      function loadIndex(i) {
-        if (i < 0) i = 0;
-        if (i >= files.length) i = files.length - 1;
-        idx = i;
-        viewer.src = files[idx];
-        pos.textContent = `${idx + 1} of ${files.length}`;
-        renderList();
-        updateButtons();
-      }
-
-      prevBtn.addEventListener('click', () => loadIndex(idx - 1));
-      nextBtn.addEventListener('click', () => loadIndex(idx + 1));
-      // Initialize
-      if (files.length === 0) {
-        fileList.innerHTML = '<li style="color: #999">No files listed. Edit the <code>files</code> array in this page.</li>';
-        viewer.src = 'about:blank';
-      } else {
-        renderList();
-        loadIndex(0);
-      }
+      files.forEach((file) => {
+        const item = document.createElement('div');
+        item.className = 'report-item';
+        
+        const link = document.createElement('a');
+        link.href = file.name;
+        link.textContent = file.name;
+        link.target = '_blank';
+        
+        const date = document.createElement('div');
+        date.className = 'report-date';
+        date.textContent = file.date;
+        
+        item.appendChild(link);
+        item.appendChild(date);
+        reportList.appendChild(item);
+      });
     </script>
+  </body>
+</html>
   </body>
 </html>
