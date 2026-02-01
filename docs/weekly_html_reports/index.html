@@ -36,31 +36,33 @@
     </div>
 
     <script>
-      // Files in this folder, in the desired order
-      const files = [
-        { name: '2026-01-01-report.html', date: 'January 1, 2026' },
-        { name: '2026-01-08-report.html', date: 'January 8, 2026' }
-      ];
-
       const reportList = document.getElementById('reportList');
 
-      files.forEach((file) => {
-        const item = document.createElement('div');
-        item.className = 'report-item';
-        
-        const link = document.createElement('a');
-        link.href = file.name;
-        link.textContent = file.name;
-        link.target = '_blank';
-        
-        const date = document.createElement('div');
-        date.className = 'report-date';
-        date.textContent = file.date;
-        
-        item.appendChild(link);
-        item.appendChild(date);
-        reportList.appendChild(item);
-      });
+      // Load reports from JSON file
+      fetch('reports.json')
+        .then(response => response.json())
+        .then(files => {
+          files.forEach((file) => {
+            const item = document.createElement('div');
+            item.className = 'report-item';
+            
+            const link = document.createElement('a');
+            link.href = file.name;
+            link.textContent = file.name;
+            link.target = '_blank';
+            
+            const date = document.createElement('div');
+            date.className = 'report-date';
+            date.textContent = file.date;
+            
+            item.appendChild(link);
+            item.appendChild(date);
+            reportList.appendChild(item);
+          });
+        })
+        .catch(error => {
+          reportList.innerHTML = '<p style="color: #f00;">Error loading reports: ' + error.message + '</p>';
+        });
     </script>
   </body>
 </html>
