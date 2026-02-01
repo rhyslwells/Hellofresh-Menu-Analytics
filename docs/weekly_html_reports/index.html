@@ -78,7 +78,7 @@
           a.textContent = f;
           if (i === idx) {
             a.style.fontWeight = 'bold';
-            a.style.color = '#333';
+            a.style.color = '#0f0';
             const marker = document.createElement('span');
             marker.className = 'current-marker';
             marker.textContent = ' ← viewing';
@@ -107,7 +107,6 @@
 
       prevBtn.addEventListener('click', () => loadIndex(idx - 1));
       nextBtn.addEventListener('click', () => loadIndex(idx + 1));
-      openNewBtn.addEventListener('click', () => window.open(files
       // Initialize
       if (files.length === 0) {
         fileList.innerHTML = '<li style="color: #999">No files listed. Edit the <code>files</code> array in this page.</li>';
