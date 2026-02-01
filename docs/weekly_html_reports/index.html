@@ -43,7 +43,6 @@
     <div class="controls">
       <button id="prev" disabled>◀ Prev</button>
       <button id="next" disabled>Next ▶</button>
-      <button id="openNew" disabled>📂 Open in new tab</button>
       <span class="pos" id="pos"></span>
     </div>
 
@@ -69,7 +68,6 @@
       const fileList = document.getElementById('fileList');
       const prevBtn = document.getElementById('prev');
       const nextBtn = document.getElementById('next');
-      const openNewBtn = document.getElementById('openNew');
 
       function renderList() {
         fileList.innerHTML = '';
@@ -95,7 +93,6 @@
       function updateButtons() {
         prevBtn.disabled = idx === 0;
         nextBtn.disabled = idx === files.length - 1;
-        openNewBtn.disabled = files.length === 0;
       }
 
       function loadIndex(i) {
@@ -110,8 +107,7 @@
 
       prevBtn.addEventListener('click', () => loadIndex(idx - 1));
       nextBtn.addEventListener('click', () => loadIndex(idx + 1));
-      openNewBtn.addEventListener('click', () => window.open(files[idx], '_blank'));
-
+      openNewBtn.addEventListener('click', () => window.open(files
       // Initialize
       if (files.length === 0) {
         fileList.innerHTML = '<li style="color: #999">No files listed. Edit the <code>files</code> array in this page.</li>';
