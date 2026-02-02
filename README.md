@@ -30,6 +30,3 @@ environment and run commands (local setup, API key, and per-script usage).
 Status:
 - Designed for weekly automation (Friday 02:00 UTC) via GitHub Actions
 - Idempotent gold-step outputs; bronze is append-only
-
-If you want I can: run the local setup checklist, or move any remaining
-implementation details into `docs/notes.md`.
