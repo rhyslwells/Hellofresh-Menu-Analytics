@@ -1,23 +1,22 @@
-# Temporal Selection Tests
+# Bronze Layer Tests
 
-This directory contains comprehensive tests for the temporal selection functionality added to the Bronze layer ingestion script.
+Comprehensive test suite for the Bronze layer ingestion script, including temporal selection functionality and data ingestion validation.
 
 ## Test Files
 
-### `test_temporal_selection.py`
-Pytest-based test suite with comprehensive coverage of all temporal functions.
+### `test_bronze.py`
+Unified test suite supporting both pytest and unittest frameworks with comprehensive coverage of all temporal functions and Bronze layer operations.
 
 **Run with:**
 ```bash
-pytest tests/bronze-tests/test_temporal_selection.py -v
-```
+# Using pytest (recommended)
+pytest tests/bronze-tests/test_bronze.py -v
 
-### `run_tests.py`
-Standalone unittest-based test runner that doesn't require pytest.
+# Using unittest (no external dependencies)
+python tests/bronze-tests/test_bronze.py
 
-**Run with:**
-```bash
-python tests/bronze-tests/run_tests.py
+# Using unittest module
+python -m unittest tests.bronze-tests.test_bronze -v
 ```
 
 ## Test Coverage
@@ -88,22 +87,22 @@ python tests/bronze-tests/run_tests.py
 pip install -e ".[dev]"
 
 # Run all tests
-pytest tests/bronze-tests/test_temporal_selection.py -v
+pytest tests/bronze-tests/test_bronze.py -v
 
 # Run specific test class
-pytest tests/bronze-tests/test_temporal_selection.py::TestParseISODate -v
+pytest tests/bronze-tests/test_bronze.py::TestParseISODate -v
 
 # Run with coverage
-pytest tests/bronze-tests/test_temporal_selection.py --cov=scripts.1_bronze -v
+pytest tests/bronze-tests/test_bronze.py --cov=scripts.1_bronze -v
 ```
 
 ### Option 2: With unittest (no external requirements)
 ```bash
 # Run all tests
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 
-# Run specific test class (not as easy, but possible)
-python -m unittest tests.bronze_tests.run_tests.TestParseISODate -v
+# Run specific test class
+python -m unittest tests.bronze-tests.test_bronze.TestParseISODate -v
 ```
 
 ## Test Results Expected
@@ -145,12 +144,15 @@ OK
 ## Test Organization
 
 ```
-tests/
-├── test_menu_params.py              # Original API tests
-├── test_temporal_selection.py       # Pytest version
-├── run_tests.py                     # Unittest standalone runner
+tests/bronze-tests/
+├── test_bronze.py                   # Unified test suite (pytest + unittest)
 ├── README.md                        # This file
-└── __init__.py                      # Package marker
+├── bronze-test-docs/                # Additional documentation
+│   ├── INDEX.md
+│   ├── QUICK_START.md
+│   ├── simple-check.md
+│   └── 0_ingestion_tests.md
+└── __pycache__/
 ```
 
 ## Key Test Scenarios
@@ -184,23 +186,23 @@ parse_temporal_arguments(start_date="2026-01-26", end_date="2026-02-01")
 
 ## Extending Tests
 
-To add new tests:
+To add new tests to `test_bronze.py`:
 
-1. **Add to `run_tests.py`** for compatibility with both unittest and pytest:
-   ```python
-   def test_new_functionality(self):
-       """Description of test."""
-       result = function_under_test()
-       self.assertEqual(result, expected_value)
-   ```
+Use unittest.TestCase format for compatibility with both unittest and pytest:
+```python
+class TestNewFeature(unittest.TestCase):
+    """Tests for new feature."""
+    
+    def test_new_functionality(self):
+        """Description of test."""
+        result = function_under_test()
+        self.assertEqual(result, expected_value)
+```
 
-2. **Add to `test_temporal_selection.py`** if pytest-specific features needed:
-   ```python
-   def test_new_functionality():
-       """Description of test."""
-       result = function_under_test()
-       assert result == expected_value
-   ```
+The unified test suite supports both:
+- `python -m unittest` (stdlib only)
+- `pytest` (if installed)
+- Direct execution: `python test_bronze.py`
 
 ## Common Test Patterns
 
@@ -233,16 +235,15 @@ def test_week_calculation(self):
 To integrate into GitHub Actions:
 
 ```yaml
-- name: Run temporal selection tests
+# Option 1: With pytest
+- name: Run bronze layer tests
   run: |
     pip install -e ".[dev]"
-    pytest tests/bronze-tests/test_temporal_selection.py -v --tb=short
-```
+    pytest tests/bronze-tests/test_bronze.py -v --tb=short
 
-Or without pytest:
-```yaml
-- name: Run temporal selection tests
-  run: python tests/bronze-tests/run_tests.py
+# Option 2: Without external dependencies
+- name: Run bronze layer tests
+  run: python tests/bronze-tests/test_bronze.py
 ```
 
 ## Troubleshooting

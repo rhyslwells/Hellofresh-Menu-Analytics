@@ -6,23 +6,23 @@ Quick reference for testing `scripts/1_bronze.py` temporal selection feature.
 
 ```bash
 # Run all tests (from project root)
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 
 # Or with pytest
-pytest tests/bronze-tests/test_temporal_selection.py -v
+pytest tests/bronze-tests/test_bronze.py -v
 ```
 
 ## Run Specific Tests
 
 ```bash
 # Test date parsing
-python -m unittest tests.bronze_tests.run_tests.TestParseISODate -v
+python -m unittest tests.bronze-tests.test_bronze.TestParseISODate -v
 
 # Test week boundaries  
-python -m unittest tests.bronze_tests.run_tests.TestGetWeekBounds -v
+python -m unittest tests.bronze-tests.test_bronze.TestGetWeekBounds -v
 
 # Test temporal argument parsing
-python -m unittest tests.bronze_tests.run_tests.TestParseTemporalArguments -v
+python -m unittest tests.bronze-tests.test_bronze.TestParseTemporalArguments -v
 ```
 
 ## Test Coverage
@@ -31,14 +31,13 @@ python -m unittest tests.bronze_tests.run_tests.TestParseTemporalArguments -v
 |----------|-------|----------|
 | `parse_iso_date()` | 5 | 100% |
 | `get_week_bounds()` | 6 | 100% |
-| `parse_temporal_arguments()` | 16 | 95%+ |
-| Integration | 2 | 100% |
-| **Total** | **29** | **97%+** |
+| `parse_temporal_arguments()` | 20+ | 95%+ |
+| Integration | 2+ | 100% |
+| **Total** | **50+** | **97%+** |
 
 ## Files
 
-- `run_tests.py` - Main test runner (unittest, no external deps)
-- `test_temporal_selection.py` - Pytest alternative
+- `test_bronze.py` - Main unified test suite (pytest + unittest)
 - `README.md` - Comprehensive testing guide
 
 ## Troubleshooting
@@ -46,17 +45,17 @@ python -m unittest tests.bronze_tests.run_tests.TestParseTemporalArguments -v
 **"ModuleNotFoundError"** - Run from project root:
 ```bash
 cd /path/to/Hellofresh-Menu-Analytics
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 ```
 
 **"pytest not found"** - Use unittest instead:
 ```bash
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 ```
 
 ## Expected Output
 
 ```
-Ran 29 tests in 0.024s
+Ran 50+ tests in 0.024s
 OK
 ```

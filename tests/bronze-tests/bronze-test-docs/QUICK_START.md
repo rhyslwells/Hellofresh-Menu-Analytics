@@ -1,21 +1,21 @@
-# Quick Start: Testing Temporal Selection
+# Quick Start: Testing Bronze Layer
 
-Testing the temporal selection feature in `scripts/1_bronze.py` - enables historical data ingestion.
+Testing the Bronze layer functionality in `scripts/1_bronze.py` - includes temporal selection for historical data ingestion.
 
 ## Run Tests (Pick One)
 
 ```bash
 # ✅ Recommended - works everywhere
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 
 # Alternative with pytest
-pytest tests/bronze-tests/test_temporal_selection.py -v
+pytest tests/bronze-tests/test_bronze.py -v
 ```
 
 ## Expected Output
 
 ```
-Ran 29 tests in 0.024s
+Ran 50+ tests in 0.024s
 OK
 ```
 
@@ -23,16 +23,16 @@ OK
 
 ```bash
 # Test date parsing only
-python -m unittest tests.bronze_tests.run_tests.TestParseISODate -v
+python -m unittest tests.bronze-tests.test_bronze.TestParseISODate -v
 
 # Test week boundaries
-python -m unittest tests.bronze_tests.run_tests.TestGetWeekBounds -v
+python -m unittest tests.bronze-tests.test_bronze.TestGetWeekBounds -v
 
 # Test temporal argument parsing
-python -m unittest tests.bronze_tests.run_tests.TestParseTemporalArguments -v
+python -m unittest tests.bronze-tests.test_bronze.TestParseTemporalArguments -v
 
 # Single test method
-python -m unittest tests.bronze_tests.run_tests.TestParseISODate.test_valid_date -v
+python -m unittest tests.bronze-tests.test_bronze.TestParseISODate.test_valid_date -v
 ```
 
 ## Test Coverage
@@ -55,13 +55,13 @@ python -m unittest tests.bronze_tests.run_tests.TestParseISODate.test_valid_date
 ```bash
 # Run from project root
 cd /path/to/Hellofresh-Menu-Analytics
-python tests/bronze-tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 ```
 
 **"pytest: command not found"**
 ```bash
 # Use unittest instead (no install needed)
-python tests/run_tests.py
+python tests/bronze-tests/test_bronze.py
 
 # Or install pytest
 pip install pytest
@@ -81,6 +81,6 @@ pip install pytest
 ## Performance
 
 - Total execution: ~25ms
-- Per test: ~0.8ms
+- Per test: ~0.5ms
 - No external dependencies (unittest version)
 - No network calls or file I/O
