@@ -2,77 +2,74 @@
 -- HelloFresh Data Platform - Query Reference
 -- Silver & Gold Layer Analytics
 -- =====================================================
--- Run these queries in Databricks SQL editor
--- Customize CATALOG/SCHEMA names as needed
-
-SET VAR catalog = 'hfresh_catalog';
-SET VAR silver_schema = 'hfresh_silver';
-SET VAR gold_schema = 'hfresh_gold';
+-- Run these queries with SQLite on hfresh.db
+-- sqlite3 C:\Users\RhysL\Desktop\Hellofresh-Menu-Analytics\hfresh\hfresh.db < scripts\sql_queries\queries.sql
 
 
 -- =====================================================
 -- SILVER LAYER QUERIES
 -- =====================================================
 
--- 1. Top 10 Most Common Recipes
+-- 1. Top 5 Most Common Recipes
 SELECT 
     r.name,
     COUNT(DISTINCT mr.menu_id) as menu_appearances,
     r.difficulty,
     r.prep_time,
     r.cuisine
-FROM ${catalog}.${silver_schema}.recipes r
-JOIN ${catalog}.${silver_schema}.menu_recipes mr 
-    ON r.id = mr.recipe_id AND mr.is_active = TRUE
-WHERE r.is_active = TRUE
-GROUP BY r.id, r.name, r.difficulty, r.prep_time, r.cuisine
+FROM recipes r
+JOIN menu_recipes mr 
+    ON r.id = mr.recipe_id AND mr.is_active = 1
+WHERE r.is_active = 1
+GROUP BY r.id
 ORDER BY menu_appearances DESC
-LIMIT 10;
+LIMIT 5;
 
 
--- 2. Top 20 Most Used Ingredients
+-- 2. Top 10 Most Used Ingredients
 SELECT 
     i.name,
     COUNT(DISTINCT ri.recipe_id) as recipe_count,
     COUNT(DISTINCT mr.menu_id) as menu_count
-FROM ${catalog}.${silver_schema}.ingredients i
-JOIN ${catalog}.${silver_schema}.recipe_ingredients ri 
-    ON i.id = ri.ingredient_id AND ri.is_active = TRUE
-JOIN ${catalog}.${silver_schema}.menu_recipes mr 
-    ON ri.recipe_id = mr.recipe_id AND mr.is_active = TRUE
-GROUP BY i.id, i.name
+FROM ingredients i
+JOIN recipe_ingredients ri 
+    ON i.id = ri.ingredient_id AND ri.is_active = 1
+JOIN menu_recipes mr 
+    ON ri.recipe_id = mr.recipe_id AND mr.is_active = 1
+GROUP BY i.id
 ORDER BY recipe_count DESC
-LIMIT 20;
+LIMIT 10;
 
 
 -- 3. Menu Diversity Analysis
 SELECT 
-    CAST(m.start_date AS DATE) as week_date,
+    m.start_date as week_date,
     m.year_week,
     COUNT(DISTINCT mr.recipe_id) as unique_recipes,
     COUNT(DISTINCT r.cuisine) as unique_cuisines,
-    ROUND(AVG(CAST(r.difficulty AS DECIMAL)), 2) as avg_difficulty
-FROM ${catalog}.${silver_schema}.menus m
-JOIN ${catalog}.${silver_schema}.menu_recipes mr 
-    ON m.id = mr.menu_id AND mr.is_active = TRUE
-JOIN ${catalog}.${silver_schema}.recipes r 
+    ROUND(AVG(CAST(r.difficulty AS REAL)), 2) as avg_difficulty
+FROM menus m
+JOIN menu_recipes mr 
+    ON m.id = mr.menu_id AND mr.is_active = 1
+JOIN recipes r 
     ON mr.recipe_id = r.id
-WHERE m.is_active = TRUE
-GROUP BY m.id, CAST(m.start_date AS DATE), m.year_week
+WHERE m.is_active = 1
+GROUP BY m.id, m.start_date, m.year_week
 ORDER BY m.start_date DESC;
 
 
--- 4. Most Common Allergens
+-- 4. Most Common Allergens (Top 10)
 SELECT 
     a.name,
     COUNT(DISTINCT ra.recipe_id) as recipe_count,
     ROUND(100.0 * COUNT(DISTINCT ra.recipe_id) / 
-          (SELECT COUNT(DISTINCT id) FROM ${catalog}.${silver_schema}.recipes), 2) as pct_of_recipes
-FROM ${catalog}.${silver_schema}.allergens a
-JOIN ${catalog}.${silver_schema}.recipe_allergens ra 
-    ON a.id = ra.allergen_id AND ra.is_active = TRUE
-GROUP BY a.id, a.name
-ORDER BY recipe_count DESC;
+          (SELECT COUNT(DISTINCT id) FROM recipes), 2) as pct_of_recipes
+FROM allergens a
+JOIN recipe_allergens ra 
+    ON a.id = ra.allergen_id AND ra.is_active = 1
+GROUP BY a.id
+ORDER BY recipe_count DESC
+LIMIT 10;
 
 
 -- 5. Cuisine Distribution
@@ -80,10 +77,10 @@ SELECT
     COALESCE(cuisine, 'Unknown') as cuisine,
     COUNT(DISTINCT id) as recipe_count,
     COUNT(DISTINCT mr.menu_id) as menu_appearances
-FROM ${catalog}.${silver_schema}.recipes r
-LEFT JOIN ${catalog}.${silver_schema}.menu_recipes mr 
-    ON r.id = mr.recipe_id AND mr.is_active = TRUE
-WHERE r.is_active = TRUE
+FROM recipes r
+LEFT JOIN menu_recipes mr 
+    ON r.id = mr.recipe_id AND mr.is_active = 1
+WHERE r.is_active = 1
 GROUP BY r.cuisine
 ORDER BY recipe_count DESC;
 
@@ -96,10 +93,10 @@ FROM (
     SELECT 
         r.id,
         COUNT(DISTINCT ri.ingredient_id) as ingredient_count
-    FROM ${catalog}.${silver_schema}.recipes r
-    LEFT JOIN ${catalog}.${silver_schema}.recipe_ingredients ri 
-        ON r.id = ri.recipe_id AND ri.is_active = TRUE
-    WHERE r.is_active = TRUE
+    FROM recipes r
+    LEFT JOIN recipe_ingredients ri 
+        ON r.id = ri.recipe_id AND ri.is_active = 1
+    WHERE r.is_active = 1
     GROUP BY r.id
 )
 GROUP BY ingredient_count
@@ -108,28 +105,28 @@ ORDER BY ingredient_count;
 
 -- 7. Quickest Recipes (fastest prep time)
 SELECT 
-    name,
-    prep_time,
-    total_time,
-    difficulty,
+    r.name,
+    r.prep_time,
+    r.total_time,
+    r.difficulty,
     COUNT(DISTINCT ri.ingredient_id) as ingredient_count
-FROM ${catalog}.${silver_schema}.recipes r
-LEFT JOIN ${catalog}.${silver_schema}.recipe_ingredients ri 
-    ON r.id = ri.ingredient_id AND ri.is_active = TRUE
-WHERE r.is_active = TRUE AND prep_time IS NOT NULL
-GROUP BY r.id, r.name, r.prep_time, r.total_time, r.difficulty
+FROM recipes r
+LEFT JOIN recipe_ingredients ri 
+    ON r.id = ri.ingredient_id AND ri.is_active = 1
+WHERE r.is_active = 1 AND r.prep_time IS NOT NULL
+GROUP BY r.id
 ORDER BY r.prep_time ASC
-LIMIT 15;
+LIMIT 5;
 
 
 -- 8. Recipe Lifecycle Summary
 SELECT 
-    CASE WHEN is_active = TRUE THEN 'Active' ELSE 'Inactive' END as status,
+    CASE WHEN is_active = 1 THEN 'Active' ELSE 'Inactive' END as status,
     COUNT(*) as recipe_count,
-    ROUND(AVG(DATEDIFF(last_seen_date, first_seen_date)), 0) as avg_days_active,
+    ROUND(AVG(CAST((julianday(last_seen_date) - julianday(first_seen_date)) AS REAL)), 0) as avg_days_active,
     MIN(first_seen_date) as earliest_first_seen,
     MAX(last_seen_date) as latest_last_seen
-FROM ${catalog}.${silver_schema}.recipes
+FROM recipes
 GROUP BY is_active;
 
 
@@ -137,35 +134,36 @@ GROUP BY is_active;
 SELECT 
     name,
     last_seen_date,
-    DATEDIFF(CURRENT_DATE(), last_seen_date) as days_since_removal,
+    CAST((julianday(DATE('now')) - julianday(last_seen_date)) AS INTEGER) as days_since_removal,
     difficulty,
     cuisine
-FROM ${catalog}.${silver_schema}.recipes
-WHERE is_active = FALSE 
-  AND last_seen_date >= DATE_SUB(CURRENT_DATE(), 14)
-ORDER BY last_seen_date DESC;
+FROM recipes
+WHERE is_active = 0 
+  AND last_seen_date >= DATE('now', '-14 days')
+ORDER BY last_seen_date DESC
+LIMIT 10;
 
 
 -- 10. New Recipes This Week
-SELECT 
-    name,
-    first_seen_date,
-    difficulty,
-    cuisine,
-    COUNT(DISTINCT ri.ingredient_id) as ingredient_count
-FROM ${catalog}.${silver_schema}.recipes r
-LEFT JOIN ${catalog}.${silver_schema}.recipe_ingredients ri 
-    ON r.id = ri.ingredient_id
-WHERE first_seen_date >= DATE_SUB(CURRENT_DATE(), 7)
-GROUP BY r.id, r.name, r.first_seen_date, r.difficulty, r.cuisine
-ORDER BY r.first_seen_date DESC;
+-- SELECT 
+--     r.name,
+--     r.first_seen_date,
+--     r.difficulty,
+--     r.cuisine,
+--     COUNT(DISTINCT ri.ingredient_id) as ingredient_count
+-- FROM recipes r
+-- LEFT JOIN recipe_ingredients ri 
+--     ON r.id = ri.ingredient_id
+-- WHERE r.first_seen_date >= DATE('now', '-7 days')
+-- GROUP BY r.id
+-- ORDER BY r.first_seen_date DESC;
 
 
 -- =====================================================
 -- GOLD LAYER QUERIES
 -- =====================================================
 
--- 11. Weekly Menu Metrics (Last 12 weeks)
+-- 11. Weekly Menu Metrics (Last 6 weeks)
 SELECT 
     week_start_date,
     total_recipes,
@@ -174,12 +172,12 @@ SELECT
     returning_recipes,
     ROUND(avg_difficulty, 2) as avg_difficulty,
     ROUND(avg_prep_time_minutes, 0) as avg_prep_time_minutes
-FROM ${catalog}.${gold_schema}.weekly_menu_metrics
+FROM weekly_menu_metrics
 ORDER BY week_start_date DESC
-LIMIT 12;
+LIMIT 6;
 
 
--- 12. Recipe Survival Metrics (Currently Active)
+-- 12. Recipe Survival Metrics (Currently Active) - Top 5
 SELECT 
     recipe_name,
     first_appearance_date,
@@ -187,10 +185,10 @@ SELECT
     total_weeks_active,
     weeks_since_last_seen,
     is_currently_active
-FROM ${catalog}.${gold_schema}.recipe_survival_metrics
-WHERE is_currently_active = TRUE
+FROM recipe_survival_metrics
+WHERE is_currently_active = 1
 ORDER BY total_weeks_active DESC
-LIMIT 20;
+LIMIT 5;
 
 
 -- 13. Recipe Survival Metrics (Recently Churned)
@@ -200,22 +198,23 @@ SELECT
     last_appearance_date,
     total_weeks_active,
     weeks_since_last_seen
-FROM ${catalog}.${gold_schema}.recipe_survival_metrics
-WHERE is_currently_active = FALSE 
+FROM recipe_survival_metrics
+WHERE is_currently_active = 0 
   AND weeks_since_last_seen <= 4
-ORDER BY last_appearance_date DESC;
+ORDER BY last_appearance_date DESC
+LIMIT 5;
 
 
--- 14. Top Trending Ingredients (Last 4 Weeks)
+-- 14. Top Trending Ingredients (Top 5 per week)
 SELECT 
     week_start_date,
     ingredient_name,
     recipe_count,
     popularity_rank
-FROM ${catalog}.${gold_schema}.ingredient_trends
-WHERE popularity_rank <= 10
+FROM ingredient_trends
+WHERE popularity_rank <= 5
 ORDER BY week_start_date DESC, popularity_rank ASC
-LIMIT 40;
+LIMIT 20;
 
 
 -- 15. Menu Stability Analysis (Last 8 Weeks)
@@ -227,20 +226,20 @@ SELECT
     recipes_retained,
     recipes_added,
     recipes_removed
-FROM ${catalog}.${gold_schema}.menu_stability_metrics
+FROM menu_stability_metrics
 ORDER BY week_start_date DESC
 LIMIT 8;
 
 
--- 16. Top Allergens by Week
+-- 16. Top Allergens by Week (Top 10 per week)
 SELECT 
     week_start_date,
     allergen_name,
     recipe_count,
     ROUND(percentage_of_menu, 2) as pct_of_menu
-FROM ${catalog}.${gold_schema}.allergen_density
+FROM allergen_density
 ORDER BY week_start_date DESC, percentage_of_menu DESC
-LIMIT 50;
+LIMIT 60;
 
 
 -- =====================================================
@@ -255,47 +254,47 @@ SELECT
         ORDER BY week_start_date 
         ROWS BETWEEN 7 PRECEDING AND CURRENT ROW
     ) as retention_8wk_avg
-FROM ${catalog}.${gold_schema}.menu_stability_metrics
+FROM menu_stability_metrics
 WHERE overlap_with_prev_week IS NOT NULL
 ORDER BY week_start_date DESC;
 
 
--- 18. Ingredient Lifecycle (Active -> Churned)
+-- 18. Ingredient Lifecycle (Active -> Churned) - Top 10
 SELECT 
     i.name,
-    COUNT(CASE WHEN r.is_active = TRUE THEN 1 END) as currently_active,
-    COUNT(CASE WHEN r.is_active = FALSE THEN 1 END) as recently_churned,
-    DATEDIFF(MAX(r.last_seen_date), MIN(r.first_seen_date)) as total_days_in_use
-FROM ${catalog}.${silver_schema}.recipe_ingredients ri
-JOIN ${catalog}.${silver_schema}.ingredients i ON ri.ingredient_id = i.id
-JOIN ${catalog}.${silver_schema}.recipes r ON ri.recipe_id = r.id
-GROUP BY i.id, i.name
-ORDER BY (COUNT(CASE WHEN r.is_active = TRUE THEN 1 END) + 
-          COUNT(CASE WHEN r.is_active = FALSE THEN 1 END)) DESC
-LIMIT 25;
+    COUNT(CASE WHEN r.is_active = 1 THEN 1 END) as currently_active,
+    COUNT(CASE WHEN r.is_active = 0 THEN 1 END) as recently_churned,
+    CAST((julianday(MAX(r.last_seen_date)) - julianday(MIN(r.first_seen_date))) AS INTEGER) as total_days_in_use
+FROM recipe_ingredients ri
+JOIN ingredients i ON ri.ingredient_id = i.id
+JOIN recipes r ON ri.recipe_id = r.id
+GROUP BY i.id
+ORDER BY (COUNT(CASE WHEN r.is_active = 1 THEN 1 END) + 
+          COUNT(CASE WHEN r.is_active = 0 THEN 1 END)) DESC
+LIMIT 10;
 
 
 -- 19. Difficulty vs Menu Appearances (Quality Analysis)
 SELECT 
     difficulty,
     COUNT(DISTINCT id) as recipe_count,
-    AVG(CAST(prep_time AS INT)) as avg_prep_time,
+    ROUND(AVG(CAST(prep_time AS REAL)), 1) as avg_prep_time,
     COUNT(DISTINCT mr.menu_id) as total_menu_appearances
-FROM ${catalog}.${silver_schema}.recipes r
-LEFT JOIN ${catalog}.${silver_schema}.menu_recipes mr 
-    ON r.id = mr.recipe_id AND mr.is_active = TRUE
-WHERE r.is_active = TRUE
+FROM recipes r
+LEFT JOIN menu_recipes mr 
+    ON r.id = mr.recipe_id AND mr.is_active = 1
+WHERE r.is_active = 1
 GROUP BY r.difficulty
 ORDER BY difficulty;
 
 
 -- 20. Gold Layer Data Quality Check
 SELECT 
-    (SELECT COUNT(*) FROM ${catalog}.${gold_schema}.weekly_menu_metrics) as weekly_metrics_rows,
-    (SELECT COUNT(*) FROM ${catalog}.${gold_schema}.recipe_survival_metrics) as recipe_survival_rows,
-    (SELECT COUNT(*) FROM ${catalog}.${gold_schema}.ingredient_trends) as ingredient_trends_rows,
-    (SELECT COUNT(*) FROM ${catalog}.${gold_schema}.menu_stability_metrics) as menu_stability_rows,
-    (SELECT COUNT(*) FROM ${catalog}.${gold_schema}.allergen_density) as allergen_density_rows;
+    (SELECT COUNT(*) FROM weekly_menu_metrics) as weekly_metrics_rows,
+    (SELECT COUNT(*) FROM recipe_survival_metrics) as recipe_survival_rows,
+    (SELECT COUNT(*) FROM ingredient_trends) as ingredient_trends_rows,
+    (SELECT COUNT(*) FROM menu_stability_metrics) as menu_stability_rows,
+    (SELECT COUNT(*) FROM allergen_density) as allergen_density_rows;
 
 
 -- =====================================================
@@ -306,32 +305,32 @@ SELECT
 SELECT 
     'recipes' as table_name,
     COUNT(*) as row_count,
-    COUNT(CASE WHEN is_active THEN 1 END) as active_count
-FROM ${catalog}.${silver_schema}.recipes
+    COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_count
+FROM recipes
 UNION ALL
 SELECT 
     'menus',
     COUNT(*),
-    COUNT(CASE WHEN is_active THEN 1 END)
-FROM ${catalog}.${silver_schema}.menus
+    COUNT(CASE WHEN is_active = 1 THEN 1 END)
+FROM menus
 UNION ALL
 SELECT 
     'ingredients',
     COUNT(*),
-    COUNT(CASE WHEN is_active THEN 1 END)
-FROM ${catalog}.${silver_schema}.ingredients
+    COUNT(CASE WHEN is_active = 1 THEN 1 END)
+FROM ingredients
 UNION ALL
 SELECT 
     'allergens',
     COUNT(*),
-    COUNT(CASE WHEN is_active THEN 1 END)
-FROM ${catalog}.${silver_schema}.allergens;
+    COUNT(CASE WHEN is_active = 1 THEN 1 END)
+FROM allergens;
 
 
 -- 22. Last data refresh times
 SELECT 
-    CAST(MAX(last_seen_date) AS DATE) as latest_data_in_system,
-    DATEDIFF(CURRENT_DATE(), CAST(MAX(last_seen_date) AS DATE)) as days_since_update,
-    COUNT(DISTINCT CAST(last_seen_date AS DATE)) as distinct_days_with_data
-FROM ${catalog}.${silver_schema}.recipes
-WHERE last_seen_date >= DATE_SUB(CURRENT_DATE(), 90);
+    MAX(last_seen_date) as latest_data_in_system,
+    CAST((julianday(DATE('now')) - julianday(MAX(last_seen_date))) AS INTEGER) as days_since_update,
+    COUNT(DISTINCT DATE(last_seen_date)) as distinct_days_with_data
+FROM recipes
+WHERE last_seen_date >= DATE('now', '-90 days');
