@@ -37,6 +37,7 @@ from pathlib import Path
 from datetime import datetime
 import subprocess
 import os
+import json
 
 # Data visualization
 try:
@@ -902,6 +903,48 @@ def commit_report_to_git(week_date: str) -> bool:
         return False
 
 
+def update_reports_json(week_date: str) -> bool:
+    """Update reports.json metadata file with new report."""
+    try:
+        reports_json_path = REPORTS_DIR / "reports.json"
+        
+        # Format the date for display (e.g., "January 1, 2026")
+        date_obj = datetime.strptime(week_date, "%Y-%m-%d")
+        formatted_date = date_obj.strftime("%B %d, %Y")
+        
+        # Create new report entry
+        new_report = {
+            "name": f"{week_date}-report.html",
+            "date": formatted_date
+        }
+        
+        # Load existing reports or create new list
+        reports = []
+        if reports_json_path.exists():
+            try:
+                with open(reports_json_path, 'r', encoding='utf-8') as f:
+                    reports = json.load(f)
+            except Exception as e:
+                print(f"  ⚠️  Could not read existing reports.json: {e}")
+                reports = []
+        
+        # Check if this report already exists
+        existing_names = [r.get('name') for r in reports]
+        if new_report['name'] not in existing_names:
+            # Add new report at the beginning (most recent first)
+            reports.insert(0, new_report)
+        
+        # Write back to file with pretty formatting
+        with open(reports_json_path, 'w', encoding='utf-8') as f:
+            json.dump(reports, f, indent=2, ensure_ascii=False)
+        
+        print(f"✓ Updated reports.json with {new_report['name']}")
+        return True
+    except Exception as e:
+        print(f"⚠️  Error updating reports.json: {e}")
+        return False
+
+
 # ======================
 # Main Execution
 # ======================
@@ -938,9 +981,14 @@ def main():
     html_content = generate_html_report(conn, week_date)
     report_path = save_report_to_file(html_content, week_date)
     
+    # Update reports.json metadata
+    if report_path:
+        print("\nUpdating reports metadata...")
+        update_reports_json(week_date)
+    
     # Commit to Git
     if report_path:
-        print("\nCommitting to Git...")
+        print("Committing to Git...")
         commit_report_to_git(week_date)
     
     print(f"\n{'='*60}")
