@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Analytics Insights: Query the gold layer for trends and metrics
 -- ============================================================================
--- Run: sqlite3 hfresh/hfresh.db < scripts/sql_queries/04_analytics_insights.sql
+-- sqlite3 hfresh/hfresh.db < scripts/sql_queries/04_analytics_insights.sql
 
 .mode column
 .headers on

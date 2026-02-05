@@ -1,7 +1,7 @@
 .venv
 .history
 .vscode
-setup-databricks-secrets.ps1
+__pycache__/
 
 # SQLite database
 hfresh/hfresh.db

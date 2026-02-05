@@ -38,6 +38,7 @@ import os
 import json
 import sqlite3
 import time
+import argparse
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from pathlib import Path
@@ -55,6 +56,109 @@ RATE_LIMIT_SLEEP_SECONDS = 1
 
 # SQLite Configuration
 DB_PATH = Path("hfresh/hfresh.db")
+
+
+# ======================
+# Temporal Utilities
+# ======================
+
+def parse_iso_date(date_str: str) -> datetime:
+    """Parse ISO date string (YYYY-MM-DD) to datetime."""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError(f"Invalid date format: {date_str}. Expected YYYY-MM-DD")
+
+
+def get_week_bounds(target_date: datetime) -> tuple[datetime, datetime]:
+    """
+    Get Monday-Sunday bounds for the week containing target_date.
+    
+    Args:
+        target_date: Any date in the target week
+        
+    Returns:
+        (monday, sunday) as datetime objects at start of day
+    """
+    # Get Monday of this week
+    days_since_monday = target_date.weekday()
+    monday = target_date - timedelta(days=days_since_monday)
+    sunday = monday + timedelta(days=6)
+    
+    # Reset to start of day
+    monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    sunday = sunday.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    return monday, sunday
+
+
+def parse_temporal_arguments(
+    week: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> tuple[datetime, datetime]:
+    """
+    Parse temporal arguments and return (start_date, end_date).
+    
+    Args:
+        week: ISO week in format 'YYYY-Www' (e.g., '2026-W05'), or a date (YYYY-MM-DD)
+        start_date: Start date (YYYY-MM-DD), inclusive
+        end_date: End date (YYYY-MM-DD), inclusive
+        
+    Returns:
+        (start_datetime, end_datetime) tuple
+        
+    Raises:
+        ValueError: If arguments are invalid
+    """
+    # If week is provided, use it to set date range
+    if week:
+        # Check if it's ISO week format (YYYY-Www)
+        if "-W" in week:
+            try:
+                year, week_num = week.split("-W")
+                year = int(year)
+                week_num = int(week_num)
+                
+                # Calculate Monday of week
+                jan4 = datetime(year, 1, 4)
+                monday_week1 = jan4 - timedelta(days=jan4.weekday())
+                monday_target_week = monday_week1 + timedelta(weeks=week_num - 1)
+                
+                start = monday_target_week.replace(hour=0, minute=0, second=0, microsecond=0)
+                end = (monday_target_week + timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
+                
+                return start, end
+            except (ValueError, IndexError):
+                raise ValueError(
+                    f"Invalid ISO week format: {week}. Expected YYYY-Www (e.g., 2026-W05)"
+                )
+        else:
+            # Treat as a date
+            target_date = parse_iso_date(week)
+            start, end = get_week_bounds(target_date)
+            return start, end
+    
+    # If explicit date range provided
+    if start_date and end_date:
+        start = parse_iso_date(start_date)
+        end = parse_iso_date(end_date)
+        
+        if start > end:
+            raise ValueError(f"start_date must be before end_date: {start_date} > {end_date}")
+        
+        return start, end
+    
+    # Default: next week (legacy behavior)
+    today = datetime.now()
+    days_until_monday = (7 - today.weekday()) % 7
+    if days_until_monday == 0:
+        days_until_monday = 7
+    
+    next_monday = today + timedelta(days=days_until_monday)
+    next_sunday = next_monday + timedelta(days=6)
+    
+    return next_monday, next_sunday
 
 
 def get_api_key() -> str:
@@ -269,35 +373,47 @@ def reference_data_exists(conn: sqlite3.Connection) -> bool:
 # Weekly Pull Orchestration
 # ======================
 
-def perform_weekly_pull(session: requests.Session, conn: sqlite3.Connection) -> dict[str, Any]:
+def perform_weekly_pull(
+    session: requests.Session,
+    conn: sqlite3.Connection,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+) -> dict[str, Any]:
     """
-    Execute this week's data pull.
+    Execute data pull for specified date range.
     
     Strategy:
-    - ALWAYS: Fetch next week's menus (with recipes embedded)
+    - ALWAYS: Fetch menus for date range (with recipes embedded)
     - FIRST RUN ONLY: Fetch reference data baseline
+    
+    Args:
+        session: Requests session
+        conn: SQLite connection
+        start_date: Start date (inclusive). If None, defaults to next week
+        end_date: End date (inclusive). If None, defaults to next week
     """
     today = datetime.now()
     pull_date = today.strftime("%Y-%m-%d")
     
-    # Calculate next week's date range
-    days_until_monday = (7 - today.weekday()) % 7
-    if days_until_monday == 0:
-        days_until_monday = 7
-    
-    next_monday = today + timedelta(days=days_until_monday)
-    next_sunday = next_monday + timedelta(days=6)
+    # Use provided dates or calculate next week
+    if start_date is None or end_date is None:
+        days_until_monday = (7 - today.weekday()) % 7
+        if days_until_monday == 0:
+            days_until_monday = 7
+        
+        start_date = today + timedelta(days=days_until_monday)
+        end_date = start_date + timedelta(days=6)
     
     print(f"\n{'='*60}")
     print(f"PULL DATE: {pull_date}")
-    print(f"Target week: {next_monday.date()} to {next_sunday.date()}")
+    print(f"Target week: {start_date.date()} to {end_date.date()}")
     print(f"{'='*60}\n")
     
     results = {}
     
-    # ALWAYS: Fetch next week's menus with embedded recipes
+    # ALWAYS: Fetch menus for the specified date range with embedded recipes
     results["menus"] = fetch_menus_for_week(
-        session, conn, LOCALE_COUNTRY, pull_date, next_monday, next_sunday
+        session, conn, LOCALE_COUNTRY, pull_date, start_date, end_date
     )
 
     # Fetch full recipe details for every recipe referenced in menus
@@ -351,6 +467,61 @@ def perform_weekly_pull(session: requests.Session, conn: sqlite3.Connection) -> 
 # Entry Point
 # ======================
 
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="HelloFresh Bronze Layer Ingestion - SQLite Database",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Ingest next week (default behavior)
+  python scripts/1_bronze.py
+  
+  # Ingest a specific week using ISO week format
+  python scripts/1_bronze.py --week 2026-W05
+  
+  # Ingest a specific week using a date from that week
+  python scripts/1_bronze.py --week 2026-01-15
+  
+  # Ingest a specific date range
+  python scripts/1_bronze.py --start-date 2026-01-01 --end-date 2026-01-31
+  
+  # With recipe details fetched
+  python scripts/1_bronze.py --week 2026-W05 --fetch-recipes
+        """,
+    )
+    
+    parser.add_argument(
+        "--week",
+        type=str,
+        default=None,
+        help="Target week in ISO format (YYYY-Www) or any date in the week (YYYY-MM-DD). "
+             "Example: 2026-W05 or 2026-01-15",
+    )
+    
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        default=None,
+        help="Start date for data range (YYYY-MM-DD). Must be used with --end-date",
+    )
+    
+    parser.add_argument(
+        "--end-date",
+        type=str,
+        default=None,
+        help="End date for data range (YYYY-MM-DD). Must be used with --start-date",
+    )
+    
+    parser.add_argument(
+        "--fetch-recipes",
+        action="store_true",
+        help="Fetch per-recipe details (slower but more complete data)",
+    )
+    
+    return parser.parse_args()
+
+
 def main() -> None:
     """Main execution."""
     print("""
@@ -359,6 +530,35 @@ def main() -> None:
     ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
+    
+    # Parse CLI arguments
+    args = parse_arguments()
+    
+    # Validate and parse temporal arguments
+    try:
+        if args.week and (args.start_date or args.end_date):
+            raise ValueError(
+                "Cannot use --week with --start-date/--end-date. Choose one."
+            )
+        
+        if (args.start_date and not args.end_date) or (args.end_date and not args.start_date):
+            raise ValueError(
+                "--start-date and --end-date must be used together"
+            )
+        
+        start_date, end_date = parse_temporal_arguments(
+            week=args.week,
+            start_date=args.start_date,
+            end_date=args.end_date,
+        )
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("\nRun 'python scripts/1_bronze.py --help' for usage.")
+        exit(1)
+    
+    # Set recipe fetch environment variable if requested
+    if args.fetch_recipes:
+        os.environ['FETCH_RECIPE_DETAILS'] = '1'
     
     # Initialize SQLite connection
     print("Connecting to database...")
@@ -372,15 +572,15 @@ def main() -> None:
     print(f"✓ API connected: {len(countries.get('data', []))} countries available")
     print(f"✓ Database: {DB_PATH}\n")
     
-    # Execute weekly pull
-    results = perform_weekly_pull(session, conn)
+    # Execute pull for specified date range
+    results = perform_weekly_pull(session, conn, start_date, end_date)
     
     print(f"\n{'='*60}")
-    print(f"✓ Weekly pull complete!")
+    print(f"✓ Pull complete!")
     print(f"{'='*60}\n")
     
     # Summary
-    print("Captured this week:")
+    print("Captured:")
     for endpoint, data in results.items():
         print(f"  {endpoint:20} {len(data):>5} records")
     

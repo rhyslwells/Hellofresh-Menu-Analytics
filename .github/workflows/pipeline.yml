@@ -1,64 +1,80 @@
-# name: HelloFresh Pipeline
+name: HelloFresh Pipeline
 
-# on:
-#   workflow_dispatch:
-#   schedule:
-#     - cron: '0 2 * * 5'  # Weekly Friday 02:00 UTC
+on:
+  workflow_dispatch:
+    inputs:
+      week:
+        description: 'Week to backfill (YYYY-MM-DD format, optional)'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 2 * * 5'  # Weekly Friday 02:00 UTC
 
-# jobs:
-#   pipeline:
-#     runs-on: ubuntu-latest
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
     
-#     steps:
-#       - name: Checkout repo
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-#       - name: Install dependencies
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install -r requirements.txt
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v2
 
-#       - name: Initialize SQLite DB
-#         run: |
-#           python scripts/init_sqlite.py
+      - name: Install dependencies
+        run: uv sync
 
-#       - name: Run Bronze ingestion
-#         env:
-#           HELLOFRESH_API_KEY: ${{ secrets.HELLOFRESH_API_KEY }}
-#         run: |
-#           python scripts/1_bronze.py
+      - name: Initialize SQLite DB
+        run: uv run python scripts/init_sqlite.py
 
-#       - name: Run Silver transformation
-#         run: |
-#           python scripts/2_silver.py
+      - name: Run Bronze ingestion
+        env:
+          HELLOFRESH_API_KEY: ${{ secrets.HELLOFRESH_API_KEY }}
+        run: |
+          if [ -z "${{ inputs.week }}" ]; then
+            uv run python scripts/1_bronze.py
+          else
+            uv run python scripts/1_bronze.py --week "${{ inputs.week }}"
+          fi
 
-#       - name: Compute Gold analytics
-#         run: |
-#           python scripts/3_gold_analytics.py
+      - name: Run Silver transformation
+        run: |
+          if [ -z "${{ inputs.week }}" ]; then
+            uv run python scripts/2_silver.py
+          else
+            uv run python scripts/2_silver.py --week "${{ inputs.week }}"
+          fi
 
-#       - name: Generate weekly report
-#         run: |
-#           python scripts/4_weekly_report.py
+      - name: Compute Gold analytics
+        run: |
+          if [ -z "${{ inputs.week }}" ]; then
+            uv run python scripts/3_gold_analytics.py
+          else
+            uv run python scripts/3_gold_analytics.py --week "${{ inputs.week }}"
+          fi
 
-#       - name: Upload reports & charts
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: hfresh-weekly-output
-#           path: hfresh/output/
-#           retention-days: 30
+      - name: Generate weekly report
+        run: uv run python scripts/4_weekly_report.py
 
-#       - name: Commit reports to repo
-#         run: |
-#           git config user.name "github-actions"
-#           git config user.email "actions@github.com"
-#           git add hfresh/output/reports/*.md || true
-#           git commit -m "chore: weekly reports [skip ci]" || true
-#           git push
-#         if: github.ref == 'refs/heads/main'
+      - name: Upload reports & charts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hfresh-weekly-output
+          path: hfresh/output/
+          retention-days: 30
+
+      - name: Commit reports to repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/weekly_reports/ || true
+          git commit -m "chore: weekly reports [skip ci]" || true
+          git push
+        if: github.ref == 'refs/heads/main'
