@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Data Quality Checks: Verify data completeness and integrity
 -- ============================================================================
--- Run: sqlite3 hfresh/hfresh.db < scripts/sql_queries/02_data_quality.sql
+-- sqlite3 hfresh/hfresh.db < scripts/sql_queries/02_data_quality.sql
 
 .mode column
 .headers on

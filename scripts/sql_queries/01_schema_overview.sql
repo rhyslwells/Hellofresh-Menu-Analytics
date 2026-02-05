@@ -1,48 +1,47 @@
 -- ============================================================================
 -- Schema Overview: Get a high-level view of the database structure
 -- ============================================================================
--- Run: sqlite3 hfresh/hfresh.db < scripts/sql_queries/01_schema_overview.sql
+-- sqlite3 hfresh/hfresh.db < scripts/sql_queries/01_schema_overview.sql
 
 .mode column
 .headers on
 
 -- Show all tables and their record counts
 SELECT 
-    name as table_name,
-    (SELECT COUNT(*) FROM recipes WHERE table_name = 'recipes') as row_count
-FROM sqlite_master WHERE type='table' AND name='recipes'
+    'api_responses' as table_name,
+    (SELECT COUNT(*) FROM api_responses) as row_count
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM ingredients) FROM sqlite_master WHERE type='table' AND name='ingredients'
+SELECT 'recipes', (SELECT COUNT(*) FROM recipes)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM allergens) FROM sqlite_master WHERE type='table' AND name='allergens'
+SELECT 'ingredients', (SELECT COUNT(*) FROM ingredients)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM tags) FROM sqlite_master WHERE type='table' AND name='tags'
+SELECT 'allergens', (SELECT COUNT(*) FROM allergens)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM labels) FROM sqlite_master WHERE type='table' AND name='labels'
+SELECT 'tags', (SELECT COUNT(*) FROM tags)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM menus) FROM sqlite_master WHERE type='table' AND name='menus'
+SELECT 'labels', (SELECT COUNT(*) FROM labels)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM api_responses) FROM sqlite_master WHERE type='table' AND name='api_responses'
+SELECT 'menus', (SELECT COUNT(*) FROM menus)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM recipe_ingredients) FROM sqlite_master WHERE type='table' AND name='recipe_ingredients'
+SELECT 'recipe_ingredients', (SELECT COUNT(*) FROM recipe_ingredients)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM recipe_allergens) FROM sqlite_master WHERE type='table' AND name='recipe_allergens'
+SELECT 'recipe_allergens', (SELECT COUNT(*) FROM recipe_allergens)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM recipe_tags) FROM sqlite_master WHERE type='table' AND name='recipe_tags'
+SELECT 'recipe_tags', (SELECT COUNT(*) FROM recipe_tags)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM recipe_labels) FROM sqlite_master WHERE type='table' AND name='recipe_labels'
+SELECT 'recipe_labels', (SELECT COUNT(*) FROM recipe_labels)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM menu_recipes) FROM sqlite_master WHERE type='table' AND name='menu_recipes'
+SELECT 'menu_recipes', (SELECT COUNT(*) FROM menu_recipes)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM weekly_menu_metrics) FROM sqlite_master WHERE type='table' AND name='weekly_menu_metrics'
+SELECT 'weekly_menu_metrics', (SELECT COUNT(*) FROM weekly_menu_metrics)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM recipe_survival_metrics) FROM sqlite_master WHERE type='table' AND name='recipe_survival_metrics'
+SELECT 'recipe_survival_metrics', (SELECT COUNT(*) FROM recipe_survival_metrics)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM ingredient_trends) FROM sqlite_master WHERE type='table' AND name='ingredient_trends'
+SELECT 'ingredient_trends', (SELECT COUNT(*) FROM ingredient_trends)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM menu_stability_metrics) FROM sqlite_master WHERE type='table' AND name='menu_stability_metrics'
+SELECT 'menu_stability_metrics', (SELECT COUNT(*) FROM menu_stability_metrics)
 UNION ALL
-SELECT name, (SELECT COUNT(*) FROM allergen_density) FROM sqlite_master WHERE type='table' AND name='allergen_density';
+SELECT 'allergen_density', (SELECT COUNT(*) FROM allergen_density);
 
 -- Show schema for each table
 .print ===============================================
