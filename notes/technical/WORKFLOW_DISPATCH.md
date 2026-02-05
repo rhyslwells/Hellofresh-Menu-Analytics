@@ -143,3 +143,60 @@ Done! The fix:
 The workflow should now successfully push the reports to weekly_reports after running the pipeline.
 
 Made changes.
+
+Two separate issues here:
+
+## Issue 1: Save as HTML instead of markdown
+
+Update the script to generate HTML files. I'll need to add a markdown-to-HTML converter. Let me update the script: 
+
+Read [](file:///c%3A/Users/RhysL/Desktop/Hellofresh-Menu-Analytics/scripts/4_weekly_report.py#460-460), lines 460 to 480
+
+Now let me update the script to save as HTML and fix the git issue: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+
+```
+
+```
+Now add markdown to dependencies in pyproject.toml: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+## Issue 2: Fix git push with GITHUB_TOKEN
+
+The problem is the git remote URL. Update the workflow to reconfigure it: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Done! Changes made:
+
+✅ **HTML Output:**
+- Script now generates `.html` files named `YYYY-MM-DD-report.html`
+- Converts markdown to HTML using the `markdown` library
+- Includes CSS styling for better presentation
+- Added `markdown>=3.5.0` to pyproject.toml
+
+✅ **Git Push Fix:**
+- Reconfigures git remote URL to use `GITHUB_TOKEN`
+- Uses standard `git push origin` instead of inline URL
+- Should now authenticate properly as `github-actions[bot]`
+
+Made changes.

@@ -3,18 +3,20 @@ SQLite WEEKLY REPORT GENERATOR
 
 Purpose
 -------
-Generates weekly markdown reports with embedded charts after each transformation.
+Generates weekly HTML reports with embedded interactive Plotly charts.
 Pulls insights from Gold layer and creates visualizations.
 
 Output
 ------
-- Reports (HTML/Markdown): stored in docs/weekly_reports/
-  - YYYY-MM-DD-report.html
-- Charts (PNG): embedded in reports or stored separately
-  - menu_overlap_trends.png
-  - recipe_survival_distribution.png
-  - ingredient_trends.png
-  - allergen_density_heatmap.png
+- Reports (HTML): stored in docs/weekly_reports/
+  - YYYY-MM-DD-report.html (with embedded interactive charts)
+
+Charts Included
+---------------
+- Menu Overlap Trends (last 3 weeks)
+- Recipe Survival Distribution
+- Ingredient Popularity Over Time
+- Allergen Density Heatmap
 
 Usage
 -----
@@ -23,6 +25,11 @@ python scripts/4_weekly_report.py
 
 With GitHub Actions (after 3_gold_analytics.py):
 python scripts/4_weekly_report.py
+
+Requirements
+------------
+- plotly
+- pandas
 """
 
 import sqlite3
@@ -33,20 +40,13 @@ import os
 
 # Data visualization
 try:
-    import matplotlib.pyplot as plt
-    import matplotlib.dates as mdates
-    import seaborn as sns
+    import plotly.graph_objects as go
+    import plotly.express as px
+    from plotly.subplots import make_subplots
     import pandas as pd
-    HAS_MATPLOTLIB = True
+    HAS_PLOTLY = True
 except ImportError:
-    HAS_MATPLOTLIB = False
-
-# Markdown to HTML conversion
-try:
-    import markdown
-    HAS_MARKDOWN = True
-except ImportError:
-    HAS_MARKDOWN = False
+    HAS_PLOTLY = False
 
 
 # ======================
@@ -56,7 +56,6 @@ except ImportError:
 DB_PATH = Path("hfresh/hfresh.db")
 PROJECT_ROOT = Path.cwd()
 REPORTS_DIR = PROJECT_ROOT / "docs" / "weekly_reports"
-CHARTS_DIR = REPORTS_DIR / "charts"
 
 
 # ======================
@@ -276,14 +275,13 @@ def check_data_available(conn: sqlite3.Connection) -> dict:
     
     return data_check
 
-def generate_menu_overlap_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 1: Menu overlap trends (last 3 weeks)."""
-    if not HAS_MATPLOTLIB:
-        print("⚠️  Matplotlib not available, skipping chart generation")
-        return
+def generate_menu_overlap_chart(conn: sqlite3.Connection) -> str:
+    """Chart 1: Menu overlap trends (last 3 weeks). Returns HTML div."""
+    if not HAS_PLOTLY:
+        print("⚠️  Plotly not available, skipping chart generation")
+        return ""
     
     cursor = conn.cursor()
-    # Get last 3 weeks of overlap data
     cursor.execute("""
         SELECT 
             week_start_date,
@@ -299,56 +297,90 @@ def generate_menu_overlap_chart(conn: sqlite3.Connection, output_path: Path) -> 
     rows = cursor.fetchall()
     if not rows:
         print("  ⚠️  No menu stability data, skipping chart")
-        return
+        return ""
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'overlap', 'added', 'removed'])
     df = df.sort_values('week_start_date')
     
-    print(f"  → Generated chart with {len(df)} weeks of data")
+    print(f"  → Generated menu overlap chart with {len(df)} weeks of data")
     
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+    # Create subplots
+    fig = make_subplots(
+        rows=2, cols=1,
+        subplot_titles=('Menu Overlap Trend (Last 3 Weeks)', 'Recipes Added vs Removed'),
+        specs=[[{"secondary_y": False}], [{"secondary_y": False}]],
+        vertical_spacing=0.15
+    )
     
     # Top chart: Overlap percentage
-    ax1.plot(df['week_start_date'], df['overlap'], marker='o', linewidth=3, markersize=12, color='#2E86AB', label='Overlap %')
-    ax1.fill_between(range(len(df)), df['overlap'], alpha=0.3, color='#2E86AB')
-    ax1.set_title('Menu Overlap Trend (Last 3 Weeks)', fontsize=14, fontweight='bold', pad=15)
-    ax1.set_ylabel('Overlap Percentage (%)', fontsize=12, fontweight='bold')
-    ax1.grid(True, alpha=0.3, linestyle='--')
-    ax1.set_ylim(0, 105)
-    for i, (x, y) in enumerate(zip(range(len(df)), df['overlap'])):
-        ax1.text(x, y + 3, f'{y:.1f}%', ha='center', fontsize=10, fontweight='bold')
+    fig.add_trace(
+        go.Scatter(
+            x=df['week_start_date'],
+            y=df['overlap'],
+            mode='lines+markers+text',
+            name='Overlap %',
+            line=dict(color='#2E86AB', width=3),
+            marker=dict(size=12),
+            fill='tozeroy',
+            fillcolor='rgba(46, 134, 171, 0.2)',
+            text=[f'{y:.1f}%' for y in df['overlap']],
+            textposition='top center',
+            hovertemplate='<b>%{x}</b><br>Overlap: %{y:.1f}%<extra></extra>'
+        ),
+        row=1, col=1
+    )
     
     # Bottom chart: Added vs Removed
-    x = range(len(df))
-    width = 0.35
-    bars1 = ax2.bar([i - width/2 for i in x], df['added'], width, label='Added', color='#A23B72', alpha=0.8, edgecolor='black', linewidth=1.5)
-    bars2 = ax2.bar([i + width/2 for i in x], df['removed'], width, label='Removed', color='#F18F01', alpha=0.8, edgecolor='black', linewidth=1.5)
-    ax2.set_title('Recipes Added vs Removed', fontsize=14, fontweight='bold', pad=15)
-    ax2.set_ylabel('Count', fontsize=12, fontweight='bold')
-    ax2.set_xlabel('Week', fontsize=12, fontweight='bold')
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(df['week_start_date'], rotation=45, ha='right', fontsize=10)
-    ax2.legend(fontsize=11, loc='upper right')
-    ax2.grid(True, alpha=0.3, axis='y', linestyle='--')
+    fig.add_trace(
+        go.Bar(
+            x=df['week_start_date'],
+            y=df['added'],
+            name='Added',
+            marker=dict(color='#A23B72'),
+            text=df['added'],
+            textposition='outside',
+            hovertemplate='<b>%{x}</b><br>Added: %{y}<extra></extra>'
+        ),
+        row=2, col=1
+    )
     
-    # Add value labels on bars
-    for bars in [bars1, bars2]:
-        for bar in bars:
-            height = bar.get_height()
-            if height > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., height,
-                        f'{int(height)}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+    fig.add_trace(
+        go.Bar(
+            x=df['week_start_date'],
+            y=df['removed'],
+            name='Removed',
+            marker=dict(color='#F18F01'),
+            text=df['removed'],
+            textposition='outside',
+            hovertemplate='<b>%{x}</b><br>Removed: %{y}<extra></extra>'
+        ),
+        row=2, col=1
+    )
     
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close()
-    print(f"  ✓ Menu overlap chart saved")
+    # Update layout
+    fig.update_yaxes(title_text="Overlap Percentage (%)", row=1, col=1, range=[0, 105])
+    fig.update_yaxes(title_text="Count", row=2, col=1)
+    fig.update_xaxes(title_text="Week", row=2, col=1)
+    
+    fig.update_layout(
+        height=700,
+        showlegend=True,
+        hovermode='x unified',
+        plot_bgcolor='white',
+        paper_bgcolor='white'
+    )
+    
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    
+    print(f"  ✓ Menu overlap chart generated")
+    return fig.to_html(include_plotlyjs='cdn', div_id="menu_overlap_chart")
 
 
-def generate_recipe_survival_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 2: Recipe survival distribution with improved styling."""
-    if not HAS_MATPLOTLIB:
-        return
+def generate_recipe_survival_chart(conn: sqlite3.Connection) -> str:
+    """Chart 2: Recipe survival distribution. Returns HTML div."""
+    if not HAS_PLOTLY:
+        return ""
     
     cursor = conn.cursor()
     cursor.execute("""
@@ -362,36 +394,58 @@ def generate_recipe_survival_chart(conn: sqlite3.Connection, output_path: Path) 
     rows = cursor.fetchall()
     if not rows:
         print("  ⚠️  No recipe survival data, skipping chart")
-        return
+        return ""
     
     df = pd.DataFrame(rows, columns=['total_weeks_active', 'is_currently_active'])
     
     active = df[df['is_currently_active'] == 1]['total_weeks_active']
     inactive = df[df['is_currently_active'] == 0]['total_weeks_active']
     
-    print(f"  → Generated chart with {len(active)} active and {len(inactive)} inactive recipes")
+    print(f"  → Generated recipe survival chart with {len(active)} active and {len(inactive)} inactive recipes")
     
-    fig, ax = plt.subplots(figsize=(13, 7))
-    n, bins, patches = ax.hist([active, inactive], label=['Currently Active', 'Churned'], bins=20, alpha=0.8, edgecolor='black', linewidth=1.5, color=['#2E86AB', '#A23B72'])
-    ax.set_title('Recipe Survival Distribution', fontsize=14, fontweight='bold', pad=15)
-    ax.set_xlabel('Weeks Active', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Number of Recipes', fontsize=12, fontweight='bold')
-    ax.legend(fontsize=12, loc='upper right')
-    ax.grid(True, alpha=0.3, axis='y', linestyle='--')
+    fig = go.Figure()
     
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close()
-    print(f"  ✓ Recipe survival chart saved")
+    fig.add_trace(go.Histogram(
+        x=active,
+        name='Currently Active',
+        marker=dict(color='#2E86AB'),
+        nbinsx=20,
+        hovertemplate='<b>Active Recipes</b><br>Weeks Active: %{x}<br>Count: %{y}<extra></extra>'
+    ))
+    
+    fig.add_trace(go.Histogram(
+        x=inactive,
+        name='Churned',
+        marker=dict(color='#A23B72'),
+        nbinsx=20,
+        hovertemplate='<b>Churned Recipes</b><br>Weeks Active: %{x}<br>Count: %{y}<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        title='Recipe Survival Distribution',
+        xaxis_title='Weeks Active',
+        yaxis_title='Number of Recipes',
+        barmode='overlay',
+        height=500,
+        showlegend=True,
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        hovermode='x unified'
+    )
+    
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    
+    print(f"  ✓ Recipe survival chart generated")
+    return fig.to_html(include_plotlyjs='cdn', div_id="recipe_survival_chart")
 
 
-def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 3: Top ingredients over last 3 weeks."""
-    if not HAS_MATPLOTLIB:
-        return
+def generate_ingredient_trends_chart(conn: sqlite3.Connection) -> str:
+    """Chart 3: Top ingredients over last 3 weeks. Returns HTML div."""
+    if not HAS_PLOTLY:
+        return ""
     
     cursor = conn.cursor()
-    # Get last 3 weeks of top ingredient data
     cursor.execute("""
         SELECT 
             week_start_date,
@@ -406,39 +460,50 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection, output_path: Path
     df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'ingredient_name', 'recipe_count'])
     
     if df.empty:
-        return
+        print("  ⚠️  No ingredient trends data, skipping chart")
+        return ""
     
     df = df.sort_values('week_start_date')
-    pivot_df = df.pivot_table(index='week_start_date', columns='ingredient_name', values='recipe_count', fill_value=0)
     
-    fig, ax = plt.subplots(figsize=(14, 7))
-    pivot_df.plot(ax=ax, marker='o', linewidth=2.5, markersize=10, color=sns.color_palette("husl", len(pivot_df.columns)))
-    ax.set_title('Top 8 Ingredients Over Last 3 Weeks', fontsize=14, fontweight='bold', pad=15)
-    ax.set_xlabel('Week Start Date', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Recipe Count', fontsize=12, fontweight='bold')
-    ax.legend(title='Ingredient', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=11)
-    ax.grid(True, alpha=0.3, linestyle='--')
-    plt.xticks(rotation=45, ha='right', fontsize=10)
+    print(f"  → Generated ingredient trends chart")
     
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor='white')
-    plt.close()
-    print(f"  ✓ Ingredient trends chart saved")
-    plt.grid(True, alpha=0.3)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f"✓ Ingredient trends chart saved")
+    fig = px.line(
+        df,
+        x='week_start_date',
+        y='recipe_count',
+        color='ingredient_name',
+        markers=True,
+        title='Top 8 Ingredients Over Last 3 Weeks',
+        labels={'week_start_date': 'Week Start Date', 'recipe_count': 'Recipe Count', 'ingredient_name': 'Ingredient'},
+        height=500
+    )
+    
+    fig.update_layout(
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        hovermode='x unified'
+    )
+    
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    
+    for trace in fig.data:
+        trace.update(
+            mode='lines+markers',
+            line=dict(width=3),
+            marker=dict(size=10)
+        )
+    
+    print(f"  ✓ Ingredient trends chart generated")
+    return fig.to_html(include_plotlyjs='cdn', div_id="ingredient_trends_chart")
 
 
-def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path) -> None:
-    """Chart 4: Allergen density heatmap (last 3 weeks)."""
-    if not HAS_MATPLOTLIB:
-        return
+def generate_allergen_density_chart(conn: sqlite3.Connection) -> str:
+    """Chart 4: Allergen density heatmap (last 3 weeks). Returns HTML div."""
+    if not HAS_PLOTLY:
+        return ""
     
     cursor = conn.cursor()
-    # Get last 3 weeks of allergen data
     cursor.execute("""
         SELECT 
             week_start_date,
@@ -453,58 +518,199 @@ def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path)
     df = pd.DataFrame(cursor.fetchall(), columns=['week_start_date', 'allergen_name', 'percentage_of_menu'])
     
     if df.empty:
-        return
+        print("  ⚠️  No allergen density data, skipping chart")
+        return ""
     
     df = df.sort_values('week_start_date')
     pivot_df = df.pivot_table(index='allergen_name', columns='week_start_date', values='percentage_of_menu', fill_value=0)
     
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(pivot_df, annot=True, fmt='.1f', cmap='RdYlGn_r', cbar_kws={'label': '% of Menu'}, linewidths=0.5)
-    plt.title('Allergen Density Heatmap - Last 3 Weeks (%)', fontsize=14, fontweight='bold')
-    plt.xlabel('Week Start Date', fontsize=11)
-    plt.ylabel('Allergen', fontsize=11)
-    plt.xticks(rotation=45, ha='right')
+    print(f"  → Generated allergen density heatmap")
     
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f"✓ Allergen density chart saved")
+    fig = go.Figure(data=go.Heatmap(
+        z=pivot_df.values,
+        x=pivot_df.columns,
+        y=pivot_df.index,
+        colorscale='RdYlGn_r',
+        colorbar=dict(title='% of Menu'),
+        hovertemplate='<b>%{y}</b><br>Week: %{x}<br>Percentage: %{z:.1f}%<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        title='Allergen Density Heatmap - Last 3 Weeks (%)',
+        xaxis_title='Week Start Date',
+        yaxis_title='Allergen',
+        height=500,
+        plot_bgcolor='white',
+        paper_bgcolor='white'
+    )
+    
+    print(f"  ✓ Allergen density chart generated")
+    return fig.to_html(include_plotlyjs='cdn', div_id="allergen_density_chart")
 
-def save_report_to_file(content: str, pull_date: str) -> str:
-    """Save markdown report as HTML file."""
+def save_report_to_file(html_content: str, pull_date: str) -> str:
+    """Save HTML report with embedded charts."""
     filename = f"{pull_date}-report.html"
     
     try:
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         filepath = REPORTS_DIR / filename
         
-        # Convert markdown to HTML
-        if HAS_MARKDOWN:
-            html_content = markdown.markdown(content, extensions=['extra', 'codehilite'])
-        else:
-            # Fallback: simple HTML wrapping if markdown not available
-            html_content = f"<pre>{content}</pre>"
-        
-        # Wrap in basic HTML template
+        # Wrap in HTML template with CSS styling
         full_html = f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HelloFresh Report - {pull_date}</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }}
-        h1, h2, h3 {{ color: #333; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 20px 0; background: white; }}
-        th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
-        th {{ background-color: #f0f0f0; font-weight: bold; }}
-        img {{ max-width: 100%; height: auto; margin: 20px 0; }}
-        code {{ background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }}
-        pre {{ background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }}
+        h1 {{
+            color: #2E86AB;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            border-bottom: 3px solid #2E86AB;
+            padding-bottom: 15px;
+        }}
+        h2 {{
+            color: #2E86AB;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }}
+        h3 {{
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }}
+        .metadata {{
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2E86AB;
+        }}
+        .metadata p {{
+            margin: 5px 0;
+            color: #555;
+        }}
+        .metadata strong {{
+            color: #2E86AB;
+        }}
+        table {{
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }}
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }}
+        th {{
+            background-color: #2E86AB;
+            color: white;
+            font-weight: bold;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f9f9f9;
+        }}
+        tr:hover {{
+            background-color: #f0f0f0;
+        }}
+        .chart-container {{
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #A23B72;
+        }}
+        .chart-container h3 {{
+            color: #A23B72;
+            margin-top: 0;
+        }}
+        .executive-summary {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }}
+        .executive-summary ul {{
+            list-style: none;
+            padding-left: 0;
+        }}
+        .executive-summary li {{
+            padding: 8px 0;
+            font-size: 1.1em;
+        }}
+        .executive-summary li:before {{
+            content: "✓ ";
+            margin-right: 10px;
+            font-weight: bold;
+        }}
+        .data-quality {{
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            border-left: 4px solid #4caf50;
+        }}
+        .data-quality ul {{
+            list-style: none;
+            padding-left: 0;
+        }}
+        .data-quality li {{
+            padding: 5px 0;
+            color: #2e7d32;
+        }}
+        footer {{
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9em;
+        }}
+        .plotly-chart {{
+            width: 100%;
+            height: auto;
+        }}
     </style>
 </head>
 <body>
-    {html_content}
+    <div class="container">
+        {html_content}
+        <footer>
+            <p>This report was generated automatically by the HelloFresh Data Platform.</p>
+            <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </footer>
+    </div>
 </body>
 </html>"""
         
@@ -518,12 +724,13 @@ def save_report_to_file(content: str, pull_date: str) -> str:
 
 
 # ======================
-# Markdown Report Generation
+# HTML Report Generation
 # ======================
 
-def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
-    """Generate markdown report with embedded chart references and SQL tables."""
+def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
+    """Generate HTML report with embedded charts and data tables."""
     
+    print("Gathering report data...")
     summary = get_week_summary(conn, week_date)
     top_recipes = get_top_recipes(conn, limit=10)
     stability = get_menu_stability(conn, limit=5)
@@ -532,149 +739,140 @@ def generate_markdown_report(conn: sqlite3.Connection, week_date: str) -> str:
     cuisines = get_cuisine_distribution(conn)
     lifecycle = get_recipe_lifecycle(conn)
     
-    lines = []
-    lines.append("# HelloFresh Data Analysis Report")
-    lines.append("")
-    lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    lines.append(f"**Analysis Period:** Week of {week_date}")
-    lines.append(f"**Data Source:** SQLite Gold Layer")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
+    print("Generating charts...")
+    menu_overlap_html = generate_menu_overlap_chart(conn)
+    recipe_survival_html = generate_recipe_survival_chart(conn)
+    ingredient_trends_html = generate_ingredient_trends_chart(conn)
+    allergen_density_html = generate_allergen_density_chart(conn)
+    
+    # Build HTML content
+    html_parts = []
+    
+    # Header
+    html_parts.append(f"<h1>HelloFresh Data Analysis Report</h1>")
+    html_parts.append(f"""<div class="metadata">
+        <p><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+        <p><strong>Analysis Period:</strong> Week of {week_date}</p>
+        <p><strong>Data Source:</strong> SQLite Gold Layer</p>
+    </div>""")
     
     # Executive Summary
-    lines.append("## Executive Summary")
-    lines.append("")
+    html_parts.append("<h2>Executive Summary</h2>")
     if summary:
-        lines.append(f"- **Total Recipes This Week:** {summary.get('total_recipes', 0)}")
-        lines.append(f"- **New Recipes Introduced:** {summary.get('new_recipes', 0)}")
-        lines.append(f"- **Returning Recipes:** {summary.get('returning_recipes', 0)}")
-        lines.append(f"- **Average Difficulty:** {summary.get('avg_difficulty', 'N/A')}")
-        lines.append(f"- **Average Prep Time:** {summary.get('avg_prep_time', 'N/A')} minutes")
-    lines.append("")
+        html_parts.append(f"""<div class="executive-summary">
+            <ul>
+                <li><strong>Total Recipes This Week:</strong> {summary.get('total_recipes', 0)}</li>
+                <li><strong>New Recipes Introduced:</strong> {summary.get('new_recipes', 0)}</li>
+                <li><strong>Returning Recipes:</strong> {summary.get('returning_recipes', 0)}</li>
+                <li><strong>Average Difficulty:</strong> {summary.get('avg_difficulty', 'N/A')}</li>
+                <li><strong>Average Prep Time:</strong> {summary.get('avg_prep_time', 'N/A')} minutes</li>
+            </ul>
+        </div>""")
     
-    # Weekly Menu Metrics Table
-    lines.append("### Weekly Metrics Table")
-    lines.append("")
-    lines.append("| Metric | Value |")
-    lines.append("|--------|-------|")
+    # Weekly Metrics Table
+    html_parts.append("<h3>Weekly Metrics Table</h3>")
+    html_parts.append("<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>")
     if summary:
-        lines.append(f"| Total Recipes | {summary.get('total_recipes', 0)} |")
-        lines.append(f"| Unique Recipes | {summary.get('unique_recipes', 0)} |")
-        lines.append(f"| New Recipes | {summary.get('new_recipes', 0)} |")
-        lines.append(f"| Returning Recipes | {summary.get('returning_recipes', 0)} |")
-        lines.append(f"| Avg Difficulty | {summary.get('avg_difficulty', 'N/A')} |")
-        lines.append(f"| Avg Prep Time (min) | {summary.get('avg_prep_time', 'N/A')} |")
-    lines.append("")
+        html_parts.append(f"<tr><td>Total Recipes</td><td>{summary.get('total_recipes', 0)}</td></tr>")
+        html_parts.append(f"<tr><td>Unique Recipes</td><td>{summary.get('unique_recipes', 0)}</td></tr>")
+        html_parts.append(f"<tr><td>New Recipes</td><td>{summary.get('new_recipes', 0)}</td></tr>")
+        html_parts.append(f"<tr><td>Returning Recipes</td><td>{summary.get('returning_recipes', 0)}</td></tr>")
+        html_parts.append(f"<tr><td>Avg Difficulty</td><td>{summary.get('avg_difficulty', 'N/A')}</td></tr>")
+        html_parts.append(f"<tr><td>Avg Prep Time (min)</td><td>{summary.get('avg_prep_time', 'N/A')}</td></tr>")
+    html_parts.append("</tbody></table>")
     
     # Menu Evolution
-    lines.append("## 1. Menu Evolution")
-    lines.append("")
-    lines.append(f"![Menu Overlap Trends](../charts/menu_overlap_trends.png)")
-    lines.append("")
+    html_parts.append("<h2>1. Menu Evolution</h2>")
+    if menu_overlap_html:
+        html_parts.append(f'<div class="chart-container">{menu_overlap_html}</div>')
     
     # Menu Stability Table
-    lines.append("### Recent Menu Stability")
-    lines.append("")
-    lines.append("| Week | Overlap % | New | Removed | Retained |")
-    lines.append("|------|-----------|-----|---------|----------|")
+    html_parts.append("<h3>Recent Menu Stability</h3>")
+    html_parts.append("<table><thead><tr><th>Week</th><th>Overlap %</th><th>Added</th><th>Removed</th></tr></thead><tbody>")
     if stability:
         for week in stability[:5]:
             overlap = week.get('overlap_with_prev_week') or 'N/A'
-            lines.append(f"| {week.get('week_start_date')} | {overlap} | {week.get('recipes_added', 0)} | {week.get('recipes_removed', 0)} | - |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{week.get('week_start_date')}</td><td>{overlap}</td><td>{week.get('recipes_added', 0)}</td><td>{week.get('recipes_removed', 0)}</td></tr>")
+    html_parts.append("</tbody></table>")
     
     # Recipe Lifecycle
-    lines.append("## 2. Recipe Lifecycle Analysis")
-    lines.append("")
-    lines.append(f"![Recipe Survival Distribution](../charts/recipe_survival_distribution.png)")
-    lines.append("")
-    lines.append("### Top 10 Active Recipes (Current Week)")
-    lines.append("")
-    lines.append("| Rank | Recipe Name | Difficulty | Prep Time | Appearances |")
-    lines.append("|------|-------------|-----------|-----------|-------------|")
+    html_parts.append("<h2>2. Recipe Lifecycle Analysis</h2>")
+    if recipe_survival_html:
+        html_parts.append(f'<div class="chart-container">{recipe_survival_html}</div>')
+    
+    html_parts.append("<h3>Top 10 Active Recipes (Current Week)</h3>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Recipe Name</th><th>Difficulty</th><th>Prep Time</th><th>Appearances</th></tr></thead><tbody>")
     if top_recipes:
         for i, recipe in enumerate(top_recipes[:10], 1):
             name = recipe.get('name', 'Unknown')
             difficulty = recipe.get('difficulty', 'N/A')
             prep = recipe.get('prep_time', 'N/A')
             apps = recipe.get('menu_appearances', 0)
-            lines.append(f"| {i} | {name} | {difficulty} | {prep} | {apps} |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{difficulty}</td><td>{prep}</td><td>{apps}</td></tr>")
+    html_parts.append("</tbody></table>")
     
     # Ingredient Trends
-    lines.append("## 3. Ingredient Trends")
-    lines.append("")
-    lines.append(f"![Ingredient Popularity Over Time](../charts/ingredient_trends.png)")
-    lines.append("")
-    lines.append("### Top Trending Ingredients (Latest Week)")
-    lines.append("")
-    lines.append("| Rank | Ingredient | Recipes | Popularity |")
-    lines.append("|------|-----------|---------|------------|")
+    html_parts.append("<h2>3. Ingredient Trends</h2>")
+    if ingredient_trends_html:
+        html_parts.append(f'<div class="chart-container">{ingredient_trends_html}</div>')
+    
+    html_parts.append("<h3>Top Trending Ingredients (Latest Week)</h3>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Ingredient</th><th>Recipes</th><th>Popularity</th></tr></thead><tbody>")
     if ingredient_trends:
         for i, ing in enumerate(ingredient_trends[:10], 1):
             name = ing.get('ingredient_name', 'Unknown')
             count = ing.get('recipe_count', 0)
             rank = ing.get('popularity_rank', 'N/A')
-            lines.append(f"| {i} | {name} | {count} | #{rank} |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{count}</td><td>#{rank}</td></tr>")
+    html_parts.append("</tbody></table>")
     
-    # Most Used Ingredients
-    lines.append("### Most Used Ingredients (All Time)")
-    lines.append("")
-    lines.append("| Rank | Ingredient | In Recipes | Menu Appearances |")
-    lines.append("|------|------------|-----------|------------------|")
+    html_parts.append("<h3>Most Used Ingredients (All Time)</h3>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Ingredient</th><th>In Recipes</th><th>Menu Appearances</th></tr></thead><tbody>")
     if popular_ings:
         for i, ing in enumerate(popular_ings[:10], 1):
             name = ing.get('ingredient_name', 'Unknown')
             recipes = ing.get('recipe_count', 0)
             menus = ing.get('menu_count', 0)
-            lines.append(f"| {i} | {name} | {recipes} | {menus} |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{recipes}</td><td>{menus}</td></tr>")
+    html_parts.append("</tbody></table>")
     
     # Allergen Analysis
-    lines.append("## 4. Allergen Analysis")
-    lines.append("")
-    lines.append(f"![Allergen Density Heatmap](../charts/allergen_density_heatmap.png)")
-    lines.append("")
+    html_parts.append("<h2>4. Allergen Analysis</h2>")
+    if allergen_density_html:
+        html_parts.append(f'<div class="chart-container">{allergen_density_html}</div>')
     
-    lines.append("## 5. Cuisine Distribution")
-    lines.append("")
-    lines.append("| Rank | Cuisine | Recipes | Menu Appearances |")
-    lines.append("|------|---------|---------|------------------|")
+    # Cuisine Distribution
+    html_parts.append("<h2>5. Cuisine Distribution</h2>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Cuisine</th><th>Recipes</th><th>Menu Appearances</th></tr></thead><tbody>")
     if cuisines:
         for i, cuisine in enumerate(cuisines[:10], 1):
             cuisine_name = cuisine.get('cuisine', 'Unknown')
             count = cuisine.get('recipe_count', 0)
             apps = cuisine.get('menu_appearances', 0)
-            lines.append(f"| {i} | {cuisine_name} | {count} | {apps} |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{i}</td><td>{cuisine_name}</td><td>{count}</td><td>{apps}</td></tr>")
+    html_parts.append("</tbody></table>")
     
-    lines.append("## 6. Recipe Lifecycle Status")
-    lines.append("")
-    lines.append("| Status | Count | Avg Days Active |")
-    lines.append("|--------|-------|-----------------|")
+    # Recipe Lifecycle Status
+    html_parts.append("<h2>6. Recipe Lifecycle Status</h2>")
+    html_parts.append("<table><thead><tr><th>Status</th><th>Count</th><th>Avg Days Active</th></tr></thead><tbody>")
     if lifecycle:
         for status, data in lifecycle.items():
             count = data.get('count', 0)
             days = data.get('avg_days', 0)
-            lines.append(f"| {status} | {count} | {days} |")
-    lines.append("")
+            html_parts.append(f"<tr><td>{status}</td><td>{count}</td><td>{days}</td></tr>")
+    html_parts.append("</tbody></table>")
     
-    # Data Quality
-    lines.append("## Data Quality Notes")
-    lines.append("")
-    lines.append(f"- **Report Generated:** {datetime.now().isoformat()}")
-    lines.append(f"- **Week Start Date:** {week_date}")
-    lines.append(f"- **Data Source:** SQLite Database (`hfresh/hfresh.db`)")
-    lines.append("")
+    # Data Quality Notes
+    html_parts.append("""<div class="data-quality">
+        <h3>Data Quality Notes</h3>
+        <ul>
+            <li><strong>Report Generated:</strong> {}</li>
+            <li><strong>Week Start Date:</strong> {}</li>
+            <li><strong>Data Source:</strong> SQLite Database (hfresh/hfresh.db)</li>
+        </ul>
+    </div>""".format(datetime.now().isoformat(), week_date))
     
-    lines.append("---")
-    lines.append("")
-    lines.append("*This report was generated automatically by the HelloFresh Data Platform.*")
-    lines.append("*Charts are stored in the output/charts/ directory.*")
-    
-    return "\n".join(lines)
+    return "\n".join(html_parts)
 
 
 def commit_report_to_git(week_date: str) -> bool:
@@ -709,11 +907,11 @@ def commit_report_to_git(week_date: str) -> bool:
 # ======================
 
 def main():
-    """Generate weekly report with charts and Git commit."""
+    """Generate weekly report with embedded charts and Git commit."""
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  Weekly Report Generation                                ║
-    ║  Gold Layer → Markdown + Charts                          ║
+    ║  Gold Layer → HTML with Embedded Plotly Charts           ║
     ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
@@ -724,30 +922,25 @@ def main():
     week_date = get_latest_week(conn)
     print(f"\nGenerating report for week: {week_date}\n")
     
-    # Generate charts
-    print("Generating charts...")
-    
-    # Check data availability first
+    # Check data availability
+    print("Checking data availability...")
     data_check = check_data_available(conn)
-    print(f"  Data check: {data_check}")
+    print(f"  Data check: {data_check}\n")
     
-    if HAS_MATPLOTLIB:
-        CHARTS_DIR.mkdir(parents=True, exist_ok=True)
-        generate_menu_overlap_chart(conn, CHARTS_DIR / "menu_overlap_trends.png")
-        generate_recipe_survival_chart(conn, CHARTS_DIR / "recipe_survival_distribution.png")
-        generate_ingredient_trends_chart(conn, CHARTS_DIR / "ingredient_trends.png")
-        generate_allergen_density_chart(conn, CHARTS_DIR / "allergen_density_heatmap.png")
-    else:
-        print("⚠️  Matplotlib not available, skipping chart generation")
+    if not HAS_PLOTLY:
+        print("⚠️  Plotly not available, skipping report generation")
+        print("   Install with: pip install plotly pandas")
+        conn.close()
+        return
     
-    # Generate markdown report
-    print("Generating markdown report...")
-    markdown_content = generate_markdown_report(conn, week_date)
-    report_path = save_report_to_file(markdown_content, week_date)
+    # Generate HTML report with embedded charts
+    print("Generating HTML report with embedded charts...")
+    html_content = generate_html_report(conn, week_date)
+    report_path = save_report_to_file(html_content, week_date)
     
     # Commit to Git
     if report_path:
-        print("Committing to Git...")
+        print("\nCommitting to Git...")
         commit_report_to_git(week_date)
     
     print(f"\n{'='*60}")
