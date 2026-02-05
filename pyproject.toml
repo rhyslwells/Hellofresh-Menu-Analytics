@@ -12,6 +12,7 @@ dependencies = [
     "pyarrow==14.0.1",
     "plotly>=5.15.0",
     "pytest>=9.0.2",
+    "markdown>=3.5.0",
 ]
 
 [project.optional-dependencies]

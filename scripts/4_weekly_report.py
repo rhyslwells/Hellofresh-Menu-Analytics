@@ -41,6 +41,13 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
+# Markdown to HTML conversion
+try:
+    import markdown
+    HAS_MARKDOWN = True
+except ImportError:
+    HAS_MARKDOWN = False
+
 
 # ======================
 # Configuration
@@ -464,14 +471,45 @@ def generate_allergen_density_chart(conn: sqlite3.Connection, output_path: Path)
     print(f"✓ Allergen density chart saved")
 
 def save_report_to_file(content: str, pull_date: str) -> str:
-    """Save markdown report to file (local filesystem)."""
-    filename = f"weekly_report_{pull_date}.md"
+    """Save markdown report as HTML file."""
+    filename = f"{pull_date}-report.html"
     
     try:
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         filepath = REPORTS_DIR / filename
+        
+        # Convert markdown to HTML
+        if HAS_MARKDOWN:
+            html_content = markdown.markdown(content, extensions=['extra', 'codehilite'])
+        else:
+            # Fallback: simple HTML wrapping if markdown not available
+            html_content = f"<pre>{content}</pre>"
+        
+        # Wrap in basic HTML template
+        full_html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelloFresh Report - {pull_date}</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }}
+        h1, h2, h3 {{ color: #333; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 20px 0; background: white; }}
+        th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+        th {{ background-color: #f0f0f0; font-weight: bold; }}
+        img {{ max-width: 100%; height: auto; margin: 20px 0; }}
+        code {{ background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }}
+        pre {{ background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+    </style>
+</head>
+<body>
+    {html_content}
+</body>
+</html>"""
+        
         with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(content)
+            f.write(full_html)
         print(f"✓ Report saved to {filepath}")
         return str(filepath)
     except Exception as e:

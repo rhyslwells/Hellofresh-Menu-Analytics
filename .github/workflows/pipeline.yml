@@ -75,7 +75,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           git add docs/weekly_reports/ || true
           git commit -m "chore: weekly reports [skip ci]" || true
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:${{ github.ref_name }}
+          git push origin ${{ github.ref_name }}
         if: github.ref == 'refs/heads/main'
