@@ -1,5 +1,8 @@
 ## Building an Automated HelloFresh Menu Analytics Pipeline
 
+Use of triggers in git actions. Here I explore the behavior of the `workflow_dispatch` trigger, which allows manual runs of the pipeline with custom parameters. I check how the `--week` parameter is handled in the bronze ingestion script. 
+Should later look into stringing actions together.
+
 ### What the project does
 
 This [project](https://github.com/rhyslwells/Hellofresh-Menu-Analytics/tree/main) builds a small but complete analytics workflow around HelloFresh menus. Each week, menu and recipe data are pulled from the HelloFresh API and stored in a SQLite database. From there, a set of SQL analytics queries are run to examine recent menu changes and how they compare with the previous week.

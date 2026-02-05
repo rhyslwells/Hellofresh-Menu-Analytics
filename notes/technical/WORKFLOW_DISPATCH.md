@@ -121,3 +121,25 @@ Here's what I'll add to the workflow:
 ```
 
 Want me to add this to the pipeline?
+
+Ah! The issue is **GitHub token permissions** for the git push. The `github-actions[bot]` doesn't have write access with the current setup.
+
+## Fix: Configure git to use the GitHub token for push
+
+The workflow needs to use the built-in `GITHUB_TOKEN` when pushing. Update the git commit step: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Done! The fix:
+- ✅ Uses `GITHUB_TOKEN` (automatically available in workflows)
+- ✅ Embeds token in HTTPS URL for authentication
+- ✅ Pushes to the correct branch (`${{ github.ref_name }}`)
+- ✅ Uses proper bot user email format
+
+The workflow should now successfully push the reports to weekly_reports after running the pipeline.
+
+Made changes.
