@@ -14,6 +14,8 @@ Done:
 - [x] Add `GITHUB_SETUP.md` and `LOCAL_DEV.md`
 - [x] Can we write some sql scripts to explore the hfresh.db file saving these to scripts\sql_queries\ for future reference?
 
+
+
 This file contains the practical developer notes, the TODO checklist, and
 the exact commands for building and running the repository locally. High-
 level project information and links live in the repository `README.md`.

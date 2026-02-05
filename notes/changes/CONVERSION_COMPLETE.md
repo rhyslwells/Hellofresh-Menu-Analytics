@@ -249,7 +249,7 @@ plt.savefig('hfresh/output/charts/recipe_count.png', dpi=150)
 
 Before using in production, verify:
 
-- [ ] `python scripts/init_sqlite.py` runs without errors
+- [x] `python scripts/init_sqlite.py` runs without errors
 - [ ] `python scripts/1_bronze.py` populates `api_responses` table
 - [ ] `python scripts/2_silver.py` populates 11 silver tables with >0 rows
 - [ ] `python scripts/3_gold_analytics.py` computes 5 analytics tables
