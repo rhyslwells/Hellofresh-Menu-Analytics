@@ -71,13 +71,6 @@ jobs:
       - name: Generate weekly report
         run: uv run python scripts/4_weekly_report.py
 
-      - name: Upload reports & charts
-        uses: actions/upload-artifact@v4
-        with:
-          name: hfresh-weekly-output
-          path: hfresh/output/
-          retention-days: 30
-
       - name: Commit reports to repo
         run: |
           git config user.name "github-actions[bot]"

@@ -8,14 +8,13 @@ Pulls insights from Gold layer and creates visualizations.
 
 Output
 ------
-- Charts (PNG): stored in hfresh/output/charts/
+- Reports (HTML/Markdown): stored in docs/weekly_reports/
+  - YYYY-MM-DD-report.html
+- Charts (PNG): embedded in reports or stored separately
   - menu_overlap_trends.png
   - recipe_survival_distribution.png
   - ingredient_trends.png
   - allergen_density_heatmap.png
-- Reports (Markdown): stored in hfresh/output/reports/
-  - weekly_report_YYYY-MM-DD.md
-- Git integration: Commits reports to repository
 
 Usage
 -----
@@ -49,8 +48,8 @@ except ImportError:
 
 DB_PATH = Path("hfresh/hfresh.db")
 PROJECT_ROOT = Path.cwd()
-CHARTS_DIR = PROJECT_ROOT / "hfresh" / "output" / "charts"
-REPORTS_DIR = PROJECT_ROOT / "hfresh" / "output" / "reports"
+REPORTS_DIR = PROJECT_ROOT / "docs" / "weekly_reports"
+CHARTS_DIR = REPORTS_DIR / "charts"
 
 
 # ======================
@@ -646,7 +645,7 @@ def commit_report_to_git(week_date: str) -> bool:
         os.chdir(PROJECT_ROOT)
         
         # Git operations
-        report_file = f"hfresh/output/reports/weekly_report_{week_date}.md"
+        report_file = f"docs/weekly_reports/{week_date}-report.html"
         subprocess.run(["git", "add", report_file], check=True, capture_output=True)
         subprocess.run(["git", "config", "user.name", "hfresh-pipeline"], check=True, capture_output=True)
         subprocess.run(["git", "config", "user.email", "hfresh@github.local"], check=True, capture_output=True)
