@@ -23,6 +23,7 @@ Usage
 -----
 From command line:
 python scripts/4_weekly_report.py
+uv run python scripts/4_weekly_report.py --date 2026-02-07
 
 With specific date:
 python scripts/4_weekly_report.py --date 2026-02-07
@@ -592,26 +593,52 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
 
 
 def commit_report_to_git(week_date: str) -> bool:
-    """Commit report to Git repository."""
+    """Commit report and metadata to Git repository."""
     try:
         os.chdir(PROJECT_ROOT)
         
-        # Git operations
+        # Git operations - add both report and reports.json
         report_file = f"docs/weekly_reports/{week_date}-report.html"
+        reports_json = "docs/weekly_reports/reports.json"
+        
         subprocess.run(["git", "add", report_file], check=True, capture_output=True)
+        subprocess.run(["git", "add", reports_json], check=True, capture_output=True)
         subprocess.run(["git", "config", "user.name", "hfresh-pipeline"], check=True, capture_output=True)
         subprocess.run(["git", "config", "user.email", "hfresh@github.local"], check=True, capture_output=True)
-        subprocess.run(
-            ["git", "commit", "-m", f"Weekly report {week_date}"],
-            check=True,
-            capture_output=True
-        )
-        subprocess.run(["git", "push"], check=True, capture_output=True)
         
-        print(f"✓ Report committed to Git")
+        # Try to commit - may fail if nothing changed, which is OK
+        result = subprocess.run(
+            ["git", "commit", "-m", f"chore: weekly reports [{week_date}]"],
+            capture_output=True,
+            text=True
+        )
+        
+        # If commit failed due to nothing to commit, that's OK
+        if result.returncode != 0:
+            if "nothing to commit" in result.stdout or "nothing to commit" in result.stderr:
+                print(f"ℹ️  No changes to commit (report already exists)")
+                return True
+            else:
+                print(f"⚠️  Git commit error: {result.stderr}")
+                return False
+        
+        # Push changes
+        push_result = subprocess.run(
+            ["git", "push"],
+            capture_output=True,
+            text=True
+        )
+        
+        if push_result.returncode != 0:
+            print(f"⚠️  Git push warning: {push_result.stderr}")
+            # Don't fail completely if push fails (may be due to workflow context)
+            return True
+        
+        print(f"✓ Report committed and pushed to Git")
         return True
+        
     except subprocess.CalledProcessError as e:
-        print(f"⚠️  Git commit failed: {e}")
+        print(f"⚠️  Git operation failed: {e}")
         return False
     except Exception as e:
         print(f"⚠️  Error during Git operations: {e}")
