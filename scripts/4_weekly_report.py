@@ -34,7 +34,7 @@ Requirements
 
 import sqlite3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import subprocess
 import os
 import json
@@ -74,6 +74,15 @@ def get_db_connection() -> sqlite3.Connection:
 # ======================
 # Report Data Queries
 # ======================
+
+def get_week_start_date(date_str: str) -> str:
+    """Get the Monday (week start) of the week containing the given date."""
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    # Monday is 0, Sunday is 6
+    days_since_monday = date.weekday()
+    week_start = date - timedelta(days=days_since_monday)
+    return week_start.strftime("%Y-%m-%d")
+
 
 def get_latest_week(conn: sqlite3.Connection) -> str:
     """Get the most recent week from Gold metrics."""
@@ -117,8 +126,8 @@ def get_week_summary(conn: sqlite3.Connection, week_date: str) -> dict:
     return {}
 
 
-def get_top_recipes(conn: sqlite3.Connection, limit: int = 10) -> list:
-    """Get top recipes by recent appearance."""
+def get_top_recipes(conn: sqlite3.Connection, limit: int = 5) -> list:
+    """Get top recipes by difficulty (hardest first)."""
     try:
         cursor = conn.cursor()
         cursor.execute("""
@@ -132,7 +141,7 @@ def get_top_recipes(conn: sqlite3.Connection, limit: int = 10) -> list:
             LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id AND mr.is_active = 1
             WHERE r.is_active = 1
             GROUP BY r.id, r.name, r.difficulty, r.prep_time
-            ORDER BY r.last_seen_date DESC, menu_appearances DESC
+            ORDER BY r.difficulty DESC
             LIMIT ?
         """, (limit,))
         
@@ -143,8 +152,8 @@ def get_top_recipes(conn: sqlite3.Connection, limit: int = 10) -> list:
         return []
 
 
-def get_menu_stability(conn: sqlite3.Connection, limit: int = 5) -> list:
-    """Get recent menu stability metrics."""
+def get_menu_stability(conn: sqlite3.Connection, week_date: str, limit: int = 5) -> list:
+    """Get menu stability metrics for weeks up to and including week_date."""
     cursor = conn.cursor()
     cursor.execute("""
         SELECT 
@@ -155,16 +164,17 @@ def get_menu_stability(conn: sqlite3.Connection, limit: int = 5) -> list:
             recipes_added,
             recipes_removed
         FROM menu_stability_metrics
+        WHERE week_start_date <= ?
         ORDER BY week_start_date DESC
         LIMIT ?
-    """, (limit,))
+    """, (week_date, limit))
     
     columns = [desc[0] for desc in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def get_ingredient_trends(conn: sqlite3.Connection, limit: int = 10) -> list:
-    """Get trending ingredients."""
+def get_ingredient_trends(conn: sqlite3.Connection, limit: int = 5) -> list:
+    """Get trending ingredients (top by popularity rank)."""
     cursor = conn.cursor()
     cursor.execute("""
         SELECT 
@@ -181,7 +191,7 @@ def get_ingredient_trends(conn: sqlite3.Connection, limit: int = 10) -> list:
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def get_popular_ingredients(conn: sqlite3.Connection, limit: int = 15) -> list:
+def get_popular_ingredients(conn: sqlite3.Connection, limit: int = 5) -> list:
     """Top ingredients appearing most frequently."""
     try:
         cursor = conn.cursor()
@@ -203,54 +213,6 @@ def get_popular_ingredients(conn: sqlite3.Connection, limit: int = 15) -> list:
     except Exception as e:
         print(f"⚠️  Error getting popular ingredients: {e}")
         return []
-
-
-def get_cuisine_distribution(conn: sqlite3.Connection) -> list:
-    """Distribution of recipes by cuisine."""
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT 
-                COALESCE(r.cuisine, 'Unknown') as cuisine,
-                COUNT(DISTINCT r.id) as recipe_count,
-                COUNT(DISTINCT mr.menu_id) as menu_appearances
-            FROM recipes r
-            LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id AND mr.is_active = 1
-            GROUP BY r.cuisine
-            ORDER BY recipe_count DESC
-        """)
-        
-        columns = [desc[0] for desc in cursor.description]
-        return [dict(zip(columns, row)) for row in cursor.fetchall()]
-    except Exception as e:
-        print(f"⚠️  Error getting cuisine distribution: {e}")
-        return []
-
-
-def get_recipe_lifecycle(conn: sqlite3.Connection) -> dict:
-    """Active vs inactive recipe counts."""
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT 
-                is_active,
-                COUNT(*) as recipe_count,
-                ROUND(AVG(CAST((JULIANDAY(last_seen_date) - JULIANDAY(first_seen_date)) AS REAL)), 0) as avg_days_active
-            FROM recipes
-            GROUP BY is_active
-        """)
-        
-        result = {}
-        for row in cursor.fetchall():
-            status = 'Active' if row[0] else 'Inactive'
-            result[status] = {
-                'count': row[1],
-                'avg_days': row[2]
-            }
-        return result
-    except Exception as e:
-        print(f"⚠️  Error getting recipe lifecycle: {e}")
-        return {}
 
 
 # ======================
@@ -734,12 +696,10 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
     
     print("Gathering report data...")
     summary = get_week_summary(conn, week_date)
-    top_recipes = get_top_recipes(conn, limit=10)
-    stability = get_menu_stability(conn, limit=5)
-    ingredient_trends = get_ingredient_trends(conn, limit=10)
-    popular_ings = get_popular_ingredients(conn, limit=10)
-    cuisines = get_cuisine_distribution(conn)
-    lifecycle = get_recipe_lifecycle(conn)
+    top_recipes = get_top_recipes(conn, limit=5)
+    stability = get_menu_stability(conn, week_date, limit=5)
+    ingredient_trends = get_ingredient_trends(conn, limit=5)
+    popular_ings = get_popular_ingredients(conn, limit=5)
     
     print("Generating charts...")
     menu_overlap_html = generate_menu_overlap_chart(conn)
@@ -771,18 +731,6 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
             </ul>
         </div>""")
     
-    # Weekly Metrics Table
-    html_parts.append("<h3>Weekly Metrics Table</h3>")
-    html_parts.append("<table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>")
-    if summary:
-        html_parts.append(f"<tr><td>Total Recipes</td><td>{summary.get('total_recipes', 0)}</td></tr>")
-        html_parts.append(f"<tr><td>Unique Recipes</td><td>{summary.get('unique_recipes', 0)}</td></tr>")
-        html_parts.append(f"<tr><td>New Recipes</td><td>{summary.get('new_recipes', 0)}</td></tr>")
-        html_parts.append(f"<tr><td>Returning Recipes</td><td>{summary.get('returning_recipes', 0)}</td></tr>")
-        html_parts.append(f"<tr><td>Avg Difficulty</td><td>{summary.get('avg_difficulty', 'N/A')}</td></tr>")
-        html_parts.append(f"<tr><td>Avg Prep Time (min)</td><td>{summary.get('avg_prep_time', 'N/A')}</td></tr>")
-    html_parts.append("</tbody></table>")
-    
     # Menu Evolution
     html_parts.append("<h2>1. Menu Evolution</h2>")
     if menu_overlap_html:
@@ -802,15 +750,14 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
     if recipe_survival_html:
         html_parts.append(f'<div class="chart-container">{recipe_survival_html}</div>')
     
-    html_parts.append("<h3>Top 10 Active Recipes (Current Week)</h3>")
-    html_parts.append("<table><thead><tr><th>Rank</th><th>Recipe Name</th><th>Difficulty</th><th>Prep Time</th><th>Appearances</th></tr></thead><tbody>")
+    html_parts.append("<h3>Top 5 Most Difficult Active Recipes</h3>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Recipe Name</th><th>Difficulty</th><th>Prep Time (min)</th></tr></thead><tbody>")
     if top_recipes:
-        for i, recipe in enumerate(top_recipes[:10], 1):
+        for i, recipe in enumerate(top_recipes[:5], 1):
             name = recipe.get('name', 'Unknown')
             difficulty = recipe.get('difficulty', 'N/A')
             prep = recipe.get('prep_time', 'N/A')
-            apps = recipe.get('menu_appearances', 0)
-            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{difficulty}</td><td>{prep}</td><td>{apps}</td></tr>")
+            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{difficulty}</td><td>{prep}</td></tr>")
     html_parts.append("</tbody></table>")
     
     # Ingredient Trends
@@ -818,20 +765,19 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
     if ingredient_trends_html:
         html_parts.append(f'<div class="chart-container">{ingredient_trends_html}</div>')
     
-    html_parts.append("<h3>Top Trending Ingredients (Latest Week)</h3>")
-    html_parts.append("<table><thead><tr><th>Rank</th><th>Ingredient</th><th>Recipes</th><th>Popularity</th></tr></thead><tbody>")
+    html_parts.append("<h3>Top 5 Trending Ingredients</h3>")
+    html_parts.append("<table><thead><tr><th>Rank</th><th>Ingredient</th><th>Recipe Count</th></tr></thead><tbody>")
     if ingredient_trends:
-        for i, ing in enumerate(ingredient_trends[:10], 1):
+        for i, ing in enumerate(ingredient_trends[:5], 1):
             name = ing.get('ingredient_name', 'Unknown')
             count = ing.get('recipe_count', 0)
-            rank = ing.get('popularity_rank', 'N/A')
-            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{count}</td><td>#{rank}</td></tr>")
+            html_parts.append(f"<tr><td>{i}</td><td>{name}</td><td>{count}</td></tr>")
     html_parts.append("</tbody></table>")
     
-    html_parts.append("<h3>Most Used Ingredients (All Time)</h3>")
+    html_parts.append("<h3>Top 5 Most Used Ingredients</h3>")
     html_parts.append("<table><thead><tr><th>Rank</th><th>Ingredient</th><th>In Recipes</th><th>Menu Appearances</th></tr></thead><tbody>")
     if popular_ings:
-        for i, ing in enumerate(popular_ings[:10], 1):
+        for i, ing in enumerate(popular_ings[:5], 1):
             name = ing.get('ingredient_name', 'Unknown')
             recipes = ing.get('recipe_count', 0)
             menus = ing.get('menu_count', 0)
@@ -842,37 +788,6 @@ def generate_html_report(conn: sqlite3.Connection, week_date: str) -> str:
     html_parts.append("<h2>4. Allergen Analysis</h2>")
     if allergen_density_html:
         html_parts.append(f'<div class="chart-container">{allergen_density_html}</div>')
-    
-    # Cuisine Distribution
-    html_parts.append("<h2>5. Cuisine Distribution</h2>")
-    html_parts.append("<table><thead><tr><th>Rank</th><th>Cuisine</th><th>Recipes</th><th>Menu Appearances</th></tr></thead><tbody>")
-    if cuisines:
-        for i, cuisine in enumerate(cuisines[:10], 1):
-            cuisine_name = cuisine.get('cuisine', 'Unknown')
-            count = cuisine.get('recipe_count', 0)
-            apps = cuisine.get('menu_appearances', 0)
-            html_parts.append(f"<tr><td>{i}</td><td>{cuisine_name}</td><td>{count}</td><td>{apps}</td></tr>")
-    html_parts.append("</tbody></table>")
-    
-    # Recipe Lifecycle Status
-    html_parts.append("<h2>6. Recipe Lifecycle Status</h2>")
-    html_parts.append("<table><thead><tr><th>Status</th><th>Count</th><th>Avg Days Active</th></tr></thead><tbody>")
-    if lifecycle:
-        for status, data in lifecycle.items():
-            count = data.get('count', 0)
-            days = data.get('avg_days', 0)
-            html_parts.append(f"<tr><td>{status}</td><td>{count}</td><td>{days}</td></tr>")
-    html_parts.append("</tbody></table>")
-    
-    # Data Quality Notes
-    html_parts.append("""<div class="data-quality">
-        <h3>Data Quality Notes</h3>
-        <ul>
-            <li><strong>Report Generated:</strong> {}</li>
-            <li><strong>Week Start Date:</strong> {}</li>
-            <li><strong>Data Source:</strong> SQLite Database (hfresh/hfresh.db)</li>
-        </ul>
-    </div>""".format(datetime.now().isoformat(), week_date))
     
     return "\n".join(html_parts)
 
@@ -976,8 +891,9 @@ def main():
     
     # Get week date - use provided date if given, otherwise get latest
     if args.date:
-        week_date = args.date
-        print(f"\nGenerating report for specified date: {week_date}\n")
+        # Calculate the Monday of the week containing the provided date
+        week_date = get_week_start_date(args.date)
+        print(f"\nGenerating report for week of: {week_date} (provided date: {args.date})\n")
     else:
         week_date = get_latest_week(conn)
         print(f"\nGenerating report for latest week: {week_date}\n")
