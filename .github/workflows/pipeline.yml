@@ -12,6 +12,10 @@ on:
         required: false
         type: boolean
         default: false
+      report-date:
+        description: 'Report date in YYYY-MM-DD format (optional, uses latest if not specified)'
+        required: false
+        type: string
   schedule:
     - cron: '0 2 * * 5'  # Weekly Friday 02:00 UTC
 
@@ -160,7 +164,12 @@ jobs:
         run: uv sync
 
       - name: Generate weekly report
-        run: uv run python scripts/4_weekly_report.py
+        run: |
+          if [ -z "${{ inputs.report-date }}" ]; then
+            uv run python scripts/4_weekly_report.py
+          else
+            uv run python scripts/4_weekly_report.py --date "${{ inputs.report-date }}"
+          fi
 
       - name: Commit reports to repo
         run: |

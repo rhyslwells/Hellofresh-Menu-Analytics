@@ -38,6 +38,7 @@ from datetime import datetime
 import subprocess
 import os
 import json
+import argparse
 
 # Data visualization
 try:
@@ -951,6 +952,18 @@ def update_reports_json(week_date: str) -> bool:
 
 def main():
     """Generate weekly report with embedded charts and Git commit."""
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description='Generate weekly report for a specific date or latest week'
+    )
+    parser.add_argument(
+        '--date',
+        type=str,
+        default=None,
+        help='Report date in YYYY-MM-DD format (optional, defaults to latest week in database)'
+    )
+    args = parser.parse_args()
+    
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  Weekly Report Generation                                ║
@@ -961,9 +974,13 @@ def main():
     
     conn = get_db_connection()
     
-    # Get latest week
-    week_date = get_latest_week(conn)
-    print(f"\nGenerating report for week: {week_date}\n")
+    # Get week date - use provided date if given, otherwise get latest
+    if args.date:
+        week_date = args.date
+        print(f"\nGenerating report for specified date: {week_date}\n")
+    else:
+        week_date = get_latest_week(conn)
+        print(f"\nGenerating report for latest week: {week_date}\n")
     
     # Check data availability
     print("Checking data availability...")
