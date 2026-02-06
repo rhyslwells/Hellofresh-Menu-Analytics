@@ -250,6 +250,8 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection, week_date: str) -
         return ""
     
     cursor = conn.cursor()
+    
+    # First try exact week match with popularity_rank <= 5
     cursor.execute("""
         SELECT 
             ingredient_name,
@@ -257,9 +259,25 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection, week_date: str) -
         FROM ingredient_trends
         WHERE week_start_date = ? AND popularity_rank <= 5
         ORDER BY popularity_rank ASC
+        LIMIT 5
     """, (week_date,))
     
     rows = cursor.fetchall()
+    
+    # If no exact match, try to get top 5 for that week regardless of rank
+    if not rows:
+        print(f"  ℹ️  No ranked ingredients for {week_date}, trying top 5 by recipe_count...")
+        cursor.execute("""
+            SELECT 
+                ingredient_name,
+                recipe_count
+            FROM ingredient_trends
+            WHERE week_start_date = ?
+            ORDER BY recipe_count DESC
+            LIMIT 5
+        """, (week_date,))
+        rows = cursor.fetchall()
+    
     if not rows:
         print("  ⚠️  No ingredient trends data, skipping chart")
         return ""
@@ -622,6 +640,32 @@ def commit_report_to_git(week_date: str) -> bool:
                 print(f"⚠️  Git commit error: {result.stderr}")
                 return False
         
+        # Fetch remote changes before pushing
+        fetch_result = subprocess.run(
+            ["git", "fetch"],
+            capture_output=True,
+            text=True
+        )
+        
+        if fetch_result.returncode != 0:
+            print(f"⚠️  Git fetch failed: {fetch_result.stderr}")
+            # Continue anyway, push might still work
+        
+        # Pull to merge remote changes if needed
+        pull_result = subprocess.run(
+            ["git", "pull", "--rebase"],
+            capture_output=True,
+            text=True
+        )
+        
+        if pull_result.returncode != 0:
+            if "conflict" in pull_result.stderr.lower():
+                print(f"⚠️  Git pull failed due to conflicts: {pull_result.stderr}")
+                return False
+            elif pull_result.returncode != 0:
+                print(f"ℹ️  Git pull check: {pull_result.stderr}")
+                # Continue anyway, push might still work
+        
         # Push changes
         push_result = subprocess.run(
             ["git", "push"],
@@ -630,7 +674,7 @@ def commit_report_to_git(week_date: str) -> bool:
         )
         
         if push_result.returncode != 0:
-            print(f"⚠️  Git push warning: {push_result.stderr}")
+            print(f"⚠️  Git push failed: {push_result.stderr}")
             # Don't fail completely if push fails (may be due to workflow context)
             return True
         
