@@ -161,7 +161,7 @@
                     
                     const link = document.createElement('a');
                     link.href = file.name;
-                    link.textContent = file.name.replace('.html', '').replace(/-/g, ' ').toUpperCase();
+                    link.textContent = file.name.replace('.html', '').replace(/report/i, 'REPORT');
                     link.target = '_blank';
                     
                     const date = document.createElement('div');
