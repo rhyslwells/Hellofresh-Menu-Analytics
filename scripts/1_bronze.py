@@ -5,6 +5,7 @@ Purpose
 -------
 Fetches weekly menus (with embedded recipes) from the HelloFresh API.
 Writes raw JSON responses to SQLite database in the bronze layer.
+It fetches the upcoming week (next Monday–Sunday) by default.
 
 Architecture
 ------------
