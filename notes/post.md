@@ -17,7 +17,8 @@ Although the project itself is small in scope, it became a useful space to explo
 
 * **ETL design with a Medallion structure:** Data is organised into Bronze and Silver layers, separating raw API ingestion from cleaned, query-ready tables.
 * **Automation with GitHub Actions:** Data ingestion, analytics, and publishing are fully automated.
-* **Secure configuration:** The HelloFresh API key is managed using GitHub Secrets and injected at runtime.
+* **Secure configuration:** The HelloFresh API key is managed using GitHub Secrets and injected at runtime.
+
 * **Copilot-assisted development:** GitHub Copilot in VS Code is used to translate GitHub issues into concrete changes in the repository.
 * **Documentation as structure:** A blueprint document in the `docs` folder describes the repository layout and overall workflow, alongside documentation cataloguing significant changes.
 * **Schema memory aid:** A Mermaid diagram captures the SQLite database schema and relationships for reference during analysis.
