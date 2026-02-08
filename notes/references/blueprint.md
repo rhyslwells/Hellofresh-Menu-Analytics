@@ -71,6 +71,7 @@
    - Uses SQLite SQL + Python set operations
    - Calculates weekly metrics, trends, stability
 
+Use a 5_dashboard instead.
 5. **Report Generation** (`4_weekly_report.py`)
    - Generates 4 PNG charts (matplotlib/seaborn)
    - Creates markdown report with embedded charts
@@ -300,42 +301,7 @@ CREATE TABLE allergen_density (
 
 ---
 
-## 5. Repository Structure
 
-```
-Databricks-Explorer/
-├── scripts/
-│   ├── init_sqlite.py          # Create schema
-│   ├── 1_bronze.py             # API ingestion
-│   ├── 2_silver.py             # SCD normalization
-│   ├── 3_gold_analytics.py     # Analytics
-│   ├── 4_weekly_report.py      # Reports & charts
-│   └── sqlite_utils.py         # Utility functions
-├── hfresh/
-│   ├── hfresh.db               # SQLite database (all 14 tables)
-│   └── output/
-│       ├── charts/             # Overwritten weekly
-│       │   ├── menu_overlap.png
-│       │   ├── recipe_survival.png
-│       │   ├── ingredient_trends.png
-│       │   └── allergen_heatmap.png
-│       └── reports/
-│           ├── weekly_report_2026-01-23.md
-│           ├── weekly_report_2026-01-30.md
-│           └── ...
-├── .github/
-│   └── workflows/
-│       └── pipeline.yml        # GitHub Actions
-├── docs/
-│   ├── blueprint.md            # This document
-│   ├── SCD-Type-2.md           # SCD explanation
-│   ├── notes.md                # Task list
-│   └── ...
-├── requirements.txt            # Python dependencies
-└── .gitignore                  # Excludes *.db, output/charts
-```
-
----
 
 ## 6. Execution Flow
 
@@ -358,35 +324,8 @@ ls -la hfresh/output/reports/
 ls -la hfresh/output/charts/
 ```
 
-### GitHub Actions (Automated)
-
-1. Workflow triggers Friday 02:00 UTC
-2. Workflow pulls repo code and installs dependencies
-3. Executes all 5 scripts in sequence
-4. Report + charts auto-commit to main branch
-5. Artifacts uploaded for 5 days retention
-
----
 
 ## 7. Design Decisions
-
-### 7.1 SQLite vs Databricks
-
-| Aspect | SQLite | Databricks |
-|--------|--------|-----------|
-| **Cost** | Free | Paid (compute + storage) |
-| **Setup** | 5 minutes | 1+ hour |
-| **Portability** | Single file | Workspace lock-in |
-| **Scalability** | <10GB | Petabyte-scale |
-| **Development** | Local machine | Cloud dependency |
-| **Best for** | Small datasets, learning | Production, petabyte scale |
-
-**Decision:** SQLite chosen for:
-- ✅ Zero infrastructure cost
-- ✅ Local development experience
-- ✅ GitHub Actions compatibility
-- ✅ Portable, shareable dataset
-- ✅ Sufficient for weekly HelloFresh data
 
 ### 7.2 SCD Type 2 with UPDATE+INSERT
 
@@ -427,32 +366,10 @@ added_recipes = current_recipes - prev_recipes
 
 ---
 
-## 8. Success Criteria
-
-**Conversion Complete When:**
-- ✅ All 4 scripts converted from Databricks/Spark to SQLite/pandas
-- ✅ 14 SQLite tables created with SCD Type 2 schema
-- ✅ 5 gold analytics tables computed correctly
-- ✅ 4 PNG charts generated (menu, recipe, ingredient, allergen)
-- ✅ Weekly reports markdown created and git-committed
-- ✅ GitHub Actions workflow runs successfully on schedule
-- ✅ Local pipeline executes end-to-end without errors
-- ✅ Documentation complete and clear
-
-**Current Status:** ✅ ALL CRITERIA MET
-
----
 
 ## 9. Troubleshooting
 
 ### Common Issues
-
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| `ModuleNotFoundError: No module named 'requests'` | Dependencies not installed | Run `pip install -r requirements.txt` |
-| `hfresh.db not found` | Schema not initialized | Run `python scripts/init_sqlite.py` first |
-| "API key not found (None)" | GitHub Secret not configured | Set `HELLOFRESH_API_KEY` in repo Settings → Secrets |
-| Reports not committing | Not in Git repo | Run from repo root with Git initialized |
 
 See [LOCAL_DEV.md](LOCAL_DEV.md) and [GITHUB_SETUP.md](GITHUB_SETUP.md) for detailed troubleshooting.
 
@@ -460,29 +377,5 @@ See [LOCAL_DEV.md](LOCAL_DEV.md) and [GITHUB_SETUP.md](GITHUB_SETUP.md) for deta
 
 ## 10. Next Steps
 
-1. **Run locally first**
-   - Set up venv and install dependencies
-   - Configure API key
-   - Execute all 5 pipeline steps
-   - Verify outputs in `hfresh/output/`
 
-2. **Push to GitHub**
-   - Create repository on GitHub
-   - Add all files
-   - Configure GitHub Secrets
-
-3. **Verify automation**
-   - Wait for Friday 02:00 UTC or manually trigger
-   - Check GitHub Actions logs
-   - Verify report + charts committed
-
-4. **Monitor ongoing**
-   - Review weekly reports for patterns
-   - Alert on data quality issues
-   - Adjust schedule/retention as needed
-
----
-
-**Document Version:** 2.0 (SQLite + GitHub Actions)  
-**Last Updated:** 2026-01-25  
-**Original:** Databricks blueprint | **Current:** SQLite implementation
+Add the fact we are updating 5_dashboard, with weekly reports also generating for repfrernce.
