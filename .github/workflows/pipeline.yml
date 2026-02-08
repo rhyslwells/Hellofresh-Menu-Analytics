@@ -142,9 +142,41 @@ jobs:
             uv run python scripts/3_gold_analytics.py --week "${{ inputs.week }}"
           fi
 
-  weekly-report:
+  dashboard:
     runs-on: ubuntu-latest
     needs: [gold]
+    if: ${{ inputs.report-only != true && github.event_name != 'workflow_dispatch' || inputs.report-only != true }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Generate dashboard
+        run: uv run python scripts/5_dashboard.py
+
+      - name: Commit dashboard to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git add docs/index.html || true
+          git commit -m "chore: update dashboard [skip ci]" || true
+          git push origin ${{ github.ref_name }}
+        if: github.ref == 'refs/heads/main'
+
+  weekly-report:
+    runs-on: ubuntu-latest
+    needs: [gold, dashboard]
     if: |
       always() &&
       (needs.gold.result == 'success' || inputs.report-only == true)
