@@ -340,6 +340,122 @@ def compute_allergen_density(conn: sqlite3.Connection) -> None:
         conn.rollback()
 
 
+def compute_recipe_tags_analytics(conn: sqlite3.Connection) -> None:
+    """Table 6: Recipe tags analytics - track tags (categories) over time."""
+    print("Computing recipe tags analytics...")
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Delete existing data to prevent duplicates
+        cursor.execute("DELETE FROM recipe_tags_analytics")
+        
+        # First compute total recipes per week
+        cursor.execute("""
+            CREATE TEMP TABLE IF NOT EXISTS temp_total_recipes_per_week_tags AS
+            SELECT 
+                m.start_date as week_start_date,
+                COUNT(DISTINCT mr.recipe_id) as total_recipes
+            FROM menus m
+            LEFT JOIN menu_recipes mr ON m.id = mr.menu_id AND mr.is_active = 1
+            WHERE m.is_active = 1
+            GROUP BY m.start_date
+        """)
+        
+        # Compute tag analytics
+        cursor.execute("""
+            INSERT INTO recipe_tags_analytics
+            (tag_id, tag_name, week_start_date, recipe_count, percentage_of_menu, 
+             popularity_rank, created_at)
+            WITH weekly_tags AS (
+                SELECT 
+                    t.tag_id,
+                    t.name as tag_name,
+                    m.start_date as week_start_date,
+                    COUNT(DISTINCT r.id) as recipe_count,
+                    ROW_NUMBER() OVER (PARTITION BY m.start_date ORDER BY COUNT(DISTINCT r.id) DESC) as popularity_rank,
+                    ROUND(100.0 * COUNT(DISTINCT r.id) / 
+                        NULLIF((SELECT total_recipes FROM temp_total_recipes_per_week_tags WHERE week_start_date = m.start_date), 0), 
+                        2) as percentage_of_menu
+                FROM menus m
+                LEFT JOIN menu_recipes mr ON m.id = mr.menu_id AND mr.is_active = 1
+                LEFT JOIN recipes r ON mr.recipe_id = r.id
+                LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id AND rt.is_active = 1
+                LEFT JOIN tags t ON rt.tag_id = t.tag_id
+                WHERE m.is_active = 1 AND t.tag_id IS NOT NULL
+                GROUP BY m.start_date, t.tag_id, t.name
+            )
+            SELECT 
+                tag_id,
+                tag_name,
+                week_start_date,
+                recipe_count,
+                percentage_of_menu,
+                popularity_rank,
+                ? as created_at
+            FROM weekly_tags
+        """, (datetime.now(timezone.utc).isoformat(),))
+        
+        cursor.execute("DROP TABLE IF EXISTS temp_total_recipes_per_week_tags")
+        
+        conn.commit()
+        print("  ✓ Recipe tags analytics computed")
+    except Exception as e:
+        print(f"  ⚠️  Error computing recipe tags analytics: {e}")
+        conn.rollback()
+
+
+def compute_ingredient_complexity_metrics(conn: sqlite3.Connection) -> None:
+    """Table 7: Ingredient complexity metrics - track ingredient count trends."""
+    print("Computing ingredient complexity metrics...")
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Delete existing data to prevent duplicates
+        cursor.execute("DELETE FROM ingredient_complexity_metrics")
+        
+        cursor.execute("""
+            INSERT INTO ingredient_complexity_metrics
+            (week_start_date, avg_ingredients_per_recipe, min_ingredients, 
+             max_ingredients, median_ingredients, created_at)
+            WITH recipe_ingredient_counts AS (
+                SELECT 
+                    r.id as recipe_id,
+                    COUNT(DISTINCT ri.ingredient_id) as ingredient_count
+                FROM recipes r
+                LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id AND ri.is_active = 1
+                WHERE r.is_active = 1
+                GROUP BY r.id
+            ),
+            weekly_complexity AS (
+                SELECT 
+                    m.start_date as week_start_date,
+                    mr.recipe_id,
+                    COALESCE(ric.ingredient_count, 0) as ingredient_count
+                FROM menus m
+                LEFT JOIN menu_recipes mr ON m.id = mr.menu_id AND mr.is_active = 1
+                LEFT JOIN recipe_ingredient_counts ric ON mr.recipe_id = ric.recipe_id
+                WHERE m.is_active = 1
+            )
+            SELECT 
+                week_start_date,
+                ROUND(AVG(CAST(ingredient_count AS REAL)), 2) as avg_ingredients_per_recipe,
+                MIN(ingredient_count) as min_ingredients,
+                MAX(ingredient_count) as max_ingredients,
+                ROUND(AVG(ingredient_count), 2) as median_ingredients,
+                ? as created_at
+            FROM weekly_complexity
+            GROUP BY week_start_date
+        """, (datetime.now(timezone.utc).isoformat(),))
+        
+        conn.commit()
+        print("  ✓ Ingredient complexity metrics computed")
+    except Exception as e:
+        print(f"  ⚠️  Error computing ingredient complexity metrics: {e}")
+        conn.rollback()
+
+
 def build_gold_layer() -> None:
     """Build all gold layer analytics tables."""
     print("""
@@ -357,6 +473,8 @@ def build_gold_layer() -> None:
     compute_weekly_menu_metrics(conn)
     compute_ingredient_trends(conn)
     compute_allergen_density(conn)
+    compute_recipe_tags_analytics(conn)
+    compute_ingredient_complexity_metrics(conn)
     
     # Optional metrics (commented out - not used in dashboard)
     # compute_recipe_survival_metrics(conn)
@@ -372,6 +490,8 @@ def build_gold_layer() -> None:
         ('weekly_menu_metrics', 'weekly_menu_metrics'),
         ('ingredient_trends', 'ingredient_trends'),
         ('allergen_density', 'allergen_density'),
+        ('recipe_tags_analytics', 'recipe_tags_analytics'),
+        ('ingredient_complexity_metrics', 'ingredient_complexity_metrics'),
         # ('recipe_survival_metrics', 'recipe_survival_metrics'),
         # ('menu_stability_metrics', 'menu_stability_metrics'),
     ]

@@ -271,6 +271,32 @@ def init_database():
     """)
     print("  ✓ allergen_density")
     
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS recipe_tags_analytics (
+            tag_id TEXT,
+            tag_name TEXT,
+            week_start_date TEXT,
+            recipe_count INTEGER,
+            percentage_of_menu REAL,
+            popularity_rank INTEGER,
+            created_at TEXT,
+            PRIMARY KEY (tag_id, week_start_date)
+        )
+    """)
+    print("  ✓ recipe_tags_analytics")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS ingredient_complexity_metrics (
+            week_start_date TEXT PRIMARY KEY,
+            avg_ingredients_per_recipe REAL,
+            min_ingredients INTEGER,
+            max_ingredients INTEGER,
+            median_ingredients REAL,
+            created_at TEXT
+        )
+    """)
+    print("  ✓ ingredient_complexity_metrics")
+    
     conn.commit()
     conn.close()
     

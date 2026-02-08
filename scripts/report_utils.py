@@ -828,6 +828,147 @@ def generate_weekly_difficulty_chart(conn: sqlite3.Connection) -> str:
     return fig.to_html(include_plotlyjs=False, div_id="weekly_difficulty_chart")
 
 
+def generate_recipe_tags_chart(conn: sqlite3.Connection) -> str:
+    """Chart: Recipe tags analytics - stacked bar chart showing tag distribution per week."""
+    if not HAS_PLOTLY:
+        return ""
+    
+    print("  → Generating recipe tags analytics chart...")
+    
+    cursor = conn.cursor()
+    
+    # Get top 8 tags by average usage
+    cursor.execute("""
+        SELECT tag_name
+        FROM recipe_tags_analytics
+        GROUP BY tag_name
+        HAVING AVG(recipe_count) > 0
+        ORDER BY AVG(recipe_count) DESC
+        LIMIT 8
+    """)
+    
+    top_tags = [row[0] for row in cursor.fetchall()]
+    
+    if not top_tags:
+        print("    ⚠️  No recipe tags data available")
+        return ""
+    
+    # Get weekly data for top tags
+    placeholders = ", ".join(["?" for _ in top_tags])
+    cursor.execute(f"""
+        SELECT 
+            week_start_date,
+            tag_name,
+            percentage_of_menu
+        FROM recipe_tags_analytics
+        WHERE tag_name IN ({placeholders})
+        ORDER BY week_start_date ASC, tag_name
+    """, top_tags)
+    
+    rows = cursor.fetchall()
+    
+    if not rows:
+        print("    ⚠️  No weekly tag data available")
+        return ""
+    
+    df = pd.DataFrame(rows, columns=['week_start_date', 'tag_name', 'percentage_of_menu'])
+    
+    fig = px.area(
+        df,
+        x='week_start_date',
+        y='percentage_of_menu',
+        color='tag_name',
+        title='Recipe Tags Distribution Over Time (Top 8 Tags)',
+        labels={'week_start_date': 'Week', 'percentage_of_menu': 'Percentage of Menu', 'tag_name': 'Tag'},
+        height=450,
+        color_discrete_sequence=px.colors.qualitative.Pastel
+    )
+    
+    fig.update_layout(_get_standard_layout(
+        hovermode='x unified',
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+    ))
+    _apply_grid_styling(fig, x_grid=True, y_grid=True)
+    
+    print(f"    ✓ Generated with {len(df)} data points from {df['week_start_date'].nunique()} weeks")
+    
+    return fig.to_html(include_plotlyjs=False, div_id="recipe_tags_chart")
+
+
+def generate_ingredient_complexity_chart(conn: sqlite3.Connection) -> str:
+    """Chart: Ingredient complexity metrics - line chart showing ingredient count trends per week."""
+    if not HAS_PLOTLY:
+        return ""
+    
+    print("  → Generating ingredient complexity chart...")
+    
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT 
+            week_start_date,
+            avg_ingredients_per_recipe,
+            min_ingredients,
+            max_ingredients
+        FROM ingredient_complexity_metrics
+        ORDER BY week_start_date ASC
+    """)
+    
+    rows = cursor.fetchall()
+    
+    if not rows:
+        print("    ⚠️  No ingredient complexity data available")
+        return ""
+    
+    df = pd.DataFrame(rows, columns=['week_start_date', 'avg_ingredients_per_recipe', 'min_ingredients', 'max_ingredients'])
+    
+    fig = go.Figure()
+    
+    # Add average line
+    fig.add_trace(go.Scatter(
+        x=df['week_start_date'],
+        y=df['avg_ingredients_per_recipe'],
+        name='Average Ingredients per Recipe',
+        mode='lines+markers',
+        line=dict(color=COLOR_PRIMARY, width=3),
+        marker=dict(size=7),
+    ))
+    
+    # Add range as shaded area (max - min)
+    fig.add_trace(go.Scatter(
+        x=df['week_start_date'],
+        y=df['max_ingredients'],
+        fill=None,
+        mode='lines',
+        line_color='rgba(0,0,0,0)',
+        showlegend=False,
+        name='Max',
+    ))
+    
+    fig.add_trace(go.Scatter(
+        x=df['week_start_date'],
+        y=df['min_ingredients'],
+        fill='tonexty',
+        mode='lines',
+        line_color='rgba(0,0,0,0)',
+        name='Min-Max Range',
+        fillcolor='rgba(46, 134, 171, 0.2)',
+    ))
+    
+    fig.update_layout(_get_standard_layout(
+        title='Ingredient Complexity Metrics Over Time',
+        xaxis_title='Week',
+        yaxis_title='Number of Ingredients',
+        hovermode='x unified',
+        height=450,
+    ))
+    _apply_grid_styling(fig, x_grid=True, y_grid=True)
+    
+    print(f"    ✓ Generated ingredient complexity data for {len(df)} weeks")
+    
+    return fig.to_html(include_plotlyjs=False, div_id="ingredient_complexity_chart")
+
+
 def generate_summary_metrics_panel(conn: sqlite3.Connection) -> str:
     """Generate summary metrics cards showing key aggregates."""
     print("  → Generating summary metrics panel...")

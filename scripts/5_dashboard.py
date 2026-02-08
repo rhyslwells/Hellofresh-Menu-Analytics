@@ -46,6 +46,8 @@ from report_utils import (
     generate_allergen_patterns_chart,
     generate_recipe_difficulty_chart,
     generate_weekly_difficulty_chart,
+    generate_recipe_tags_chart,
+    generate_ingredient_complexity_chart,
     generate_summary_metrics_panel,
     get_summary_metrics,
     HAS_PLOTLY,
@@ -95,6 +97,8 @@ def generate_dashboard() -> bool:
         allergen_chart = generate_allergen_patterns_chart(conn)
         difficulty_chart = generate_recipe_difficulty_chart(conn)
         weekly_difficulty_chart = generate_weekly_difficulty_chart(conn)
+        recipe_tags_chart = generate_recipe_tags_chart(conn)
+        ingredient_complexity_chart = generate_ingredient_complexity_chart(conn)
         metrics_panel = generate_summary_metrics_panel(conn)
         
         # Build content sections
@@ -131,6 +135,14 @@ def generate_dashboard() -> bool:
             {
                 'title': '4. Weekly Recipe Difficulty Trends',
                 'content': wrap_chart_in_div(weekly_difficulty_chart, 'Average Difficulty Per Week Over Time')
+            },
+            {
+                'title': '5. Recipe Tags Distribution',
+                'content': wrap_chart_in_div(recipe_tags_chart, 'Top 8 Recipe Tags Over Time')
+            },
+            {
+                'title': '6. Ingredient Complexity Metrics',
+                'content': wrap_chart_in_div(ingredient_complexity_chart, 'Average Ingredients per Recipe Over Time')
             },
             {
                 'title': 'Weekly Reports Archive',
