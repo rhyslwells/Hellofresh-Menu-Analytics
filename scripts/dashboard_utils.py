@@ -98,13 +98,26 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'ingredient_name', 'recipe_count'])
     
-    fig = px.line(
-        df,
-        x='week_start_date',
-        y='recipe_count',
-        color='ingredient_name',
+    # Ensure recipe_count is float64 to prevent binary encoding issues
+    df['recipe_count'] = df['recipe_count'].astype('float64')
+    
+    # Create figure manually to avoid binary encoding
+    fig = go.Figure()
+    
+    for ingredient in top_ingredients:
+        ingredient_data = df[df['ingredient_name'] == ingredient]
+        fig.add_trace(go.Scatter(
+            x=ingredient_data['week_start_date'].tolist(),
+            y=ingredient_data['recipe_count'].tolist(),
+            mode='lines',
+            name=ingredient,
+            hovertemplate=f"Ingredient={ingredient}<br>Week=%{{x}}<br>Recipe Count=%{{y}}<extra></extra>"
+        ))
+    
+    fig.update_layout(
         title='Ingredient Usage Trends Over Time (Top 8)',
-        labels={'week_start_date': 'Week', 'recipe_count': 'Recipe Count', 'ingredient_name': 'Ingredient'},
+        xaxis_title='Week',
+        yaxis_title='Recipe Count',
         height=450
     )
     
@@ -115,7 +128,7 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated with {len(df)} data points from {df['week_start_date'].nunique()} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="ingredient_trends_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="ingredient_trends_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -148,12 +161,20 @@ def generate_allergen_patterns_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'allergen_name', 'allergen_density'])
     
+    # Ensure allergen_density is float64 to prevent binary encoding issues
+    df['allergen_density'] = df['allergen_density'].astype('float64')
+    
     pivot_df = df.pivot(index='allergen_name', columns='week_start_date', values='allergen_density')
     
+    # Convert to lists to prevent binary encoding
+    z_values = pivot_df.values.tolist()
+    x_values = pivot_df.columns.tolist()
+    y_values = pivot_df.index.tolist()
+    
     fig = go.Figure(data=go.Heatmap(
-        z=pivot_df.values,
-        x=pivot_df.columns,
-        y=pivot_df.index,
+        z=z_values,
+        x=x_values,
+        y=y_values,
         colorscale='YlOrRd',
         colorbar=dict(title="Density"),
         hovertemplate='<b>%{y}</b><br>Week: %{x}<br>Density: %{z:.3f}<extra></extra>',
@@ -168,7 +189,7 @@ def generate_allergen_patterns_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated heatmap for {pivot_df.shape[0]} allergens across {pivot_df.shape[1]} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="allergen_patterns_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="allergen_patterns_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -202,23 +223,31 @@ def generate_recipe_difficulty_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['difficulty', 'recipe_count'])
     
-    fig = px.bar(
-        df,
-        x='difficulty',
-        y='recipe_count',
-        title='Recipe Distribution by Difficulty Level',
-        labels={'difficulty': 'Difficulty Level', 'recipe_count': 'Number of Recipes'},
-        height=400,
-        color='difficulty',
-        color_discrete_sequence=px.colors.qualitative.Set2
-    )
+    # Ensure recipe_count is float64 to prevent binary encoding issues
+    df['recipe_count'] = df['recipe_count'].astype('float64')
     
-    fig.update_layout(_get_standard_layout(showlegend=False))
+    # Use go.Figure with go.Bar to avoid binary encoding
+    colors = px.colors.qualitative.Set2
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=df['difficulty'].tolist(),
+        y=df['recipe_count'].tolist(),
+        marker_color=colors[:len(df)],
+        hovertemplate='<b>%{x}</b><br>Count: %{y}<extra></extra>'
+    ))
+    
+    fig.update_layout(_get_standard_layout(
+        title='Recipe Distribution by Difficulty Level',
+        xaxis_title='Difficulty Level',
+        yaxis_title='Number of Recipes',
+        height=400,
+        showlegend=False
+    ))
     _apply_grid_styling(fig, x_grid=False, y_grid=True)
     
     print(f"    ✓ Generated distribution for {df['recipe_count'].sum()} total recipes")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="difficulty_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="difficulty_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -252,11 +281,20 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'total_recipes', 'new_recipes', 'returning_recipes'])
     
+    # Ensure numeric columns are float64 to prevent binary encoding issues
+    df['new_recipes'] = df['new_recipes'].astype('float64')
+    df['returning_recipes'] = df['returning_recipes'].astype('float64')
+    
+    # Convert to lists to avoid binary encoding
+    week_dates = df['week_start_date'].tolist()
+    new_recipes = df['new_recipes'].tolist()
+    returning_recipes = df['returning_recipes'].tolist()
+    
     fig = go.Figure()
     
     fig.add_trace(go.Scatter(
-        x=df['week_start_date'],
-        y=df['returning_recipes'],
+        x=week_dates,
+        y=returning_recipes,
         name='Returning Recipes',
         mode='lines',
         line=dict(color=COLOR_PRIMARY),
@@ -265,8 +303,8 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
     ))
     
     fig.add_trace(go.Scatter(
-        x=df['week_start_date'],
-        y=df['new_recipes'],
+        x=week_dates,
+        y=new_recipes,
         name='New Recipes',
         mode='lines',
         line=dict(color=COLOR_ACCENT),
@@ -284,7 +322,7 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated menu evolution for {len(df)} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="menu_evolution_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="menu_evolution_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -317,22 +355,29 @@ def generate_weekly_difficulty_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'avg_difficulty'])
     
-    fig = px.line(
-        df,
-        x='week_start_date',
-        y='avg_difficulty',
-        title='Average Recipe Difficulty Per Week',
-        labels={'week_start_date': 'Week', 'avg_difficulty': 'Average Difficulty'},
-        height=450,
-        markers=True
-    )
+    # Ensure avg_difficulty is float64 to prevent binary encoding issues
+    df['avg_difficulty'] = df['avg_difficulty'].astype('float64')
     
-    fig.update_traces(
+    # Convert to lists to avoid binary encoding
+    week_dates = df['week_start_date'].tolist()
+    difficulty_values = df['avg_difficulty'].tolist()
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=week_dates,
+        y=difficulty_values,
+        mode='lines+markers',
+        name='Average Difficulty',
         line=dict(color=COLOR_ACCENT, width=3),
-        marker=dict(size=8)
-    )
+        marker=dict(size=8),
+        hovertemplate='<b>Week: %{x}</b><br>Avg Difficulty: %{y:.2f}<extra></extra>'
+    ))
     
     fig.update_layout(_get_standard_layout(
+        title='Average Recipe Difficulty Per Week',
+        xaxis_title='Week',
+        yaxis_title='Average Difficulty',
+        height=450,
         showlegend=False,
         yaxis=dict(range=[0, 5]),
     ))
@@ -340,7 +385,7 @@ def generate_weekly_difficulty_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated weekly difficulty chart for {len(df)} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="weekly_difficulty_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="weekly_difficulty_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -392,18 +437,31 @@ def generate_recipe_tags_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'tag_name', 'percentage_of_menu'])
     
-    fig = px.area(
-        df,
-        x='week_start_date',
-        y='percentage_of_menu',
-        color='tag_name',
-        title='Recipe Tags Distribution Over Time (Top 8 Tags)',
-        labels={'week_start_date': 'Week', 'percentage_of_menu': 'Percentage of Menu', 'tag_name': 'Tag'},
-        height=450,
-        color_discrete_sequence=px.colors.qualitative.Pastel
-    )
+    # Ensure percentage_of_menu is float64 to prevent binary encoding issues
+    df['percentage_of_menu'] = df['percentage_of_menu'].astype('float64')
+    
+    # Create stacked area chart manually to avoid binary encoding
+    colors = px.colors.qualitative.Pastel
+    fig = go.Figure()
+    
+    for i, tag in enumerate(top_tags):
+        tag_data = df[df['tag_name'] == tag]
+        fig.add_trace(go.Scatter(
+            x=tag_data['week_start_date'].tolist(),
+            y=tag_data['percentage_of_menu'].tolist(),
+            name=tag,
+            mode='lines',
+            line=dict(width=0.5, color=colors[i % len(colors)]),
+            fillcolor=colors[i % len(colors)],
+            stackgroup='one',
+            hovertemplate='<b>%{fullData.name}</b><br>Week: %{x}<br>Percentage: %{y:.2f}%<extra></extra>'
+        ))
     
     fig.update_layout(_get_standard_layout(
+        title='Recipe Tags Distribution Over Time (Top 8 Tags)',
+        xaxis_title='Week',
+        yaxis_title='Percentage of Menu',
+        height=450,
         hovermode='x unified',
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
     ))
@@ -411,7 +469,7 @@ def generate_recipe_tags_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated with {len(df)} data points from {df['week_start_date'].nunique()} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="recipe_tags_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="recipe_tags_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
@@ -445,22 +503,34 @@ def generate_ingredient_complexity_chart(conn: sqlite3.Connection) -> str:
     
     df = pd.DataFrame(rows, columns=['week_start_date', 'avg_ingredients_per_recipe', 'min_ingredients', 'max_ingredients'])
     
+    # Ensure numeric columns are float64 to prevent binary encoding issues
+    df['avg_ingredients_per_recipe'] = df['avg_ingredients_per_recipe'].astype('float64')
+    df['min_ingredients'] = df['min_ingredients'].astype('float64')
+    df['max_ingredients'] = df['max_ingredients'].astype('float64')
+    
+    # Convert to lists to avoid binary encoding
+    week_dates = df['week_start_date'].tolist()
+    avg_values = df['avg_ingredients_per_recipe'].tolist()
+    max_values = df['max_ingredients'].tolist()
+    min_values = df['min_ingredients'].tolist()
+    
     fig = go.Figure()
     
     # Add average line
     fig.add_trace(go.Scatter(
-        x=df['week_start_date'],
-        y=df['avg_ingredients_per_recipe'],
+        x=week_dates,
+        y=avg_values,
         name='Average Ingredients per Recipe',
         mode='lines+markers',
         line=dict(color=COLOR_PRIMARY, width=3),
         marker=dict(size=7),
+        hovertemplate='<b>Week: %{x}</b><br>Avg: %{y:.1f}<extra></extra>'
     ))
     
     # Add range as shaded area (max - min)
     fig.add_trace(go.Scatter(
-        x=df['week_start_date'],
-        y=df['max_ingredients'],
+        x=week_dates,
+        y=max_values,
         fill=None,
         mode='lines',
         line_color='rgba(0,0,0,0)',
@@ -469,8 +539,8 @@ def generate_ingredient_complexity_chart(conn: sqlite3.Connection) -> str:
     ))
     
     fig.add_trace(go.Scatter(
-        x=df['week_start_date'],
-        y=df['min_ingredients'],
+        x=week_dates,
+        y=min_values,
         fill='tonexty',
         mode='lines',
         line_color='rgba(0,0,0,0)',
@@ -489,7 +559,7 @@ def generate_ingredient_complexity_chart(conn: sqlite3.Connection) -> str:
     
     print(f"    ✓ Generated ingredient complexity data for {len(df)} weeks")
     
-    chart_html = fig.to_html(include_plotlyjs=False, div_id="ingredient_complexity_chart")
+    chart_html = fig.to_html(include_plotlyjs=False, div_id="ingredient_complexity_chart", config={'responsive': True})
     return extract_plotly_chart(chart_html)
 
 
