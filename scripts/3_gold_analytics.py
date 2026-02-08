@@ -3,17 +3,19 @@ SQLite GOLD LAYER ANALYTICS
 
 Purpose
 -------
-Creates 5 analytical tables from Silver layer data.
-Implements blueprint metrics for menu evolution, recipe lifecycle, ingredient trends,
-and menu stability analysis.
+Creates analytical tables from Silver layer data.
+Implements blueprint metrics for menu metrics, ingredient trends, and allergen analysis.
 
-Gold Layer Tables (5 total)
+Gold Layer Tables (3 active, 2 optional)
 ---------------------------
+Active:
 1. weekly_menu_metrics: Menu composition metrics per week
-2. recipe_survival_metrics: Recipe lifespan analysis
-3. ingredient_trends: Ingredient popularity over time
-4. menu_stability_metrics: Week-over-week menu changes
-5. allergen_density: Allergen coverage analysis
+2. ingredient_trends: Ingredient popularity over time
+3. allergen_density: Allergen coverage analysis
+
+Optional (commented out - not used in dashboard):
+4. recipe_survival_metrics: Recipe lifespan analysis [UNUSED]
+5. menu_stability_metrics: Week-over-week menu changes [UNUSED]
 
 Usage
 -----
@@ -343,7 +345,7 @@ def build_gold_layer() -> None:
     print("""
     ╔══════════════════════════════════════════════════════════╗
     ║  Gold Layer Analytics                                    ║
-    ║  Silver → 5 Analytical Metrics Tables                    ║
+    ║  Silver → Analytical Metrics Tables                      ║
     ║  SQLite Database                                         ║
     ╚══════════════════════════════════════════════════════════╝
     """)
@@ -353,10 +355,12 @@ def build_gold_layer() -> None:
     # Compute all metrics
     print()
     compute_weekly_menu_metrics(conn)
-    compute_recipe_survival_metrics(conn)
     compute_ingredient_trends(conn)
-    compute_menu_stability_metrics(conn)
     compute_allergen_density(conn)
+    
+    # Optional metrics (commented out - not used in dashboard)
+    # compute_recipe_survival_metrics(conn)
+    # compute_menu_stability_metrics(conn)
     
     # Summary
     print(f"\n{'='*60}")
@@ -366,10 +370,10 @@ def build_gold_layer() -> None:
     cursor = conn.cursor()
     tables = [
         ('weekly_menu_metrics', 'weekly_menu_metrics'),
-        ('recipe_survival_metrics', 'recipe_survival_metrics'),
         ('ingredient_trends', 'ingredient_trends'),
-        ('menu_stability_metrics', 'menu_stability_metrics'),
         ('allergen_density', 'allergen_density'),
+        # ('recipe_survival_metrics', 'recipe_survival_metrics'),
+        # ('menu_stability_metrics', 'menu_stability_metrics'),
     ]
     
     for table, label in tables:

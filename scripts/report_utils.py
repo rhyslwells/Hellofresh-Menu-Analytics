@@ -776,6 +776,58 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
     return fig.to_html(include_plotlyjs=False, div_id="menu_evolution_chart")
 
 
+def generate_weekly_difficulty_chart(conn: sqlite3.Connection) -> str:
+    """Chart: Weekly average recipe difficulty - line chart showing difficulty trends per week."""
+    if not HAS_PLOTLY:
+        return ""
+    
+    print("  → Generating weekly recipe difficulty chart...")
+    
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT 
+            week_start_date,
+            avg_difficulty
+        FROM weekly_menu_metrics
+        WHERE avg_difficulty IS NOT NULL
+        ORDER BY week_start_date ASC
+    """)
+    
+    rows = cursor.fetchall()
+    
+    if not rows:
+        print("    ⚠️  No weekly difficulty data available")
+        return ""
+    
+    df = pd.DataFrame(rows, columns=['week_start_date', 'avg_difficulty'])
+    
+    fig = px.line(
+        df,
+        x='week_start_date',
+        y='avg_difficulty',
+        title='Average Recipe Difficulty Per Week',
+        labels={'week_start_date': 'Week', 'avg_difficulty': 'Average Difficulty'},
+        height=450,
+        markers=True
+    )
+    
+    fig.update_traces(
+        line=dict(color=COLOR_ACCENT, width=3),
+        marker=dict(size=8)
+    )
+    
+    fig.update_layout(_get_standard_layout(
+        showlegend=False,
+        yaxis=dict(range=[0, 5]),
+    ))
+    _apply_grid_styling(fig, x_grid=True, y_grid=True)
+    
+    print(f"    ✓ Generated weekly difficulty chart for {len(df)} weeks")
+    
+    return fig.to_html(include_plotlyjs=False, div_id="weekly_difficulty_chart")
+
+
 def generate_summary_metrics_panel(conn: sqlite3.Connection) -> str:
     """Generate summary metrics cards showing key aggregates."""
     print("  → Generating summary metrics panel...")

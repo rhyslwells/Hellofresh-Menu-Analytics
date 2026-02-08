@@ -6,12 +6,11 @@ Purpose
 Generates an interactive main page dashboard with exploratory data analysis
 from all historical data. Creates `docs/index.html` with embedded Plotly charts.
 
-Runs after gold layer is built and generates 5 interactive charts:
+Runs after gold layer is built and generates 4 interactive charts:
 1. Ingredient trends over time (line chart)
-2. Menu stability metrics (timeline)
-3. Allergen patterns (temporal heatmap)
-4. Recipe difficulty distribution (bar/histogram)
-5. Summary metrics panel (aggregates)
+2. Allergen patterns (temporal heatmap)
+3. Recipe difficulty distribution (bar/histogram)
+4. Weekly recipe difficulty trends (line chart)
 
 Output
 ------
@@ -44,10 +43,9 @@ from report_utils import (
     wrap_chart_in_div,
     check_data_available,
     generate_ingredient_trends_chart,
-    generate_menu_stability_chart,
     generate_allergen_patterns_chart,
     generate_recipe_difficulty_chart,
-    generate_menu_evolution_chart,
+    generate_weekly_difficulty_chart,
     generate_summary_metrics_panel,
     get_summary_metrics,
     HAS_PLOTLY,
@@ -94,10 +92,9 @@ def generate_dashboard() -> bool:
         # Generate all charts
         print("Generating charts...")
         ingredient_chart = generate_ingredient_trends_chart(conn)
-        stability_chart = generate_menu_stability_chart(conn)
         allergen_chart = generate_allergen_patterns_chart(conn)
         difficulty_chart = generate_recipe_difficulty_chart(conn)
-        evolution_chart = generate_menu_evolution_chart(conn)
+        weekly_difficulty_chart = generate_weekly_difficulty_chart(conn)
         metrics_panel = generate_summary_metrics_panel(conn)
         
         # Build content sections
@@ -124,20 +121,16 @@ def generate_dashboard() -> bool:
                 'content': wrap_chart_in_div(ingredient_chart, 'Top 8 Ingredients Tracked Over Time')
             },
             {
-                'title': '2. Menu Stability Metrics',
-                'content': wrap_chart_in_div(stability_chart, 'Menu Overlap and Recipe Changes')
-            },
-            {
-                'title': '3. Allergen Patterns',
+                'title': '2. Allergen Patterns',
                 'content': wrap_chart_in_div(allergen_chart, 'Allergen Density Across All Weeks')
             },
             {
-                'title': '4. Recipe Difficulty Distribution',
+                'title': '3. Recipe Difficulty Distribution',
                 'content': wrap_chart_in_div(difficulty_chart, 'How Many Recipes at Each Level')
             },
             {
-                'title': '5. Menu Evolution',
-                'content': wrap_chart_in_div(evolution_chart, 'New vs Returning Recipes Over Time')
+                'title': '4. Weekly Recipe Difficulty Trends',
+                'content': wrap_chart_in_div(weekly_difficulty_chart, 'Average Difficulty Per Week Over Time')
             },
             {
                 'title': 'Weekly Reports Archive',
