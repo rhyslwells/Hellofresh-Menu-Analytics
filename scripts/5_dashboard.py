@@ -42,6 +42,10 @@ from report_utils import (
     build_html_page,
     wrap_chart_in_div,
     check_data_available,
+    get_summary_metrics,
+    HAS_PLOTLY,
+)
+from dashboard_utils import (
     generate_ingredient_trends_chart,
     generate_allergen_patterns_chart,
     generate_recipe_difficulty_chart,
@@ -49,8 +53,6 @@ from report_utils import (
     generate_recipe_tags_chart,
     generate_ingredient_complexity_chart,
     generate_summary_metrics_panel,
-    get_summary_metrics,
-    HAS_PLOTLY,
 )
 
 
