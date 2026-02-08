@@ -57,7 +57,7 @@ FROM menu_stability_metrics;
 SELECT 
     'Expected metrics per week' as check_type,
     COUNT(DISTINCT week_start_date) as weeks_with_data,
-    COUNT(DISTINCT recipe_id) as unique_recipes_tracked,
+    SUM(total_recipes) as total_recipes_tracked,
     COUNT(CASE WHEN avg_difficulty IS NOT NULL THEN 1 END) as weeks_with_difficulty,
     COUNT(CASE WHEN avg_prep_time_minutes IS NOT NULL THEN 1 END) as weeks_with_prep_time
 FROM weekly_menu_metrics;

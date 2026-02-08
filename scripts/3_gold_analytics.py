@@ -98,7 +98,7 @@ def compute_weekly_menu_metrics(conn: sqlite3.Connection) -> None:
 
 
 def compute_recipe_survival_metrics(conn: sqlite3.Connection) -> None:
-    """Table 2: Recipe lifespan and survival analysis."""
+    """Table 2: Recipe lifespan and survival analysis (based on menu appearances)."""
     print("Computing recipe survival metrics...")
     
     try:
@@ -107,7 +107,7 @@ def compute_recipe_survival_metrics(conn: sqlite3.Connection) -> None:
         # Delete existing data to prevent duplicates
         cursor.execute("DELETE FROM recipe_survival_metrics")
         
-        # Calculate weeks between dates (approximate: days / 7)
+        # Calculate recipe appearance dates from actual menu data
         cursor.execute("""
             INSERT INTO recipe_survival_metrics
             (recipe_id, recipe_name, first_appearance_date, last_appearance_date,
@@ -116,23 +116,22 @@ def compute_recipe_survival_metrics(conn: sqlite3.Connection) -> None:
             SELECT 
                 r.id as recipe_id,
                 r.name as recipe_name,
-                r.first_seen_date as first_appearance_date,
-                r.last_seen_date as last_appearance_date,
-                MAX(1, CAST((
-                    JULIANDAY(r.last_seen_date) - JULIANDAY(r.first_seen_date)
-                ) / 7.0 + 1 AS INTEGER)) as total_weeks_active,
-                CASE 
-                    WHEN r.is_active = 1 THEN MAX(1, CAST((
-                        JULIANDAY(r.last_seen_date) - JULIANDAY(r.first_seen_date)
-                    ) / 7.0 + 1 AS INTEGER))
-                    ELSE 0
-                END as consecutive_weeks_active,
+                MIN(m.start_date) as first_appearance_date,
+                MAX(m.start_date) as last_appearance_date,
+                COUNT(DISTINCT m.start_date) as total_weeks_active,
+                COUNT(DISTINCT m.start_date) as consecutive_weeks_active,
                 MAX(0, CAST((
-                    JULIANDAY(DATE('now')) - JULIANDAY(r.last_seen_date)
+                    JULIANDAY(DATE('now')) - JULIANDAY(MAX(m.start_date))
                 ) / 7.0 AS INTEGER)) as weeks_since_last_seen,
-                r.is_active as is_currently_active,
+                CASE 
+                    WHEN MAX(m.start_date) >= DATE('now', '-14 days') THEN 1
+                    ELSE 0
+                END as is_currently_active,
                 ? as created_at
             FROM recipes r
+            LEFT JOIN menu_recipes mr ON r.id = mr.recipe_id AND mr.is_active = 1
+            LEFT JOIN menus m ON mr.menu_id = m.id AND m.is_active = 1
+            GROUP BY r.id, r.name
         """, (datetime.now(timezone.utc).isoformat(),))
         
         conn.commit()
@@ -162,7 +161,8 @@ def compute_ingredient_trends(conn: sqlite3.Connection) -> None:
                     i.name as ingredient_name,
                     m.start_date as week_start_date,
                     COUNT(DISTINCT r.id) as recipe_count,
-                    ROW_NUMBER() OVER (PARTITION BY m.start_date ORDER BY COUNT(DISTINCT r.id) DESC) as popularity_rank
+                    ROW_NUMBER() OVER (PARTITION BY m.start_date ORDER BY COUNT(DISTINCT r.id) DESC) as popularity_rank,
+                    LAG(COUNT(DISTINCT r.id)) OVER (PARTITION BY i.ingredient_id ORDER BY m.start_date) as prev_recipe_count
                 FROM ingredients i
                 JOIN recipe_ingredients ri ON i.ingredient_id = ri.ingredient_id AND ri.is_active = 1
                 JOIN recipes r ON ri.recipe_id = r.id
@@ -176,7 +176,11 @@ def compute_ingredient_trends(conn: sqlite3.Connection) -> None:
                 ingredient_name,
                 week_start_date,
                 recipe_count,
-                0 as week_over_week_change,
+                CASE 
+                    WHEN prev_recipe_count IS NULL THEN NULL
+                    WHEN prev_recipe_count = 0 THEN NULL
+                    ELSE ROUND(100.0 * (recipe_count - prev_recipe_count) / prev_recipe_count, 2)
+                END as week_over_week_change,
                 popularity_rank,
                 ? as created_at
             FROM weekly_ingredients
@@ -208,6 +212,7 @@ def compute_menu_stability_metrics(conn: sqlite3.Connection) -> None:
         """)
         
         weeks = [row[0] for row in cursor.fetchall()]
+        print(f"  Found {len(weeks)} weeks: {weeks}")
         
         # For each week, get its recipes and compare with previous week
         for i, week_date in enumerate(weeks):
@@ -221,6 +226,7 @@ def compute_menu_stability_metrics(conn: sqlite3.Connection) -> None:
             
             current_recipes = set(row[0] for row in cursor.fetchall())
             current_count = len(current_recipes)
+            print(f"  Week {week_date}: {current_count} recipes")
             
             if i == 0:
                 # First week - no previous data
@@ -248,6 +254,8 @@ def compute_menu_stability_metrics(conn: sqlite3.Connection) -> None:
                 retained = len(intersection)
                 added = current_count - retained
                 removed = prev_count - retained
+                
+                print(f"    vs {prev_week_date}: {prev_count} prev, {retained} retained, {added} added, {removed} removed")
                 
                 # Calculate percentages
                 if prev_count > 0:
