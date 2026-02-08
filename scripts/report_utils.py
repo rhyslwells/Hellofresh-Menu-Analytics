@@ -409,6 +409,42 @@ def get_summary_metrics(conn: sqlite3.Connection) -> Dict[str, Any]:
     return metrics
 
 
+# ======================
+# Chart Styling Helpers
+# ======================
+
+def _get_standard_layout(**kwargs) -> Dict[str, Any]:
+    """Get standard chart layout with common styling."""
+    standard = {
+        'plot_bgcolor': 'white',
+        'paper_bgcolor': '#f9f9f9',
+        'hovermode': 'x unified',
+    }
+    standard.update(kwargs)
+    return standard
+
+
+def _apply_grid_styling(fig, x_grid=False, y_grid=True):
+    """Apply standard grid styling to figure axes."""
+    fig.update_xaxes(showgrid=x_grid, gridcolor='lightgray' if x_grid else None)
+    fig.update_yaxes(showgrid=y_grid, gridwidth=1 if y_grid else None, gridcolor='lightgray' if y_grid else None)
+    return fig
+
+
+# ======================
+# Color Constants
+# ======================
+
+COLOR_PRIMARY = '#2E86AB'
+COLOR_ACCENT = '#A23B72'
+COLOR_SUCCESS = '#28A745'
+COLOR_DANGER = '#DC3545'
+
+
+# ======================
+# Data Checking Helpers
+# ======================
+
 def check_data_available(conn: sqlite3.Connection) -> Dict[str, int]:
     """Check how much data is available for charting."""
     cursor = conn.cursor()
@@ -492,17 +528,10 @@ def generate_ingredient_trends_chart(conn: sqlite3.Connection) -> str:
         height=450
     )
     
-    fig.update_layout(
-        plot_bgcolor='white',
-        paper_bgcolor='#f9f9f9',
-        xaxis_showgrid=True,
-        yaxis_showgrid=True,
-        hovermode='x unified',
+    fig.update_layout(_get_standard_layout(
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-    )
-    
-    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    ))
+    _apply_grid_styling(fig, x_grid=True, y_grid=True)
     
     print(f"    ✓ Generated with {len(df)} data points from {df['week_start_date'].nunique()} weeks")
     
@@ -547,7 +576,7 @@ def generate_menu_stability_chart(conn: sqlite3.Connection) -> str:
             y=df['overlap_pct'],
             name='Menu Overlap %',
             mode='lines+markers',
-            line=dict(color='#2E86AB', width=2),
+            line=dict(color=COLOR_PRIMARY, width=2),
             marker=dict(size=6),
         ),
         secondary_y=False,
@@ -558,7 +587,7 @@ def generate_menu_stability_chart(conn: sqlite3.Connection) -> str:
             x=df['week_start_date'],
             y=df['recipes_added'],
             name='Recipes Added',
-            marker=dict(color='#28A745'),
+            marker=dict(color=COLOR_SUCCESS),
             opacity=0.6,
         ),
         secondary_y=True,
@@ -569,22 +598,18 @@ def generate_menu_stability_chart(conn: sqlite3.Connection) -> str:
             x=df['week_start_date'],
             y=df['recipes_removed'],
             name='Recipes Removed',
-            marker=dict(color='#DC3545'),
+            marker=dict(color=COLOR_DANGER),
             opacity=0.6,
         ),
         secondary_y=True,
     )
     
-    fig.update_layout(
+    fig.update_layout(_get_standard_layout(
         title='Menu Stability Metrics Over Time',
         height=450,
-        plot_bgcolor='white',
-        paper_bgcolor='#f9f9f9',
-        hovermode='x unified',
         xaxis_title='Week',
         barmode='group',
-    )
-    
+    ))
     fig.update_yaxes(title_text="Overlap %", secondary_y=False, showgrid=True, gridcolor='lightgray')
     fig.update_yaxes(title_text="Recipes Added/Removed", secondary_y=True)
     fig.update_xaxes(showgrid=False)
@@ -631,14 +656,12 @@ def generate_allergen_patterns_chart(conn: sqlite3.Connection) -> str:
         hovertemplate='<b>%{y}</b><br>Week: %{x}<br>Density: %{z:.3f}<extra></extra>',
     ))
     
-    fig.update_layout(
+    fig.update_layout(_get_standard_layout(
         title='Allergen Density Patterns Over Time',
         xaxis_title='Week',
         yaxis_title='Allergen Type',
         height=400,
-        plot_bgcolor='white',
-        paper_bgcolor='#f9f9f9',
-    )
+    ))
     
     print(f"    ✓ Generated heatmap for {pivot_df.shape[0]} allergens across {pivot_df.shape[1]} weeks")
     
@@ -683,15 +706,8 @@ def generate_recipe_difficulty_chart(conn: sqlite3.Connection) -> str:
         color_discrete_sequence=px.colors.qualitative.Set2
     )
     
-    fig.update_layout(
-        plot_bgcolor='white',
-        paper_bgcolor='#f9f9f9',
-        showlegend=False,
-        hovermode='x unified',
-    )
-    
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=True, gridcolor='lightgray')
+    fig.update_layout(_get_standard_layout(showlegend=False))
+    _apply_grid_styling(fig, x_grid=False, y_grid=True)
     
     print(f"    ✓ Generated distribution for {df['recipe_count'].sum()} total recipes")
     
@@ -732,9 +748,9 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
         y=df['returning_recipes'],
         name='Returning Recipes',
         mode='lines',
-        line=dict(color='#2E86AB'),
+        line=dict(color=COLOR_PRIMARY),
         stackgroup='one',
-        fillcolor='#2E86AB',
+        fillcolor=COLOR_PRIMARY,
     ))
     
     fig.add_trace(go.Scatter(
@@ -742,23 +758,18 @@ def generate_menu_evolution_chart(conn: sqlite3.Connection) -> str:
         y=df['new_recipes'],
         name='New Recipes',
         mode='lines',
-        line=dict(color='#A23B72'),
+        line=dict(color=COLOR_ACCENT),
         stackgroup='one',
-        fillcolor='#A23B72',
+        fillcolor=COLOR_ACCENT,
     ))
     
-    fig.update_layout(
+    fig.update_layout(_get_standard_layout(
         title='Menu Evolution: New vs Returning Recipes',
         xaxis_title='Week',
         yaxis_title='Number of Recipes',
         height=400,
-        plot_bgcolor='white',
-        paper_bgcolor='#f9f9f9',
-        hovermode='x unified',
-    )
-    
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=True, gridcolor='lightgray')
+    ))
+    _apply_grid_styling(fig, x_grid=False, y_grid=True)
     
     print(f"    ✓ Generated menu evolution for {len(df)} weeks")
     
