@@ -1,6 +1,7 @@
 ## Building an Automated HelloFresh Menu Analytics Pipeline
 
 Use of triggers in git actions. Here I explore the behavior of the `workflow_dispatch` trigger, which allows manual runs of the pipeline with custom parameters. I check how the `--week` parameter is handled in the bronze ingestion script. 
+
 Should later look into stringing actions together.
 
 ### What the project does
