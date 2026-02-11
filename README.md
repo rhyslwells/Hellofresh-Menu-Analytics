@@ -4,7 +4,7 @@ Lightweight weekly data pipeline: ingest HelloFresh API, normalise with SCD Type
 
 **Outputs:** SQLite DB (bronze/silver/gold) & weekly reports with visualisations
 
-**View live:** https://rhyslwells.github.io/Hellofresh-Menu-Analytics/
+**Live Dashboard:** [HelloFresh Menu Analytics](https://rhyslwells.github.io/Hellofresh-Menu-Analytics/)
 
 ## Quick Start
 
@@ -12,9 +12,9 @@ Lightweight weekly data pipeline: ingest HelloFresh API, normalise with SCD Type
 
 ## Repository Structure
 
-- `scripts/` — pipeline stages (bronze → gold)
-- `hfresh/` — database and outputs
-- `notes/` — architecture, design, and reference
+- `scripts/` - pipeline stages (bronze to gold)
+- `hfresh/` - database and outputs
+- `notes/` - architecture, design, and reference
 
 ## Learn More
 
